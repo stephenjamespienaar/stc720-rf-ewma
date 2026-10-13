@@ -566,24 +566,53 @@ Avoid unnecessary approval requests for routine, already-authorized coding, docu
 
 ## 18. Current Project Status
 
-Completed:
+*Updated 13 October 2026. The detailed, authoritative progress record is `docs/project-status.md`.*
 
-- Git repository initialized.
-- Project directory structure created.
-- Python virtual environment configured.
-- Required scientific dependencies installed.
-- Dependencies validated.
-- Zotero MCP successfully connected to Claude Code.
-- Zotero bibliographic and PDF full-text retrieval verified.
+Completed and verified:
 
-Pending:
+- Repository, Python environment, dependencies and Zotero MCP set up and verified.
+- Research planning: rubric reviewed; `docs/research_plan.md`, `docs/methodology.md` and `docs/references.md` written. The user approved the MODIFY recommendation: conventional EWMA, GARCH–EWMA and RF–EWMA compared on a common score; frozen models; adaptation-masking investigation; pilot-first development.
+- Phase 1:
+  - core implementation (`src/`, `run.py`)
+  - execution wrapper (`scripts/run_simulation.sh`)
+  - 29 passing tests
+  - smoke and verify runs
+  - reduced feasibility pilot. The canonical run is `results/runs/pilot_20261013T075339_142070`, summarised in `docs/phase1_pilot_report.md`. Read it together with the corrected interpretations in `docs/project-status.md`.
+- Production-readiness review delivered, verdict **CORRECTIONS REQUIRED**. The record is in `.claude/skills/stc720-project/references/production-plan.md`.
 
-- Confirm the assignment rubric is available at `docs/STC720_assignment_rubric.pdf`.
-- Conduct the formal literature review.
-- Validate the proposed RF–EWMA methodology.
-- Establish the experimental design.
-- Prepare the feasibility pilot.
+Outstanding:
 
-**Current authorized phase: Research planning and feasibility assessment only.**
+- **Corrections C1–C7 (not started):**
+  - production and sensitivity configurations with an explicit approval guard
+  - paired no-change counterfactuals
+  - excess detection X(k)
+  - masking uncertainty
+  - paired-contrast estimators
+  - replicate-aware aggregation and reporting
+  - tests
+  - methodology and pilot-report errata
+- **SPY application phase (not started):** data-integrity checks, pipeline, simulation-based control limits, pre-registered reference dates.
 
-Do not begin full implementation until the user approves the research plan.
+Authorization boundaries:
+
+- **Authorized:** preparation of corrections C1–C7. Confirm the scope of the user's production-preparation instructions before starting.
+- **Not authorized:**
+  - full production simulations
+  - the ARL₀ = 100 sensitivity run
+  - the R = 10 runtime benchmark (confirm first)
+  - SPY data download or application
+- Git writes remain reserved to the user (Section 13).
+
+## 19. Session Continuity
+
+At the start of every session:
+
+1. Read this file.
+2. Use the project skill `stc720-project` (`.claude/skills/stc720-project/`) and read `docs/project-status.md`.
+3. Inspect the repository with read-only Git commands. Verify the recorded status against the actual code and artifacts, and treat anything unverified as incomplete.
+4. Summarise the verified state, the next authorized task and pending decisions to the user. Ask for approval before any work outside the authorized scope.
+5. After each meaningful milestone, update `docs/project-status.md` (verified checkpoint and update log). Do not mark work complete until it is tested and verified.
+
+Restart instruction:
+
+> Use the stc720-project skill, inspect the current repository state and resume from the last verified checkpoint. Do not execute production simulations without my explicit authorization.

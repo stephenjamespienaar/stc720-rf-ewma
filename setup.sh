@@ -50,6 +50,7 @@ data/processed/*
 # Generated experimental outputs
 results/figures/*
 results/tables/*
+results/runs/
 !results/figures/.gitkeep
 !results/tables/.gitkeep
 
