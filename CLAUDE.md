@@ -566,7 +566,7 @@ Avoid unnecessary approval requests for routine, already-authorized coding, docu
 
 ## 18. Current Project Status
 
-*Updated 13 October 2026. The detailed, authoritative progress record is `docs/project-status.md`.*
+*Updated 14 October 2026. The detailed, authoritative progress record is `docs/project-status.md`.*
 
 Completed and verified:
 
@@ -575,22 +575,24 @@ Completed and verified:
 - Phase 1:
   - core implementation (`src/`, `run.py`)
   - execution wrapper (`scripts/run_simulation.sh`)
-  - 29 passing tests
   - smoke and verify runs
-  - reduced feasibility pilot. The canonical run is `results/runs/pilot_20261013T075339_142070`, summarised in `docs/phase1_pilot_report.md`. Read it together with the corrected interpretations in `docs/project-status.md`.
+  - reduced feasibility pilot. The canonical run is `results/runs/pilot_20261013T075339_142070`, summarised in `docs/phase1_pilot_report.md` (revised after the audit; revision log §14).
 - Production-readiness review delivered, verdict **CORRECTIONS REQUIRED**. The record is in `.claude/skills/stc720-project/references/production-plan.md`.
+- **Phase 1 independently audited and remediated; 34 tests passing at the last verified checkpoint.**
+- **Initial Git baseline.** The user committed the verified Phase 1 baseline as `f77297b9a257bbe8ca80c858f6119219471925b8` on `main`.
+- **Reproducibility caveat.** The historical canonical pilot is preserved unchanged (results hash `f92f0715…`). It was generated from uncommitted pre-remediation source. The committed source does not reproduce its complete `results.json` bit-for-bit, because the remediation corrected the slope diagnostic's normalisation (`slope_h` × (n−1)/n). No other output changes. See `docs/phase1_pilot_report.md` (header note and §5) and `.claude/skills/stc720-project/references/reproducibility.md`. Never alter or regenerate the historical pilot artifacts.
 
 Outstanding:
 
 - **Corrections C1–C7 (not started):**
   - production and sensitivity configurations with an explicit approval guard
-  - paired no-change counterfactuals
+  - C2: retention of per-path derived outputs from the paired no-change (δ = 1) counterfactuals, needed for production-level excess alarm probabilities, masking uncertainty and replicate-aware analysis. The counterfactual trajectories themselves are already implemented in `run.py`.
   - excess detection X(k)
   - masking uncertainty
   - paired-contrast estimators
   - replicate-aware aggregation and reporting
   - tests
-  - methodology and pilot-report errata
+  - remaining methodology and pilot-report errata (A1, A3–A5)
 - **SPY application phase (not started):** data-integrity checks, pipeline, simulation-based control limits, pre-registered reference dates.
 
 Authorization boundaries:
@@ -599,7 +601,7 @@ Authorization boundaries:
 - **Not authorized:**
   - full production simulations
   - the ARL₀ = 100 sensitivity run
-  - the R = 10 runtime benchmark (confirm first)
+  - the bounded R = 10 runtime benchmark (requires separate approval)
   - SPY data download or application
 - Git writes remain reserved to the user (Section 13).
 
@@ -610,7 +612,7 @@ At the start of every session:
 1. Read this file.
 2. Use the project skill `stc720-project` (`.claude/skills/stc720-project/`) and read `docs/project-status.md`.
 3. Inspect the repository with read-only Git commands. Verify the recorded status against the actual code and artifacts, and treat anything unverified as incomplete.
-4. Summarise the verified state, the next authorized task and pending decisions to the user. Ask for approval before any work outside the authorized scope.
+4. Summarise the verified state, the next authorized task and pending decisions to the user. Ask for approval before any work outside the authorized scope. Production and sensitivity runs, the runtime benchmark and SPY work stay gated (§18), and Git writes stay reserved to the user (§13).
 5. After each meaningful milestone, update `docs/project-status.md` (verified checkpoint and update log). Do not mark work complete until it is tested and verified.
 
 Restart instruction:

@@ -2,7 +2,7 @@
 
 *Authoritative progress record for the STC 720 project. It is read at the start of every session through the `stc720-project` skill ([`.claude/skills/stc720-project/SKILL.md`](../.claude/skills/stc720-project/SKILL.md)) and `CLAUDE.md` §19.*
 
-*Last updated: **2026-10-14** (session 2, independent-audit remediation). Verified by:*
+*Last updated: **2026-10-14** (session 2: independent-audit remediation, then the user's Phase 1 commit `f77297b` and `CLAUDE.md` §18 synchronization). The remediation was verified by:*
 - *`pytest -q`: 34 passed*
 - *`scripts/run_simulation.sh smoke` and `verify`: both exit 0, identical hashes*
 - *SHA-256 re-check of all 104 pre-existing `results/runs/` files*
@@ -15,7 +15,7 @@
 - The production-readiness review has been **delivered**.
 - The **independent (Codex CLI) audit remediation is complete** (14 Oct 2026). Its verdict was "corrections required before commit".
 - Production corrections C1–C7 have **not been started**.
-- Phase 1 now awaits the user's review and initial commit.
+- **The user committed the verified Phase 1 baseline:** `f77297b9a257bbe8ca80c858f6119219471925b8` ("feat: add RF-EWMA simulation pipeline and verified Phase 1 pilot"). This tree is the one verified with 34 passing tests. Phase 2 preparation has not begun.
 
 | Item | Verified state | Evidence |
 |---|---|---|
@@ -25,7 +25,7 @@
 | Tests | **34 passed**: 29 original + 5 new (slope normalisation; overwrite refusal ×3 modes; fresh wrapper directory) (`.venv/bin/python -m pytest -q`, 14 Oct 2026) | `tests/test_core.py`, `pytest.ini` |
 | Smoke + verify | Passed after remediation; smoke hash `5e84db38…`, verify identical | `results/runs/smoke_20261014T002849_20414`, `results/runs/verify_20261014T002855_20527/verify.txt` (13 Oct runs kept) |
 | Audit remediation (14 Oct) | **Done.** M1 statistical reporting; M2 RF-slope interpretation; M3 overwrite guard; small fixes 1–9. The pilot was **not rerun**; the canonical artifacts are unchanged (104/104 files hash-identical) | `docs/phase1_pilot_report.md` §14 (revision log); `run.py` `refuse_overwrite`; `src/forecast.py` `slope`; `src/report.py`; `setup.sh`; `docs/methodology.md` v1.1; skill references |
-| Code ↔ canonical hash | The canonical `f92f0715…` came from **uncommitted pre-remediation source** (HEAD `2a06da8`, dirty). The remediation changed one numerical output: `slope_h` is now ×(n−1)/n. At smoke scale exactly 3 `slope_h` leaves differed (ratio (n−1)/n) and all other leaves were bit-identical. A pilot rerun with current code is expected to give a different hash; it was not rerun | scratch comparison, 14 Oct |
+| Code ↔ canonical hash | The canonical `f92f0715…` came from **uncommitted pre-remediation source** (HEAD `2a06da8`, dirty). The remediation changed one numerical output: `slope_h` is now ×(n−1)/n. At smoke scale exactly 3 `slope_h` leaves differed (ratio (n−1)/n) and all other leaves were bit-identical. A pilot rerun with the committed source (`f77297b`) is expected to give a different hash; it was not rerun | scratch comparison, 14 Oct |
 | Reduced pilot | Done; all criteria Q1–Q6 met | **Canonical run:** `results/runs/pilot_20261013T075339_142070` (hash `f92f07159b682406ef0ca8bd52c0e64e8eed38a795784b7ec8e9549c17b01bb7`; three identical runs). Summary: `docs/phase1_pilot_report.md` |
 | Production-readiness review | Delivered **in chat only** (not saved in `docs/`); verdict **CORRECTIONS REQUIRED** | Content preserved in [production-plan.md](../.claude/skills/stc720-project/references/production-plan.md) |
 | Corrections C1–C7 | **Not started** | Re-checked 14 Oct (`grep`: no `excess_detection`, `masking_se` or `--approved`). Verified 13 Oct: `run.py` has `"production": None`; `chart.paired_diff` still uses the bootstrap; there is no `excess_detection` or `masking_se`; `report.py` summarises replicate 0 only |
@@ -33,11 +33,11 @@
 | SPY application | Not started; no data downloaded | `data/raw/` holds only `.gitkeep` |
 
 **Git (read-only, 14 Oct 2026):**
-- HEAD `2a06da8` "docs: add research rubric". `setup.sh` (tracked) is now also modified (+1 line: `results/runs/`).
-- **All Phase 1 work is uncommitted.** `.gitignore` is modified; untracked: `docs/{methodology,phase1_pilot_report,references,research_plan}.md`, `pytest.ini`, `run.py`, `scripts/`, `src/*.py`, `tests/test_core.py`, `docs/project-status.md` (this file), and `.claude/skills/stc720-project/` (the continuation skill). `CLAUDE.md` is modified (§18 updated, §19 added).
-- `.serena/` is untracked and is not project work.
+- Branch `main`. **Phase 1 baseline commit:** `f77297b9a257bbe8ca80c858f6119219471925b8`, made by the user (author Stephen Pienaar; no trailers). Its parent is `2a06da8`.
+- Before this synchronization the working tree was clean, apart from untracked `.serena/` (tool state, not project work).
+- The `CLAUDE.md` §18–19 and status-record synchronization is uncommitted until the user commits it.
 - `results/runs/` is git-ignored, so the pilot artifacts exist only locally. **Keep `pilot_20261013T075339_142070` safe.** The current code would regenerate it except for the `slope_h` normalisation, so the hash would differ (see "Code ↔ canonical hash").
-- The user commits manually. Suggested message: `feat: add RF-EWMA simulation pipeline, tests, run wrapper and Phase 1 pilot`.
+- The user commits manually.
 
 ## Approvals and decisions
 
@@ -67,7 +67,7 @@ Items 1–3 are implied by the user's C1–C7 list; confirm them when preparatio
 ## Open issues
 
 1. **C1–C7** not implemented (production-plan.md).
-2. **Pilot-report errata A1–A8** not applied.
+2. **Pilot-report errata:** A2 and A6–A8 were applied on 14 Oct. **A1, A3, A4 and A5 are pending (C7).**
 3. **The production-preparation prompt** the user referred to is not recorded here; ask for it.
 4. *(Resolved 13 Oct 2026: `CLAUDE.md` §18 updated and §19 session-continuity workflow added, at the user's request.)*
 5. **SPY readiness (S1–S3):**
@@ -76,7 +76,7 @@ Items 1–3 are implied by the user's C1–C7 list; confirm them when preparatio
    - no SPY pipeline: chronological tuning, refit and freeze, continuous filtering, simulation-based UCL
    - `sim.simulate` enforces the 4th-moment margin, which a SPY-fitted GARCH-t may fail
    - the reference dates are not yet written down
-6. **`CLAUDE.md` §18 is stale (flagged to the user; not edited).** It lists "29 passing tests", and it lists "paired no-change counterfactuals" as outstanding. In fact there are 34 tests, and the counterfactuals exist; only per-path storage is pending (C2).
+6. *(Resolved 14 Oct 2026: `CLAUDE.md` §18 synchronized at the user's request, covering 34 tests, the C2 wording, the baseline commit and the reproducibility caveat. §19 step 4 now names the production and Git gates.)*
 7. **Source provenance.** The pilot came from uncommitted source. Recommended for future runs: run from a clean committed worktree, plus one wrapper line `sha256sum … > source_sha256.txt` (production-plan.md §Source provenance). Not implemented.
 8. **Pre-change false-alarm check (A9).** In the pilot, the OOC P(T<τ) was 1.4–1.9 SE below the validation P(T<50). Recheck at production scale.
 9. **Literature:**
@@ -85,9 +85,7 @@ Items 1–3 are implied by the user's C1–C7 list; confirm them when preparatio
 
 ## Next recommended task
 
-**First:** the user reviews the audit remediation and makes the initial Phase 1 commit (suggested message: `feat: add RF-EWMA simulation pipeline, tests, run wrapper and Phase 1 pilot`). Optionally the user updates `CLAUDE.md` §18 (open issue 6).
-
-**Then:** confirm with the user the instructions of the "production-preparation prompt". Then implement C1–C7 (production-plan.md), including the `--approved` guard, and update the docs and pilot-report errata. Next, run `pytest`, `scripts/run_simulation.sh smoke` and `verify` only. Then:
+**Phase 2 preparation:** confirm with the user the instructions of the "production-preparation prompt". Then implement C1–C7 (production-plan.md), including the `--approved` guard, and update the docs and pilot-report errata. Next, run `pytest`, `scripts/run_simulation.sh smoke` and `verify` only. Then:
 - report back
 - request authorization for the R = 10 runtime benchmark (if not already granted)
 - request authorization for production and for the ARL₀ = 100 sensitivity
@@ -112,3 +110,4 @@ Items 1–3 are implied by the user's C1–C7 list; confirm them when preparatio
 | 2026-10-13 | Production-readiness review delivered (CORRECTIONS REQUIRED); continuation skill created | `.claude/skills/stc720-project/` | 29 passed (re-run 08:51) | C1–C7 not started; prep prompt unrecorded | Confirm prep scope, then C1–C7 | Preparation authorized (per user); production, sensitivity and SPY **not** authorized |
 | 2026-10-13 | Continuity housekeeping: status record moved to `docs/project-status.md`; `CLAUDE.md` §18 updated, §19 added; skill links updated | `docs/project-status.md`, `CLAUDE.md`, `.claude/skills/stc720-project/` | not re-run (no code changes) | as above | Confirm prep scope, then C1–C7 | unchanged |
 | 2026-10-14 | Independent-audit remediation (M1–M3 + 9 small fixes); no pilot rerun | `run.py`, `src/forecast.py`, `src/report.py`, `tests/test_core.py`, `setup.sh`, `docs/phase1_pilot_report.md`, `docs/methodology.md`, skill refs; new runs `smoke_20261014T002849_20414` (`5e84db38…`), `verify_20261014T002855_20527` (identical) | **34 passed** | C1–C7; A1/A3–A5 errata; CLAUDE.md §18 stale; provenance recommendation | User review and initial commit; then confirm C1–C7 scope | Production, sensitivity, R = 10 benchmark, SPY **not** authorized |
+| 2026-10-14 | User committed the Phase 1 baseline `f77297b`; `CLAUDE.md` §18 synchronized (§19 step 4: gates named); documentation only | `CLAUDE.md`, `docs/project-status.md` | not re-run (no code changes; 34 collected; committed tree = verified tree) | C1–C7; A1/A3–A5 errata; provenance recommendation | Confirm the production-preparation scope, then C1–C7 | Production, sensitivity, R = 10 benchmark, SPY **not** authorized |
