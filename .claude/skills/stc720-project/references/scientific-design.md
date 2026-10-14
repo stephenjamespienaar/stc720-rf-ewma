@@ -89,7 +89,7 @@ M is the fraction of the shift still visible after adaptation. It is a ratio of 
 
 $$R_G(\delta)=\frac{\delta(\hat\omega+\hat\alpha\sigma^2)}{\hat\omega+\hat\alpha\delta\sigma^2},\qquad M_G=\frac{R_G-1}{\delta-1},$$
 
-with the bound $(1-\beta)/\alpha\approx1.29$. This is a ratio-of-means approximation. In the pilot it **underestimated M by about 30–35%**, as Jensen's inequality predicts.
+with the bound $(1-\beta)/\alpha\approx1.29$. This is a ratio-of-means approximation. In the pilot it **underestimated M by about 30–35%**, as Jensen's inequality predicts; production (R = 20) shows the same, about 0.05–0.07 absolute (about 30–35%) for GARCH and the oracle.
 
 **Transient:** every adaptive denominator is $\mathcal F_{\tau-1}$-measurable, so on day k = 0 the paired ratio equals δ exactly for every chart. GARCH then adapts within about 30–50 days.
 
@@ -134,6 +134,16 @@ Full tables are in `results/runs/pilot_20261013T075339_142070/tables.md` (git-ig
    - Per-chart summaries use each chart's own evaluable set (267 conventional, 279 GARCH, 273 RF). Contrasts use the pairwise intersections (271 and 262 paths).
 5. The RF chart's detection advantage over GARCH is **not explained by better forecasting**, since its QLIKE is worse. It **coincides with** reduced forecast responsiveness (slope 0.345) and a higher retained shift (M ≈ 0.34–0.38). The cause is **not isolated**: even the exact E[h|x] has slope var(E[h|x])/var(h) < 1, so limited predictor information, estimation, regularization or saturation could each contribute (methodology §9).
 6. The reversal of Schipper & Schmid's (2001) ranking may reflect the higher ARL₀ (sustained signal versus transient signal). This is **untested**; the ARL₀ = 100 sensitivity run addresses it, and no causal claim should be made.
+
+## Production evidence (R = 20, 14 Oct 2026; frozen; independent audit pending)
+
+The full numbers, hashes and caveats are in [production-results.md](production-results.md). In outline, all observational:
+- **IC validation:** 160/160 passed eq. 29.
+- **Detection:** conventional detected persistent increases fastest at every δ > 1; RF had shorter restricted mean delays than GARCH (heterogeneous across trained systems); RF ≈ GARCH on X(20). The pilot's ordering is reproduced at R = 20.
+- **Masking ranking** (conventional 1 > RF > GARCH ≈ oracle) is **consistent with** the detection ranking. That is an association, not a demonstrated cause.
+- **Interpretation 5** (RF's advantage over GARCH is not explained by better forecasting) still holds: RF QLIKE 0.841 against GARCH 0.812; RF slope 0.348.
+- **Interpretation 6** remains untested, because the ARL₀ = 100 sensitivity run is not authorized.
+- Equal ARL₀ did not give equal pre-change false-alarm probabilities: conventional 0.125 against GARCH 0.094.
 
 ## Known limitations to state in the article
 

@@ -566,62 +566,63 @@ Avoid unnecessary approval requests for routine, already-authorized coding, docu
 
 ## 18. Current Project Status
 
-*Updated 14 October 2026 (final production-design preparation). The detailed, authoritative progress record is `docs/project-status.md`.*
+**FIRST FULL PRODUCTION COMPLETE — SCIENTIFIC RESULTS AUDIT PENDING**
+
+*Updated 14 October 2026, at the end of the development session. The detailed, authoritative progress record and task list is `docs/project-status.md`. The frozen production numbers, hashes and caveats are in `.claude/skills/stc720-project/references/production-results.md`.*
 
 Completed and verified:
 
-- Repository, Python environment, dependencies and Zotero MCP set up and verified.
-- Research planning: rubric reviewed; `docs/research_plan.md`, `docs/methodology.md` and `docs/references.md` written. The user approved the MODIFY recommendation: conventional EWMA, GARCH–EWMA and RF–EWMA compared on a common score; frozen models; adaptation-masking investigation; pilot-first development.
-- Phase 1:
-  - core implementation (`src/`, `run.py`)
-  - execution wrapper (`scripts/run_simulation.sh`)
-  - smoke and verify runs
-  - reduced feasibility pilot. The canonical run is `results/runs/pilot_20261013T075339_142070`, summarised in `docs/phase1_pilot_report.md` (revised after the audit; revision log §14).
-- Production-readiness review delivered, verdict **CORRECTIONS REQUIRED**. The record is in `.claude/skills/stc720-project/references/production-plan.md`.
-- **Phase 1 independently audited and remediated.**
-- **Git baseline.** The user committed the verified Phase 1 baseline as `f77297b9a257bbe8ca80c858f6119219471925b8` on `main`, then the documentation commit `87c4dc7` (current HEAD).
-- **Phase 2 production preparation (corrections C1–C7) implemented and independently audited** (Codex CLI audit: CORRECTIONS REQUIRED, three major findings, no critical scientific errors). **Major findings M1–M3 and the minor findings remediated and verified with regression tests** (14 Oct 2026):
-  - M1: complete result schema and CRN-pairing check when no path survives to τ; unidentified values are None
-  - M2: figures omit unidentified points and never zero-fill SEs
-  - M3: the variance component is the *residual between-system variability (training, model selection, forest randomness and calibration) after subtracting estimated evaluation Monte Carlo variance*; arithmetic and t intervals unchanged
-- **Second independent audit:** M1 and M3 confirmed resolved, M2 plotting fixes confirmed, estimators verified; residual reporting and documentation inconsistencies corrected (14 Oct 2026): report cells distinguish `n/i` (not identifiable), `–` (not applicable) and valid zeros; δ = 1 X(k) cells read the stored estimand; headings are mode-sensitive (only `production` claims primary endpoints; sensitivity all secondary; benchmark performance-only).
-- **Phase 2 committed** by the user as `9b286e1` (current HEAD).
-- **Production-scale performance benchmark run once** (authorized, 14 Oct 2026): `results/runs/benchmark_20261014T041247_106190`, results hash `77e20ffa…`. It is performance evidence only and excluded from inference. Measured: 50.7 s per replicate, 53 s for the command, peak RSS 1.64 GiB. Under the original validation rule, 2 of 6 primary configurations passed; this outcome is recorded unchanged.
-- **Final production design (user decision, 14 Oct 2026, before production; uncommitted):**
-  - **A:** production R = 20, with the ARL₀ = 100 sensitivity matched by inheritance; the benchmark config stays at R = 1.
-  - **B:** amended IC validation (`docs/methodology.md` §6, eq. 29). A configuration passes iff its whole independent-validation 95% CI lies in [A₀(1−0.15), A₀(1+0.15)] = [425, 575] (sensitivity [85, 115]). The bounds are exact and inclusive. It is labelled a post-pilot, post-benchmark amendment, conditional on h* and not a complete equivalence test.
-  - **Failure policy:** run all 20 replicates; never drop, replace or recalibrate; report and flag every failure.
-  - **Provenance:** `scripts/git_provenance.sh` separates tracked changes, unclassified untracked files (potentially execution-relevant), ignored Python files and `.serena/` tool state.
-- **Tests: 80 passing** (`.venv/bin/python -m pytest -q`). Smoke and verify pass with identical hashes (`0ff5992f…`). The canonical pilot and benchmark artifacts are unchanged.
-- **Design decisions (user, 14 Oct 2026):**
-  - production master seed **20261014**, shared by the matched ARL₀ = 100 sensitivity run (not an independent experiment); pilot seed 20261013 unchanged
-  - 12 pre-registered primary contrasts: paired RMD₅₀₀ and X(20), RF − GARCH and RF − conventional, λ = 0.1, δ ∈ {1.5, 2, 3}, each with its δ = 1 counterpart; X(5), X(60) and the sensitivity run are secondary
-  - `benchmark` mode (R = 1, seed 20261013) is a production-scale performance benchmark only, excluded from all inference
-- **Reproducibility caveat.** The historical canonical pilot is preserved unchanged (results hash `f92f0715…`). It was generated from uncommitted pre-remediation source. The **Phase 1 remediation** (committed in `f77297b`) introduced the historical difference: it corrected the slope diagnostic's normalisation (`slope_h` × (n−1)/n), the only output change at that stage. The current **Phase 2** source differs further (output schemas, replicate aggregation, paired intervals and reporting), so it does not reproduce the pilot's `results.json` either, and the slope fix is not the only difference. The original pilot artifacts remain preserved. See `docs/phase1_pilot_report.md` (header note and §5) and `.claude/skills/stc720-project/references/reproducibility.md`. Never alter or regenerate the historical pilot artifacts.
+- **Planning:** the rubric was reviewed and `docs/research_plan.md`, `docs/methodology.md` (now v1.4) and `docs/references.md` were written. The user approved the MODIFY recommendation: conventional EWMA, GARCH–EWMA and RF–EWMA on a common score, frozen models, an adaptation-masking investigation, and pilot-first development.
+- **Phase 1 (pilot):** implementation, wrapper, smoke and verify runs, and the reduced pilot. The canonical pilot is `results/runs/pilot_20261013T075339_142070` (`f92f0715…`), summarised in `docs/phase1_pilot_report.md`. It was independently audited and remediated, and the baseline was committed as `f77297b`.
+- **Phase 2 (production preparation C1–C7):** two independent Codex audits, both remediated. Committed by the user as `9b286e1`.
+- **Performance benchmark:** run once (R = 1, seed 20261013): `results/runs/benchmark_20261014T041247_106190` (`77e20ffa…`). It is performance evidence only, excluded from inference. Under the original validation rule its outcome was 2 of 6 primary configurations passed, recorded unchanged.
+- **Final production design:** committed by the user as `3529ddd` (current HEAD).
+  - R = 20, with the ARL₀ = 100 sensitivity matched by inheritance.
+  - Amended IC validation (`docs/methodology.md` §6, eq. 29): a configuration passes iff its whole independent-validation 95% CI lies in [A₀(1−0.15), A₀(1+0.15)] = [425, 575], with exact inclusive bounds. It is a post-pilot, post-benchmark amendment, conditional on h*, and not a complete equivalence test.
+  - Failure policy: run all replicates; never drop, replace or recalibrate.
+  - Provenance classification: `scripts/git_provenance.sh`.
+  - 80 tests passing.
+- **First full production run (14 October 2026; explicitly authorized):**
+  - **Directory and hash:** `results/runs/production_20261014T060921_145897/`, results hash `44410144e3feb4a762dd2044fec07a2ddc64fdc742d43637332cc03f731431b8`.
+  - **Configuration:** mode `production`; target ARL₀ = 500; R = 20 independent training/calibration replicates; master seed 20261014; 500 RF trees; per replicate 2,000 calibration paths, 2,000 IC-validation paths and 2,000 OOC paths per shift scenario; IC horizon 5,000; OOC horizon H = 500; τ = 50; δ ∈ {1.5, 2, 3}; λ ∈ {0.1, 0.2}. The 12 primary contrasts are unchanged.
+  - **Execution:** run from clean committed `3529ddd`. 20/20 replicates, exit status 0, wall about 16 min 27 s, peak RAM about 1.74 GiB.
+  - **Validation:** **160/160** IC configurations passed eq. 29. No replicate was discarded, replaced, selectively rerun or recalibrated.
+  - **Checks:** all of the run session's internal reproducibility and verification checks passed. **No independent numerical audit has been done yet.**
+- **Observed findings** (λ = 0.1; simulation only; not causal):
+  - Conventional EWMA detected the evaluated persistent increases fastest. Mean restricted delays for conventional / RF / GARCH were 205 / 243 / 249 days at δ = 1.5, 132 / 192 / 202 at δ = 2 and 63 / 126 / 140 at δ = 3.
+  - RF–EWMA had shorter restricted delays than GARCH–EWMA, heterogeneous across fitted systems. It showed no distinguishable advantage on X(20).
+  - Conventional EWMA forecasts worst but detects best.
+  - Adaptation-masking results are **consistent with** the detection ranking. They are not proven to be its cause.
+  - Caveats (state them with any result): unadjusted 95% CIs; equal ARL₀ ≠ equal pre-change false-alarm probability; censoring at H = 500; GARCH-generated DGP; IC-validation CIs conditional on h*.
+- **Binding design decisions (user, 14 October 2026):**
+  - production seed **20261014**, shared by the matched ARL₀ = 100 sensitivity (not an independent experiment)
+  - 12 pre-registered primary contrasts: paired RMD₅₀₀ and X(20), RF − GARCH and RF − conventional, λ = 0.1, δ ∈ {1.5, 2, 3}, each with its δ = 1 counterpart; everything else is secondary
+  - no multiplicity adjustment was pre-registered; any adjustment is post hoc and supplementary
+- **Reproducibility caveat:** the historical pilot came from uncommitted pre-remediation source, and later source does not reproduce its `results.json`. Never alter or regenerate the pilot, benchmark or production artifacts (see `.claude/skills/stc720-project/references/reproducibility.md`).
 
 Current Git state:
 
-- HEAD `9b286e1` on `main`. The final production-design changes are **uncommitted**: modified `run.py`, `src/chart.py`, `src/report.py`, `scripts/run_simulation.sh`, `tests/test_core.py`, docs, skill references and this file; new `scripts/git_provenance.sh`. The user commits.
+- HEAD `3529ddd` on `main`. The post-production documentation updates are uncommitted until the user commits. `.serena/` is untracked development-tool state. The user performs all Git staging, commits and pushes.
 
-Outstanding:
+Outstanding (all **OPEN**, no new simulation needed; details in `docs/project-status.md`):
 
-- User commit of the final production-design changes. Then the mandatory production warning, and a clean-worktree launch (`git_tracked_modified: no`, `git_untracked_unclassified: none`, `git_ignored_python: none`) only after explicit authorization.
-- Remaining limitations:
-  - the R = 20 runtime is extrapolated, not measured (≈ 17 min, upper ≈ 30 min; peak RSS ≈ 1.7 GiB, upper ≈ 2.2 GiB)
-  - the validation rule is conditional on h* and gives no family-wise coverage
-  - the 12 primary contrasts are not adjusted for multiplicity
-  - smoke-size validation failures are expected (0 of 6 pass under eq. 29) and do not validate production
-- **SPY application phase (not started):** data-integrity checks, pipeline, simulation-based control limits, pre-registered reference dates.
+- **P1, the next task:** an independent production-results audit. Recompute the 12 primary contrasts from `paths.npz` without importing project estimators.
+- **P2:** Holm adjustment over the 12 primary contrasts (post hoc, supplementary), keeping the unadjusted results.
+- **P3:** repair `fig_replicates.png` (jitter clips at R = 20). Regenerate it from the frozen results into a separate directory.
+- **P4:** descriptive, post hoc investigation of RF − GARCH heterogeneity across fitted systems. Never tune RF on production outcomes.
+- **P5:** run-length distribution comparison from stored data. Per-path validation run lengths are not stored.
+- **P6:** the ARL₀ = 100 sensitivity and the SPY application (preparation items S1–S3) are **not authorized**.
 
 Authorization boundaries:
 
-- **Benchmark:** run once (authorized); **do not repeat**.
 - **Not authorized:**
-  - another benchmark (`benchmark` mode)
-  - full production simulations (R = 20)
+  - a production rerun
   - the ARL₀ = 100 sensitivity run
+  - another benchmark
   - SPY data download or application
-- `production`, `sensitivity_arl100` and `benchmark` refuse to start without `--approved`. The flag is a technical safeguard and never replaces the user's explicit authorization of each run.
+
+  None of these starts automatically in a new session.
+- `production`, `sensitivity_arl100` and `benchmark` refuse to start without `--approved`. The flag never replaces the user's explicit authorization of each run.
 - Git writes remain reserved to the user (Section 13).
 
 ## 19. Session Continuity
@@ -629,11 +630,14 @@ Authorization boundaries:
 At the start of every session:
 
 1. Read this file.
-2. Use the project skill `stc720-project` (`.claude/skills/stc720-project/`) and read `docs/project-status.md`.
-3. Inspect the repository with read-only Git commands. Verify the recorded status against the actual code and artifacts, and treat anything unverified as incomplete.
-4. Summarise the verified state, the next authorized task and pending decisions to the user. Ask for approval before any work outside the authorized scope. Production and sensitivity runs, any further benchmark and SPY work stay gated (§18), and Git writes stay reserved to the user (§13).
-5. After each meaningful milestone, update `docs/project-status.md` (verified checkpoint and update log). Do not mark work complete until it is tested and verified.
+2. Load the project skill `stc720-project` (`.claude/skills/stc720-project/`).
+3. Read `docs/project-status.md`, the authoritative checkpoint and open-task list.
+4. Read the frozen production results reference, `.claude/skills/stc720-project/references/production-results.md`.
+5. Verify the actual state with read-only commands: `git branch --show-current`, `git rev-parse HEAD`, `git status --short`. Check the production artifacts, e.g. that `sha256sum results/runs/production_20261014T060921_145897/*` matches the recorded hashes and that the recomputed results hash is `44410144…`. Treat anything unverified as incomplete.
+6. Summarise the verified state, then resume from the **highest-priority OPEN task** (currently P1, the independent audit), within its authorized scope.
+7. **Never rerun production and never start the sensitivity, a benchmark or SPY work without the user's explicit authorization in the current session.** Git writes stay reserved to the user (§13).
+8. After each meaningful milestone, update `docs/project-status.md` (verified checkpoint and update log). Do not mark work complete until it is tested and verified.
 
 Restart instruction:
 
-> Use the stc720-project skill, inspect the current repository state and resume from the last verified checkpoint. Do not execute production simulations without my explicit authorization.
+> Use the stc720-project skill, inspect the current repository state and resume from the last verified checkpoint (highest-priority OPEN task; currently P1, the independent production-results audit). Do not rerun production or start the sensitivity, benchmark or SPY work without my explicit authorization.

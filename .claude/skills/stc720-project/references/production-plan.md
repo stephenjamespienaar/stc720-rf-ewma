@@ -1,6 +1,13 @@
 # Production plan, required corrections and approval gates
 
-This file is the persistent record of the **production-readiness review** (13 Oct 2026; verdict **CORRECTIONS REQUIRED**). The review was delivered in chat and is **not saved in `docs/`**. Production execution is **not authorized**.
+This file is the persistent record of the **production-readiness review** (13 Oct 2026; verdict **CORRECTIONS REQUIRED**). The review was delivered in chat and is **not saved in `docs/`**.
+
+**Status (14 Oct 2026, end of session):**
+- The plan in this file has been **executed**. The R = 20 production run is complete and frozen (`results/runs/production_20261014T060921_145897`, `44410144…`); see [production-results.md](production-results.md).
+- No further production, sensitivity, benchmark or SPY run is authorized.
+- The open post-production tasks P1–P6 are in `docs/project-status.md`.
+
+The sections below are the historical plan record.
 
 *Updated 14 Oct 2026 (session 3): the user supplied the production-preparation prompt and approved the C1–C7 implementation plan with refinements. **C1–C7 are implemented and verified (uncommitted until the user commits)**; see the status table below and `docs/project-status.md`. Benchmark, production, sensitivity and SPY remain **not authorized**.*
 
@@ -163,7 +170,14 @@ Also report, per replicate: GARCH θ̂, s², the selected RF settings, QLIKE, th
 - whole command: 53.0 s (`time -v`), CPU 245 s user + 17 s system
 - peak RSS 1,718,464 KiB (1.64 GiB)
 
-**Forecast for R = 20 (extrapolated, not measured):**
+**Measured production (R = 20, 14 Oct 2026):**
+- wall 16 min 26.7 s, 49.1 s per replicate
+- CPU 6,602 s user + 306 s system
+- peak RSS 1,825,888 KiB (1.74 GiB), no swap
+
+The forecast below was accurate. The ARL₀ = 100 sensitivity (not authorized) should cost about the same.
+
+**Forecast for R = 20 (made before the run; extrapolated):**
 - production ≈ 20 × 50.7 s + ≈ 3 s ≈ **17 min**; upper ≈ 30 min (allowing for replicates that select deeper forests, e.g. leaf 50 instead of the benchmark's 200, and for machine load)
 - the ARL₀ = 100 sensitivity costs about the same again
 - peak RSS ≈ 1.7 GiB, upper ≈ 2.2 GiB; per-path storage grows by ≈ 1 MB per replicate, so peak RSS is roughly independent of R
@@ -200,7 +214,7 @@ Totals:
 
 1. Confirm corrections C1–C7 are complete; the status record shows tests passing and smoke/verify passing.
 2. **Benchmark: done** (authorized, 14 Oct 2026; `results/runs/benchmark_20261014T041247_106190`; do not repeat). It was run as `scripts/run_simulation.sh benchmark --approved`. Workload: R = 1, N = 2,000 calibration + 2,000 validation + 2,000 OOC paths, T_max = 5,000, H = 500, 500 trees × 6 grid cells, seed 20261013. Its outputs are performance evidence only, never part of the production or sensitivity inference.
-3. Then, after the production warning and explicit authorization: `scripts/run_simulation.sh production --approved`, and separately `scripts/run_simulation.sh sensitivity_arl100 --approved`. Each run gets its own `results/runs/<mode>_<timestamp>_<pid>/`. Launch from a clean committed worktree. Runs are not resumable: an interrupted run leaves a partial directory (logs kept, no `results.json`) and is rerun into a new directory.
+3. **Production: done** (authorized after the production warning; `/usr/bin/time -v scripts/run_simulation.sh production --approved`, 14 Oct 2026; clean `3529ddd`). The sensitivity run (`scripts/run_simulation.sh sensitivity_arl100 --approved`) needs its own explicit authorization (not given). Each run gets its own `results/runs/<mode>_<timestamp>_<pid>/`. Launch from a clean committed worktree. Runs are not resumable: an interrupted run leaves a partial directory (logs kept, no `results.json`) and is rerun into a new directory.
 4. Check: exit status 0; per-replicate validation under rule (29) (a failing replicate is **reported, never dropped, replaced or rescued**; see the failure policy below); frozen-model checks true; results hash recorded.
 5. Record the run IDs, hashes, resources and findings in the status record. Report to the user.
 

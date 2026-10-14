@@ -9,6 +9,13 @@ description: Resume and continue the STC 720 (University of Pretoria) Random For
 **Due:** Thu **5 Nov 2026, 23:59 SAST**, via ClickUP. Internal target is to submit on 4 Nov. Turnitin similarity must be ≤ 20%, and a generative-AI declaration goes below the keywords.
 **Repository:** `/home/stephen/projects/stc720-rf-ewma` (Python 3.14.4, `.venv/`, WSL2).
 
+## Current stage (14 Oct 2026): FIRST FULL PRODUCTION COMPLETE — SCIENTIFIC RESULTS AUDIT PENDING
+
+- The scientific architecture and configuration are **frozen**. Phase 1 (pilot) and Phase 2 (production preparation, audits, final R = 20 design) are complete and committed (HEAD `3529ddd`).
+- The R = 20, ARL₀ = 500 production run is complete and **frozen**: `results/runs/production_20261014T060921_145897/`, results hash `44410144…`. Its numbers, hashes and caveats are in [references/production-results.md](references/production-results.md). It has **not** yet had an independent numerical audit.
+- **Next task: P1, the independent production-results audit.** After it: P2 Holm (post hoc), P3 figure repair from the frozen results, P4 heterogeneity (descriptive), P5 run-length distributions. All are OPEN; the task list is in `docs/project-status.md`.
+- **No further simulation is authorized**: no production rerun, sensitivity, benchmark or SPY.
+
 ## Authority order
 
 1. The user's instructions in the **current** session.
@@ -20,7 +27,7 @@ description: Resume and continue the STC 720 (University of Pretoria) Random For
 ## Resume workflow (do this in order)
 
 1. Read `CLAUDE.md`.
-2. Read this skill and the status record [`docs/project-status.md`](../../../docs/project-status.md).
+2. Read this skill, the status record [`docs/project-status.md`](../../../docs/project-status.md) and the frozen-results reference [references/production-results.md](references/production-results.md).
 3. Inspect the repository using **read-only** commands only: `git status --short`, `git log --oneline -10`, `git diff --stat`, `ls results/runs/`, and the files named in the status record.
 4. Identify the latest **verified** stage. Compare what the status record says with what the code actually contains; grep for the functions or configs a task should have added.
 5. Separate completed work (tested, verified, recorded) from planned or partial work. Mark anything unclear as **unverified**.
@@ -33,7 +40,12 @@ description: Resume and continue the STC 720 (University of Pretoria) Random For
 
 - **No expensive or external runs without explicit approval in the current session.** This covers `python run.py production`, `scripts/run_simulation.sh production`, the ARL₀ = 100 sensitivity run, any further benchmark (the single authorized one ran on 14 Oct 2026), and any SPY download (`src/spy.download_snapshot`). Approval from an earlier session does not carry over unless the status record says so explicitly.
 - **Git: read-only only.** You may use `status`, `diff`, `log`, `show`, `ls-files`, `rev-parse`, `branch --show-current`. Never `add`, `commit`, `push`, `pull`, `fetch`, `merge`, `rebase`, `reset`, `restore`, `checkout`, `switch`, `stash`, `clean` or `tag`, and never change Git config or hooks. **Never add AI co-author or attribution trailers.** At a milestone, suggest a commit message; the user commits.
-- **Never overwrite or delete simulation evidence** in `results/runs/`. Each run goes to a new directory via `scripts/run_simulation.sh`. The canonical pilot is `results/runs/pilot_20261013T075339_142070` (results hash `f92f0715…`).
+- **Never overwrite or delete simulation evidence** in `results/runs/`. Each run goes to a new directory via `scripts/run_simulation.sh`. Frozen evidence:
+  - canonical pilot `results/runs/pilot_20261013T075339_142070` (`f92f0715…`)
+  - benchmark `benchmark_20261014T041247_106190` (`77e20ffa…`)
+  - **production `production_20261014T060921_145897` (`44410144…`)**
+
+  Derived outputs (audits, repaired figures) go to a separate directory and are computed from the frozen files, never by re-simulating.
 - **Do not silently change the approved scientific design.** Proposals go to the user. Never tune parameters to rescue weak results. Report negative or mixed results as they are.
 - **A task is "complete" only when** the code exists, the relevant tests pass, the outputs have been checked, and the status record is updated. Code written but not yet verified is "in progress".
 - **Literature:** never attribute equations, results or conclusions to the metadata-only papers (MacGregor & Harris 1993; Lu & Reynolds 1999). Never invent references, DOIs or quotes.
@@ -46,11 +58,12 @@ description: Resume and continue the STC 720 (University of Pretoria) Random For
 |---|---|
 | Phase 1 (docs, code, tests, smoke, pilot) | **Done and verified** |
 | Preparing production corrections C1–C7 | **Done, verified and committed** by the user (`9b286e1`, 14 Oct 2026) |
-| Final production design (R = 20, amended IC validation rule eq. 29, failure policy, provenance classification) | **Done and verified 14 Oct 2026** (80 tests); uncommitted until the user commits |
-| Full production simulation (R = 20) | **Not authorized** |
-| ARL₀ = 100 sensitivity run (R = 20, matched) | **Not authorized** (design recorded) |
+| Final production design (R = 20, amended IC validation rule eq. 29, failure policy, provenance classification) | **Done, verified and committed** by the user (`3529ddd`, 14 Oct 2026; 80 tests) |
+| Full production simulation (R = 20, ARL₀ = 500) | **Complete and frozen** (run once, authorized 14 Oct 2026; `production_20261014T060921_145897`, hash `44410144…`). **No rerun authorized** |
+| Post-production analysis P1–P5 (independent audit, Holm, figure repair, heterogeneity, run-length comparison; no new simulation) | **OPEN.** P1 is next. Code changes (e.g. P3 in `src/report.py`) follow the normal test-and-verify rules |
+| ARL₀ = 100 sensitivity run (R = 20, matched) | **Not authorized** (design recorded; P6) |
 | Production-scale benchmark (`benchmark` mode, R = 1) | **Run once** (authorized, 14 Oct 2026; `benchmark_20261014T041247_106190`); performance evidence only; **do not repeat** |
-| SPY download and application | **Not authorized** (later, separate phase) |
+| SPY download and application | **Not authorized** (later, separate phase; preparation items S1–S3 open; P6) |
 | Git writes | **Never** (user only) |
 
 ## Reference files
@@ -61,6 +74,7 @@ description: Resume and continue the STC 720 (University of Pretoria) Random For
 | [references/production-plan.md](references/production-plan.md) | Readiness-review findings, corrections C1–C7, production and sensitivity configurations, replicate-aware estimators, compute estimates, execution procedure, SPY phase |
 | [references/research-literature.md](references/research-literature.md) | Zotero setup, the 10 references with evidence status, literature discussed but not added, citation caveats |
 | [references/reproducibility.md](references/reproducibility.md) | Environment, commands, seeds, determinism, artifacts, provenance |
+| [references/production-results.md](references/production-results.md) | Frozen R = 20 production run: identity and hashes, configuration, measured execution, observed findings, caveats, data for P1–P5 |
 
 ## Keeping the status current
 
@@ -77,4 +91,4 @@ Only record what you verified this session. If an approval or decision came from
 
 ## Restart instruction for the user
 
-> Use the stc720-project skill, inspect the current repository state and resume from the last verified checkpoint. Do not execute production simulations without my explicit authorization.
+> Use the stc720-project skill, inspect the current repository state and resume from the last verified checkpoint (highest-priority OPEN task; currently P1, the independent production-results audit). Do not rerun production or start the sensitivity, benchmark or SPY work without my explicit authorization.

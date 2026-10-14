@@ -2,7 +2,15 @@
 
 *Authoritative progress record for the STC 720 project. It is read at the start of every session through the `stc720-project` skill ([`.claude/skills/stc720-project/SKILL.md`](../.claude/skills/stc720-project/SKILL.md)) and `CLAUDE.md` §19.*
 
-*Last updated: **2026-10-14** (final production-design preparation on HEAD `9b286e1`; uncommitted). Verified by:*
+## FIRST FULL PRODUCTION COMPLETE — SCIENTIFIC RESULTS AUDIT PENDING
+
+*Last updated: **2026-10-14**, end of the development session (post-production documentation synchronization, on HEAD `3529ddd`).*
+- *The scientific architecture and configuration are **frozen**. Phase 1 and Phase 2 are complete.*
+- *The R = 20 production run `results/runs/production_20261014T060921_145897` is complete and frozen.*
+- *The **next task is P1 (independent production-results audit)**, below. No further simulation is authorized.*
+- *Numbers, hashes and caveats are in [production-results.md](../.claude/skills/stc720-project/references/production-results.md).*
+
+*Earlier update (final production-design preparation on HEAD `9b286e1`; since committed by the user as `3529ddd`). Verified by:*
 - *`.venv/bin/python -m pytest -q`: **80 passed** (72 previous + 8 new parametrized cases)*
 - *four deliberate mutations (strict bounds, float bounds, old rule, R = 10), each caught*
 - *`scripts/run_simulation.sh smoke` and `verify`: exit 0; hash `0ff5992f6d155c91…` identical in smoke and both verify runs*
@@ -22,7 +30,40 @@
 
 ## Verified checkpoint
 
-**Final production design prepared (14 Oct 2026; user-approved plan with two refinements; uncommitted on HEAD `9b286e1`):**
+**First full production run completed (14 Oct 2026; explicitly authorized by the user: "START PRODUCTION … this one full ARL₀ = 500 production simulation … at commit 3529ddd").** Details, full tables and hashes are in [production-results.md](../.claude/skills/stc720-project/references/production-results.md).
+- **Run.**
+  - directory `results/runs/production_20261014T060921_145897/`
+  - `results_sha256` `44410144e3feb4a762dd2044fec07a2ddc64fdc742d43637332cc03f731431b8`; re-verified at the end-of-session synchronization (stored value = recomputed value; all 17 files unchanged)
+  - command `/usr/bin/time -v scripts/run_simulation.sh production --approved`, run on clean committed HEAD `3529ddd`
+- **Configuration (unchanged design).** Mode `production`; target ARL₀ = 500; R = 20 independent training-and-calibration replicates; master seed 20261014; 500 RF trees. Per replicate: 2,000 calibration paths, 2,000 IC-validation paths, and 2,000 OOC paths per shift scenario (CRN across δ). IC horizon 5,000; OOC horizon H = 500; τ = 50; δ ∈ {1.5, 2, 3}; λ ∈ {0.1, 0.2}. The 12 primary contrasts and the IC rule (eq. 29) are unchanged.
+- **Execution.**
+  - 20/20 replicates; exit status 0; wall 16 min 26.7 s; peak RSS 1,825,888 KiB (1.74 GiB)
+  - **160/160 IC configurations passed** the amended criterion (eq. 29)
+  - no replicate was discarded, replaced, selectively rerun or recalibrated
+- **Checks.** All of the run session's internal reproducibility and verification checks passed: config, validation coverage, pass-flag recomputation, frozen models, recomputation from `paths.npz` with the project's estimators, aggregate and results hash, source hashes, and integrity of the historical artifacts. **The production results have not yet had an independent numerical audit (P1).**
+- **Principal observed findings** (λ = 0.1; mean restricted delay RMD₅₀₀ in days):
+
+  | δ | Conventional | RF | GARCH |
+  |---|---|---|---|
+  | 1.5 | 205 | 243 | 249 |
+  | 2 | 132 | 192 | 202 |
+  | 3 | 63 | 126 | 140 |
+
+  1. Conventional EWMA detected the evaluated persistent increases fastest.
+  2. RF–EWMA had shorter mean restricted delays than GARCH–EWMA: paired −6.1 / −9.9 / −13.1 days, unadjusted CIs exclude 0, with large between-system heterogeneity.
+  3. RF–EWMA showed no clearly distinguishable advantage over GARCH–EWMA on X(20): all three CIs include 0.
+  4. Conventional EWMA has the worst conditional-variance forecasting accuracy (QLIKE 1.019 against GARCH 0.812 and RF 0.841) but the best detection in these scenarios.
+  5. Adaptation masking (M: conventional 1 by construction > RF ≈ 0.28–0.34 > GARCH ≈ 0.14–0.24) is **consistent with** the detection ranking. It is **not shown to be the cause**, or the sole cause.
+- **Caveats** (see production-results.md):
+  - matched paths and predefined survivor conditioning
+  - replicate-level uncertainty from 20 independently fitted and calibrated systems
+  - unadjusted 95% CIs
+  - equal ARL₀ ≠ equal pre-change false-alarm probability (0.125 against 0.094)
+  - administrative censoring at H = 500
+  - GARCH-generated DGP
+  - IC-validation CIs are conditional on h* and exclude control-limit estimation uncertainty
+
+**Final production design prepared (14 Oct 2026; user-approved plan with two refinements; committed by the user as `3529ddd`):**
 - **A. R = 20.** Production `replicates` 10 → 20. `sensitivity_arl100` inherits it (matched; only `target_arl` and `label` differ). The benchmark config is unchanged (R = 1, seed 20261013). Everything else is unchanged: seed 20261014, 500 trees, 2,000 calibration, validation and OOC paths, δ, λ, τ, H, the 12 primary contrasts, models and tuning.
 - **B. Amended IC validation rule (methodology §6, eq. 29).** A configuration passes iff its whole independent-validation 95% CI lies in [A₀(1−ε), A₀(1+ε)], ε = 0.15. That is [425, 575] at ARL₀ = 500 and [85, 115] at 100.
   - Bounds are inclusive and exactly A₀(1 ± ε), compared in exact rational arithmetic (`chart.ic_equivalence`). This was the user's refinement: no rounding in the rule.
@@ -81,7 +122,7 @@
 
 **Git (read-only, 14 Oct 2026):**
 - Branch `main`. **Phase 1 baseline commit:** `f77297b9a257bbe8ca80c858f6119219471925b8`, made by the user (author Stephen Pienaar; no trailers). Its parent is `2a06da8`.
-- HEAD `9b286e1` (Phase 2, user commit; parent `87c4dc7`). The final production-design changes are **uncommitted**: modified `run.py`, `src/chart.py`, `src/report.py`, `scripts/run_simulation.sh`, `tests/test_core.py`, docs, skill references and `CLAUDE.md`, plus the new `scripts/git_provenance.sh`. Untracked `.serena/` is development-tool state.
+- HEAD `3529ddd` ("feat: finalize production design (R=20, IC validation, provenance)", user commit; parent `9b286e1`, Phase 2). The production run used this commit. Post-production documentation edits (`CLAUDE.md`, this file, the skill) are **uncommitted** until the user commits. Untracked `.serena/` is development-tool state.
 - `results/runs/` is git-ignored, so the pilot artifacts exist only locally. **Keep `pilot_20261013T075339_142070` safe.** Neither the Phase 1 committed source (slope normalisation) nor the current Phase 2 source (also new schemas, aggregation, paired intervals and reporting) reproduces its `results.json` bit-for-bit (see "Code ↔ canonical hash"). The original artifacts are the record.
 - The user commits manually.
 
@@ -108,7 +149,8 @@
 | **Amendment B:** IC validation passes iff the whole independent-validation 95% CI lies in [A₀(1−ε), A₀(1+ε)], ε = 0.15; bounds exactly A₀(1 ± ε), robust inclusive comparison; labelled a post-pilot, post-benchmark amendment made before production; benchmark outcomes kept unchanged | **Approved** (with the refinement "no rounding in the scientific rule") | User, 14 Oct 2026 |
 | Production failure-handling policy (run all 20; no discards, replacements or recalibration on validation; report all; flag failures; no nominal-calibration claim if any fail) | **Approved** | User, 14 Oct 2026 |
 | Provenance: tracked changes, untracked source/configuration and `.serena/` tool state reported separately; no untracked file assumed harmless | **Approved and implemented** | User, 14 Oct 2026 |
-| Full production run (R = 20), ARL₀ = 100 run, another benchmark, SPY download | **Not authorized** | User, 14 Oct 2026 ("Do not run production, sensitivity, another benchmark or SPY") |
+| Full production run (R = 20, ARL₀ = 500), one run | **Authorized and run** (`production_20261014T060921_145897`); no reruns | User, 14 Oct 2026 ("START PRODUCTION … this one full ARL₀ = 500 production simulation") |
+| ARL₀ = 100 sensitivity run, another production run, another benchmark, SPY download | **Not authorized** | User, 14 Oct 2026 ("Do not launch any additional production, sensitivity, benchmark or SPY experiment") |
 | SPY design (Yahoo adjusted close, 1993–2006 training, 2007 to Sep 2026 monitoring, frozen models, descriptive alarms) | **Approved plan**; execution not authorized | User, 13 Oct 2026 |
 
 **Recommendations still awaiting explicit user confirmation:**
@@ -132,13 +174,13 @@
    - `sim.simulate` enforces the 4th-moment margin, which a SPY-fitted GARCH-t may fail
    - the reference dates are not yet written down
 6. *(Resolved 14 Oct 2026: `CLAUDE.md` §18 synchronized at the user's request, covering 34 tests, the C2 wording, the baseline commit and the reproducibility caveat. §19 step 4 now names the production and Git gates.)*
-7. **Source provenance.** The pilot came from uncommitted source. The wrapper now writes `source_sha256.txt` (implemented 14 Oct). Still required: launch benchmark, production and sensitivity from a **clean committed worktree**.
-8. **Pre-change false-alarm check (A9).** In the pilot, the OOC P(T<τ) was 1.4–1.9 SE below the validation P(T<50). Recheck at production scale.
+7. *(Resolved for production, 14 Oct 2026: launched from clean committed `3529ddd`.)* **Source provenance.** The pilot came from uncommitted source. The wrapper now writes `source_sha256.txt` (implemented 14 Oct). Still required: launch benchmark, production and sensitivity from a **clean committed worktree**.
+8. *(Resolved at production scale, 14 Oct 2026: OOC minus validation P(T<τ) is −0.0005 to −0.0033 across chart × λ, within Monte Carlo error.)* **Pre-change false-alarm check (A9).** In the pilot, the OOC P(T<τ) was 1.4–1.9 SE below the validation P(T<50). Recheck at production scale.
 9. **Literature:**
    - MacGregor & Harris (1993) and Lu & Reynolds (1999) are metadata-only.
    - Lee, Park & Baek (2020) was mentioned in the user's session-closing prompt but **not discussed in this session and not in Zotero**; no details are verified.
 10. *(Resolved 14 Oct, session 3: `CLAUDE.md` §18 synchronized at the user's request after the audit remediation.)*
-11. **Memory headroom.** Estimated production peak RSS ≈ 1.4–1.8 GiB (upper ≈ 3 GiB, not measured); `free -m` showed ≈ 3.4 GiB available on 14 Oct. The benchmark measures it.
+11. *(Resolved, 14 Oct 2026: measured production peak RSS 1.74 GiB, no swap.)* **Memory headroom.** Estimated production peak RSS ≈ 1.4–1.8 GiB (upper ≈ 3 GiB, not measured); `free -m` showed ≈ 3.4 GiB available on 14 Oct. The benchmark measures it.
 12. **Verification disclosure (session 3).** One guard check passed `--approved` on a real CLI call (`run.py production --approved --out <existing smoke dir>`); it was refused by the overwrite guard before any computation, as designed. Future guard checks with the flag use only the monkeypatched tests.
 
 13. **Residual between-system SD σ̂_sys** is descriptive only (method of moments, truncated at 0, R = 20); it does not isolate training-sample variability.
@@ -147,7 +189,24 @@
 
 16. *(Resolved 14 Oct 2026 by user decision before production: amendment B, the equivalence-style rule of methodology eq. 29, plus R = 20 and the failure policy. The benchmark's original-rule outcomes stay recorded unchanged. Original text follows.)* **Benchmark validation failures (decision needed before production).** At N = 2,000 the validation 95% CI is about ±4.3%, while the criterion ignores the Monte Carlo error of h* from the 2,000 calibration paths (similar size), so an unbiased calibration fails the CI part more often than 5% (about 17% per configuration if the two errors were independent), and charts share calibration and validation paths, so failures are correlated. The observed shortfalls (conventional and RF −5% to −8%, about −1.7 to −2.6 combined SE) may also reflect a systematic effect; not isolated. Options for the user, to be decided **before** production results are seen: keep the rule and report failures; pre-register a criterion that includes calibration error; or enlarge the calibration set (cost: ≈ +14 s per replicate per extra 2,000 paths). No change has been made.
 
+### OPEN post-production tasks (14 Oct 2026; none started)
+
+None of these needs new simulation. Do them in priority order.
+
+| ID | Status | Task |
+|---|---|---|
+| **P1** | **OPEN — highest priority, next task** | **Independent production-results audit.** Recompute all 12 primary contrasts from `paths.npz` with an independent calculation that does **not** import `run`, `src.chart` or `src.aggregate` (plain NumPy/SciPy). Verify: matched survivor sets E_a ∩ E_b (T ≥ τ for both charts; T = 550 is censored, T = 549 a detection with D = H); restricted delays D_H = min(T − τ + 1, H); X(20) against the δ = 1 counterfactual; within-replicate normal paired SEs; the across-replicate t intervals (df 19); all 20 replicates represented; agreement with `results.json`. Report discrepancies; never edit the frozen run |
+| **P2** | OPEN | **Multiplicity-aware interpretation.** Holm adjustment over the 12 primary contrasts, using replicate-level inference (one-sample t-tests of the 20 replicate contrasts, df 19). Keep the unadjusted estimates and CIs. Label it **post hoc and supplementary**: methodology §7.4 pre-registered no adjustment, and this was decided after the results were seen. No confirmatory overstatement |
+| **P3** | OPEN | **Repair `fig_replicates.png`** (issue 17). The jitter `0.03·(r − (R−1)/2)` clips replicates 0 and 19 at δ = 1 and 3 when R = 20. Make it work for any R (needs a `src/report.py` change and a regression test). Regenerate **from the frozen `results.json` only** into a separate derived-output directory. Never overwrite the production artifacts; never rerun the simulation |
+| **P4** | OPEN | **Descriptive heterogeneity investigation** (post hoc, descriptive). Why RF − GARCH contrasts vary across fitted systems (s_b 9.4–20.8 days): relate the per-replicate selected RF settings, forecast diagnostics (QLIKE, slope, corr, gap closure), masking M and paired delays, from `results.json`. **Never tune RF hyperparameters on production outcomes** |
+| **P5** | OPEN | **Run-length distribution comparison.** Compare validation RL quantiles (q10/q50/q90), P(T ≤ 250) and P(T < τ) across schemes, and explain why equal mean ARL₀ need not imply identical RL distributions (e.g. dependence in u; conventional ACF₁ 0.13). Use stored data only: per-replicate validation summaries, and δ = 1 no-change alarm days in `paths.npz` (truncated at day 549). Per-path validation run lengths are **not stored**; report that limitation, and do not invent or re-simulate |
+| **P6** | OPEN — **not authorized** | Later experiments: the ARL₀ = 100 sensitivity run and the SPY application (with SPY preparation items S1–S3, issue 5). Neither starts in a future session without the user's explicit authorization |
+
 ## Next recommended task
+
+**P1 (independent production-results audit)**, then P2–P5 in order, with no new simulation. Production reruns, the ARL₀ = 100 sensitivity, further benchmarks and SPY are **not authorized**. The earlier task notes below are kept for history.
+
+**Scientific results audit of `production_20261014T060921_145897`** (user review), then the user's decision on the figure defect (issue 17) and on the ARL₀ = 100 sensitivity run (not authorized). Earlier text:
 
 **Await the user's commit of the final production-design changes, then the mandatory production warning and explicit authorization.** Production (R = 20), the ARL₀ = 100 sensitivity, another benchmark and SPY remain not authorized. Launch only from a clean worktree (`git_tracked_modified: no`, `git_untracked_unclassified: none`, `git_ignored_python: none`). Before the run, give the mandatory production warning (configuration, R, paths, horizons, trees, measured runtime with upper bound, RAM/CPU, output path, interruption and overwrite behaviour) and wait for explicit authorization of production and, separately, of the ARL₀ = 100 sensitivity.
 
@@ -177,3 +236,5 @@
 | 2026-10-14 | **Second Phase 2 audit: final reporting corrections** (M1, M3 confirmed resolved; M2 plots confirmed): `n/i` vs `–` vs valid zero in report cells (`stat`, `zero_cell`); δ = 1 X(k) cells read stored estimands (n/i when no survivor); mode-sensitive headings (`STATUS`); historical reproducibility wording (Phase 1 slope fix vs Phase 2 schema changes); `P(late ∣ D>20)` header no longer breaks the Markdown table; two-line figure title | `src/report.py`, `tests/test_core.py`, `CLAUDE.md`, `docs/project-status.md`, `docs/phase1_pilot_report.md`, `reproducibility.md`, `SKILL.md`; runs `smoke_20261014T034755_98486`, `verify_20261014T034757_98595` (hash `afef9c4e…`, `results.json` unchanged) | **72 passed** | multiplicity; unmeasured runtime and memory | User commit review; then benchmark authorization | Benchmark, production, sensitivity, SPY **not** authorized |
 | 2026-10-14 | **Production-scale performance benchmark executed** (authorized; R = 1, seed 20261013, 500 trees; HEAD `9b286e1`) | `results/runs/benchmark_20261014T041247_106190` (`77e20ffa…`) | not re-run (no code change) | validation 2/6 primary passed (conventional and RF −5% to −8%); decision on validation criterion | User decision on issue 16; production warning | Production, sensitivity, SPY **not** authorized |
 | 2026-10-14 | **Final production design prepared** (user-approved plan + 2 refinements): R = 20 (sensitivity matched); amended IC validation rule eq. 29 (exact inclusive bounds A₀(1 ± ε)); failure policy; provenance classification (`scripts/git_provenance.sh`); benchmark original outcomes unchanged | `run.py`, `src/chart.py`, `src/report.py`, `scripts/run_simulation.sh`, `scripts/git_provenance.sh` (new), `tests/test_core.py`, `docs/methodology.md` v1.4, `docs/research_plan.md`, skill refs, `CLAUDE.md`; runs `smoke_20261014T053655_132590`, `verify_20261014T053658_132710` (`0ff5992f…`) | **80 passed** | multiplicity; validation rule conditional on h*; runtime extrapolated | User commit; production warning; explicit authorization | Production (R = 20), sensitivity, another benchmark, SPY **not** authorized |
+| 2026-10-14 | **First full production run** (authorized; R = 20, seed 20261014, HEAD `3529ddd`, clean): exit 0, 16:26.7 wall, 1.74 GiB peak; IC validation 160/160 | `results/runs/production_20261014T060921_145897` (`44410144…`) | 80 passed (preflight) | issue 17 (figure jitter at R = 20); multiplicity; RF − GARCH heterogeneity across replicates | Scientific results audit | Sensitivity, further production, benchmark, SPY **not** authorized |
+| 2026-10-14 | **End-of-session synchronization** (documentation only): production milestone and findings recorded; open tasks P1–P6; `CLAUDE.md` §18–19, skill and references updated; new `references/production-results.md` | `CLAUDE.md`, `docs/project-status.md`, `.claude/skills/stc720-project/SKILL.md`, `references/{production-results (new), scientific-design, production-plan, reproducibility}.md`; production `44410144…` re-verified, 424 run files unchanged | not run (no code change) | P1–P6 OPEN | P1 independent audit | Sensitivity, further production or benchmark, SPY **not** authorized |

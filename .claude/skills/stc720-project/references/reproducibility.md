@@ -31,7 +31,7 @@ scripts/run_simulation.sh verify              # smoke twice; compares results ha
 scripts/run_simulation.sh pilot               # reduced pilot (~4 s); canonical hash f92f0715… came from the PRE-remediation source (see below)
 # NOT AUTHORIZED (each needs explicit user authorization, then --approved):
 #   scripts/run_simulation.sh benchmark --approved      (already run once, 14 Oct 2026; do not repeat)
-#   scripts/run_simulation.sh production --approved
+#   scripts/run_simulation.sh production --approved     (run once, 14 Oct 2026; frozen; no rerun authorized)
 #   scripts/run_simulation.sh sensitivity_arl100 --approved
 # NOT AUTHORIZED: any SPY download
 # Without --approved the wrapper exits 2 before creating a directory; run.py exits before writing anything.
@@ -73,6 +73,11 @@ scripts/run_simulation.sh pilot               # reduced pilot (~4 s); canonical 
   - smoke runs
   - verify: `verify_20261013T075053_138405`
 - Production-scale performance benchmark (performance evidence only, excluded from inference; never modify): `benchmark_20261014T041247_106190` (results hash `77e20ffa…`, `results.json` `970ab9ea…`, `paths.npz` `5069c9da…`; committed source `9b286e1`)
+- **Frozen production run (primary evidence; never modify, overwrite or regenerate):** `results/runs/production_20261014T060921_145897/`, from clean committed `3529dddf5ea7dcc68d3f279e31e6150dd188d3d7`.
+  - `results_sha256` `44410144e3feb4a762dd2044fec07a2ddc64fdc742d43637332cc03f731431b8`; recompute it with `run.results_hash(json.load(...))`
+  - file SHA-256s: `results.json` `716862ab41d08c581d2bd65c63979c046a9d9cb5930c111381b3eeb6506b708b`, `paths.npz` `0055f1e115e6cd676d88dcc0875dfee19c44018afc8154658b40be9a2ab8cdf3`, `config.json` `897cf519889a117a7282592b9f7108e74eba4ef0bd047201e37261fba340c130`, `tables.md` `7757c948017b6ee2ef6ed04411534404fe03ea77774ac2de517b8a93ead0dc39`; the rest are in [production-results.md](production-results.md)
+  - derived outputs (audit, Holm, repaired figures) go to a **separate directory**, computed from these files
+  - bit-for-bit rerun reproducibility of production is **not demonstrated**: it was not rerun, and `verify` shows determinism at smoke scale on this machine only
 - `data/raw/` and `data/processed/` are git-ignored and currently empty. A SPY snapshot, once authorized, must be saved once with its metadata and SHA-256. Never re-download silently.
 - `results/figures/` and `results/tables/` are git-ignored and intended for the final report outputs.
 
