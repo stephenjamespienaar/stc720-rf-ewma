@@ -8,9 +8,9 @@
 
 All numbers below come from that run's `results.json` / `tables.md`. They are based on **one training replicate** and 300 paths per role, so they are pilot evidence, not production results.
 
-**Revised 14 Oct 2026 after an independent audit.** No numerical result was changed and the pilot was not rerun. Interpretations, labels and units were corrected (§14).
+**Revised 14 Oct 2026 after an independent audit.** No numerical result was changed and the pilot was not rerun. Interpretations, labels and units were corrected (§14). **Further errata A1, A3, A4 and A5 (14 Oct 2026, Phase 2 preparation)** add the two diagnostic validation rows, label the conventional M as "1 by construction", state why M has no SE, and add excess-detection point estimates derived exactly from stored values (§14); again no rerun.
 
-**Source provenance.** The pilot was generated from **uncommitted** working-tree source: `provenance.txt` records HEAD `2a06da8` with `git_worktree_dirty: yes`, and `src/` and `run.py` were untracked at the time. The source was then modified by the audit remediation (§14). Only one change affects numerical output: the `slope_h` diagnostic now uses one normalisation for covariance and variance, which multiplies it by (n−1)/n = 1 − 1.1×10⁻⁶. A rerun of `pilot` with the remediated code is therefore expected to give a different results hash than `f92f0715…`. This expectation comes from code inspection and was confirmed at smoke scale; the pilot itself was not rerun.
+**Source provenance.** The pilot was generated from **uncommitted** working-tree source: `provenance.txt` records HEAD `2a06da8` with `git_worktree_dirty: yes`, and `src/` and `run.py` were untracked at the time. The source was then modified by the audit remediation (§14). Only one change affects numerical output: the `slope_h` diagnostic now uses one normalisation for covariance and variance, which multiplies it by (n−1)/n = 1 − 1.1×10⁻⁶. A rerun of `pilot` with the remediated code is therefore expected to give a different results hash than `f92f0715…`. This expectation comes from code inspection and was confirmed at smoke scale; the pilot itself was not rerun. *(Note, 14 Oct 2026, Phase 2: this paragraph describes the Phase 1 remediation only. The Phase 2 source also changes output schemas, aggregation, paired intervals and reporting, so the current code differs from the pilot source by more than the slope normalisation.)*
 
 ---
 
@@ -109,8 +109,10 @@ The conventional score keeps clear dependence (ACF₁ = 0.13, from volatility cl
 | 0.2 | Conventional | 5.134 | 467.2 | [416.3, 518.1] | 0.0% | 0.140 | yes |
 | 0.2 | GARCH | 4.690 | 491.1 | [435.6, 546.7] | 0.0% | 0.117 | yes |
 | 0.2 | RF | 4.427 | 469.0 | [415.9, 522.1] | 0.0% | 0.133 | yes |
+| 0.1 | *GARCH, true params (diagnostic, not a competitor)* | 2.838 | 511.2 | [452.5, 569.9] | 0.0% | 0.120 | yes |
+| 0.2 | *GARCH, true params (diagnostic, not a competitor)* | 4.476 | 472.7 | [418.1, 527.4] | 0.0% | 0.123 | yes |
 
-- All 8 chart × λ combinations pass, including the diagnostic; the two diagnostic rows are in the run's `tables.md`, Table 3. Calibration censoring was 1 of 300 paths (0.33%) for the conventional chart at λ = 0.1 and 0 for every other configuration. Validation censoring was 0 throughout.
+- All **8** chart × λ configurations pass: **6 primary** (3 charts × 2 λ) and **2 diagnostic** (the known-parameter GARCH chart × 2 λ, italic rows; erratum A1, values read from the canonical `results.json`). Calibration censoring was 1 of 300 paths (0.33%) for the conventional chart at λ = 0.1 and 0 for every other configuration. Validation censoring was 0 throughout.
 - **Independent theory check.** For the known-parameter chart (iid input), the Brook–Evans ARL at the calibrated h* is 508.0 (λ = 0.1) and 487.6 (λ = 0.2). The validation estimates are 511.2 and 472.7.
 - **Run lengths are not geometric.** The median RL (311–348) is close to the geometric value of 347. However, early false alarms are more frequent: RL q10 is 34–44 against a geometric 53, and P(T < 50) is 0.12–0.15 against 0.093. Matching ARL₀ does not equalise early false alarms. The conventional chart has the most early alarms.
 
@@ -143,6 +145,15 @@ The conventional score keeps clear dependence (ACF₁ = 0.13, from volatility cl
 
   A CI that excludes 0 shows only that the difference is not Monte Carlo noise **for this trained system**. It is not a method-level significance claim.
 
+- **Baseline-adjusted excess detection X̂(k) (erratum A5).** $\hat X(k)=\hat P(D(\delta)\le k)-\hat P(D(1)\le k)$ on the same paths (methodology eq. 24). By CRN each chart's evaluable set is identical across δ, so the paired mean equals this difference exactly, and the values below are **derived from the stored P(D≤k)** of the canonical `results.json` (no rerun). **Their SEs are not available**: they need the per-path indicators, which the pilot did not store. λ = 0.1; X(5) / X(20) / X(60):
+
+  | δ | Conventional | GARCH | RF | *GARCH true params (diagnostic)* |
+  |---|---|---|---|---|
+  | 1.5 | 0.019 / 0.049 / 0.124 | 0.022 / 0.050 / 0.082 | 0.018 / 0.066 / 0.099 | 0.018 / 0.043 / 0.089 |
+  | 2 | 0.030 / 0.105 / 0.236 | 0.047 / 0.097 / 0.143 | 0.033 / 0.114 / 0.158 | 0.050 / 0.107 / 0.164 |
+  | 3 | 0.075 / 0.266 / 0.498 | 0.093 / 0.197 / 0.283 | 0.084 / 0.220 / 0.337 | 0.100 / 0.221 / 0.311 |
+
+  The no-change baselines P(D(1) ≤ 5 / 20 / 60) are 0.011 / 0.045 / 0.120 (conventional), 0.014 / 0.054 / 0.129 (GARCH) and 0.015 / 0.048 / 0.132 (RF). At δ = 3, X̂(20) is 0.197–0.266 across the three primary charts. These are single-replicate point estimates without uncertainty and support no ranking.
 - **Initial sensitivity.** At δ = 3, λ = 0.1, P(D ≤ 5) is 0.086 (conventional), 0.108 (GARCH) and 0.099 (RF). The no-change baseline is about 0.011–0.015. These chart differences lie within sampling error (SE ≈ 0.018). P(D ≤ 20) favours the conventional chart: 0.311, against 0.251 (GARCH) and 0.267 (RF).
 - **Detection is slow overall.** At ARL₀ = 500, doubling the variance takes a median of 94–158 trading days to detect.
 
@@ -150,9 +161,11 @@ The conventional score keeps clear dependence (ACF₁ = 0.13, from volatility cl
 
 | δ | Conventional M | GARCH M (theory) | RF M | GARCH true-param M (theory) |
 |---|---|---|---|---|
-| 1.5 | 1.000 | 0.200 (0.137) | 0.384 | 0.226 (0.160) |
-| 2 | 1.000 | 0.160 (0.106) | 0.353 | 0.182 (0.125) |
-| 3 | 1.000 | 0.114 (0.073) | 0.336 | 0.132 (0.087) |
+| 1.5 | 1 (by construction) | 0.200 (0.137) | 0.384 | 0.226 (0.160) |
+| 2 | 1 (by construction) | 0.160 (0.106) | 0.353 | 0.182 (0.125) |
+| 3 | 1 (by construction) | 0.114 (0.073) | 0.336 | 0.132 (0.087) |
+
+*Errata A3 and A4.* The conventional chart's M = 1 is **algebraic, not a finding**: its denominator is fixed and the fault is multiplicative, so $u_t(\delta)=\delta u_t(1)$ path by path (stored value 1.000; it is an exactness check, now also a unit test). **The M values carry no standard errors**: the delta-method SE (methodology eq. 26) needs per-path window means at δ and at δ = 1, which the pilot stored only as pooled means. They cannot be obtained from the stored outputs without a rerun, which was not done; production computes them.
 
 - **Transient confirmed.** At k = 0 the paired score ratio equals δ exactly for every chart, because every denominator is $\mathcal F_{\tau-1}$-measurable. The GARCH ratio then decays: at δ = 2 it is 1.92, 1.78, 1.58, 1.43 and 1.23 at k = 1, 2, 5, 10, 20, reaching about 1.16 by k ≈ 50 (`fig_profile.png`).
 - **First-order theory (eq. 20)** reproduces the pattern (M ≪ 1 and decreasing in δ). It **underestimates the level by about 30–35%**, which fits Jensen's inequality for a ratio-of-means approximation. It should be presented as an approximation.
@@ -254,6 +267,15 @@ All pilot criteria are met:
 - Defaults D1–D3 (DGP values, ARL₀ = 500 / τ = 50 / λ, SPY partitions) were adopted as recommended in plan v2. Say if any should change.
 
 ## 14. Revision log
+
+**14 Oct 2026: Phase 2 preparation errata (A1, A3, A4, A5).** No numerical result was changed and the pilot was not rerun; the canonical run directory is unchanged. The added numbers were read from, or derived arithmetically from, the unchanged `results.json`.
+
+| Change | Section |
+|---|---|
+| A1: the two diagnostic (known-parameter GARCH) validation rows added and marked; "8 configurations = 6 primary + 2 diagnostic" | §6 |
+| A3: conventional M labelled "1 (by construction)", an exactness check, not a finding | §8 |
+| A4: M has no SE because per-path window means were not stored; production computes the delta-method SE | §8 |
+| A5: X̂(k) point estimates, k = 5, 20, 60, derived exactly from stored P(D ≤ k) (identical evaluable sets across δ by CRN); SEs unavailable | §7 |
 
 **14 Oct 2026: independent-audit remediation.** No numerical result was changed and the pilot was not rerun. Every number added here (the δ = 1 contrasts and the chart-specific n) was read from the unchanged `results.json`.
 

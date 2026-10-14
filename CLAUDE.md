@@ -566,7 +566,7 @@ Avoid unnecessary approval requests for routine, already-authorized coding, docu
 
 ## 18. Current Project Status
 
-*Updated 14 October 2026. The detailed, authoritative progress record is `docs/project-status.md`.*
+*Updated 14 October 2026 (session 3). The detailed, authoritative progress record is `docs/project-status.md`.*
 
 Completed and verified:
 
@@ -578,31 +578,39 @@ Completed and verified:
   - smoke and verify runs
   - reduced feasibility pilot. The canonical run is `results/runs/pilot_20261013T075339_142070`, summarised in `docs/phase1_pilot_report.md` (revised after the audit; revision log §14).
 - Production-readiness review delivered, verdict **CORRECTIONS REQUIRED**. The record is in `.claude/skills/stc720-project/references/production-plan.md`.
-- **Phase 1 independently audited and remediated; 34 tests passing at the last verified checkpoint.**
-- **Initial Git baseline.** The user committed the verified Phase 1 baseline as `f77297b9a257bbe8ca80c858f6119219471925b8` on `main`.
-- **Reproducibility caveat.** The historical canonical pilot is preserved unchanged (results hash `f92f0715…`). It was generated from uncommitted pre-remediation source. The committed source does not reproduce its complete `results.json` bit-for-bit, because the remediation corrected the slope diagnostic's normalisation (`slope_h` × (n−1)/n). No other output changes. See `docs/phase1_pilot_report.md` (header note and §5) and `.claude/skills/stc720-project/references/reproducibility.md`. Never alter or regenerate the historical pilot artifacts.
+- **Phase 1 independently audited and remediated.**
+- **Git baseline.** The user committed the verified Phase 1 baseline as `f77297b9a257bbe8ca80c858f6119219471925b8` on `main`, then the documentation commit `87c4dc7` (current HEAD).
+- **Phase 2 production preparation (corrections C1–C7) implemented and independently audited** (Codex CLI audit: CORRECTIONS REQUIRED, three major findings, no critical scientific errors). **Major findings M1–M3 and the minor findings remediated and verified with regression tests** (14 Oct 2026):
+  - M1: complete result schema and CRN-pairing check when no path survives to τ; unidentified values are None
+  - M2: figures omit unidentified points and never zero-fill SEs
+  - M3: the variance component is the *residual between-system variability (training, model selection, forest randomness and calibration) after subtracting estimated evaluation Monte Carlo variance*; arithmetic and t intervals unchanged
+- **Second independent audit:** M1 and M3 confirmed resolved, M2 plotting fixes confirmed, estimators verified; residual reporting and documentation inconsistencies corrected (14 Oct 2026): report cells distinguish `n/i` (not identifiable), `–` (not applicable) and valid zeros; δ = 1 X(k) cells read the stored estimand; headings are mode-sensitive (only `production` claims primary endpoints; sensitivity all secondary; benchmark performance-only).
+- **Tests: 72 passing** (`.venv/bin/python -m pytest -q`): 34 Phase 1, 24 Phase 2, 7 audit-remediation and 7 report-cell regression tests. Smoke and verify pass with identical hashes. The canonical pilot artifacts are unchanged.
+- **Design decisions (user, 14 Oct 2026):**
+  - production master seed **20261014**, shared by the matched ARL₀ = 100 sensitivity run (not an independent experiment); pilot seed 20261013 unchanged
+  - 12 pre-registered primary contrasts: paired RMD₅₀₀ and X(20), RF − GARCH and RF − conventional, λ = 0.1, δ ∈ {1.5, 2, 3}, each with its δ = 1 counterpart; X(5), X(60) and the sensitivity run are secondary
+  - `benchmark` mode (R = 1, seed 20261013) is a production-scale performance benchmark only, excluded from all inference
+- **Reproducibility caveat.** The historical canonical pilot is preserved unchanged (results hash `f92f0715…`). It was generated from uncommitted pre-remediation source. The **Phase 1 remediation** (committed in `f77297b`) introduced the historical difference: it corrected the slope diagnostic's normalisation (`slope_h` × (n−1)/n), the only output change at that stage. The current **Phase 2** source differs further (output schemas, replicate aggregation, paired intervals and reporting), so it does not reproduce the pilot's `results.json` either, and the slope fix is not the only difference. The original pilot artifacts remain preserved. See `docs/phase1_pilot_report.md` (header note and §5) and `.claude/skills/stc720-project/references/reproducibility.md`. Never alter or regenerate the historical pilot artifacts.
+
+Current Git state:
+
+- All Phase 2 and audit-remediation changes are **uncommitted** on `main` (HEAD `87c4dc7`): modified `run.py`, `src/chart.py`, `src/report.py`, `scripts/run_simulation.sh`, `tests/test_core.py`, docs, skill references and this file; new `src/aggregate.py`. The user commits.
 
 Outstanding:
 
-- **Corrections C1–C7 (not started):**
-  - production and sensitivity configurations with an explicit approval guard
-  - C2: retention of per-path derived outputs from the paired no-change (δ = 1) counterfactuals, needed for production-level excess alarm probabilities, masking uncertainty and replicate-aware analysis. The counterfactual trajectories themselves are already implemented in `run.py`.
-  - excess detection X(k)
-  - masking uncertainty
-  - paired-contrast estimators
-  - replicate-aware aggregation and reporting
-  - tests
-  - remaining methodology and pilot-report errata (A1, A3–A5)
+- User commit review of the Phase 2 changes; then a clean-worktree launch of the production-scale benchmark, only after explicit authorization.
+- Remaining limitations: unmeasured runtime and memory (estimated benchmark ≈ 1 min, upper bound 6 min; peak RSS ≈ 1.4–1.8 GiB, upper 3 GiB); 12 primary contrasts not adjusted for multiplicity; smoke-size ARL₀ validation failures are expected and do not validate production.
 - **SPY application phase (not started):** data-integrity checks, pipeline, simulation-based control limits, pre-registered reference dates.
 
 Authorization boundaries:
 
-- **Authorized:** preparation of corrections C1–C7. Confirm the scope of the user's production-preparation instructions before starting.
+- **Benchmark readiness:** code ready; the benchmark has **not** been run and is **not authorized**.
 - **Not authorized:**
+  - the production-scale benchmark (`benchmark` mode)
   - full production simulations
   - the ARL₀ = 100 sensitivity run
-  - the bounded R = 10 runtime benchmark (requires separate approval)
   - SPY data download or application
+- `production`, `sensitivity_arl100` and `benchmark` refuse to start without `--approved`. The flag is a technical safeguard and never replaces the user's explicit authorization of each run.
 - Git writes remain reserved to the user (Section 13).
 
 ## 19. Session Continuity

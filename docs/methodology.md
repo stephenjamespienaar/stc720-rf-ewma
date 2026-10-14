@@ -1,6 +1,6 @@
 # Methodology — RF–EWMA Monitoring of Financial Volatility
 
-*Version 1.1, 14 Oct 2026 (v1.0: 13 Oct 2026; v1.1 revises §7 paired-comparison populations and the §9 slope interpretation after an independent audit). Equation numbers are stable references for code, tests and the report.*
+*Version 1.3, 14 Oct 2026 (v1.0: 13 Oct 2026; v1.1 revises §7 paired-comparison populations and the §9 slope interpretation after an independent audit; v1.2 adds the Phase 2 production estimators — eqs. 23–28, alarm-day coding, X(k), conditional quantiles, masking SE, replicate aggregation, pre-registered primary endpoints, production and sensitivity configurations, §10.1–10.3; v1.3 applies the Phase 2 audit: eq. 28 relabelled as residual between-system variance σ̂²_sys (arithmetic unchanged), matched sensitivity design, reconstruction scope of `paths.npz`, primary-endpoint scope, smoke versus validation). Equation numbers are stable references for code, tests and the report; v1.2 appends equations and renumbers none.*
 
 **Labels used throughout:**
 - **[E]** established method, with source
@@ -144,26 +144,53 @@ found by bisection on fixed calibration paths [P]. Because (15) is a lower bound
 
 It passes if $A_0$ lies in the CI and $|\hat A_{\text{val}}/A_0-1|\le0.15$.
 
-ARL₀ is **conditional on the trained forecasters** of the replicate. Variation across training samples needs replicates (sized after the pilot).
+ARL₀ is **conditional on the trained forecasters** of the replicate. Variation across training samples is captured by independent training replicates (production R = 10, §10.1) and aggregated as in §10.2.
 
 ## 7. Out-of-control evaluation
 
-The change occurs at monitoring day τ = 50. Paths have $\tau-1+H$ monitoring days ($H=500$ in the pilot).
+The change occurs at monitoring day τ = 50. Paths have $M=\tau-1+H$ monitoring days ($H=500$, so $M=549$).
 
 $$ \text{pre-change false alarm: } T<\tau;\qquad D=T-\tau+1\ \ (T\ge\tau);\qquad D_H=\min(D,H). \tag{17} $$
 
-**Reported:**
-- $\hat P(T<\tau)$, checked against the validation $P(T<\tau)$
-- conditional on $T\ge\tau$: the restricted mean $E[D_H]$, **labelled "restricted to H"** and never called ARL₁
-- median $D$
-- $P(D\le5)$, $P(D\le20)$, $P(D\le60)$
-- censored fraction $P(T>\tau+H-1)$
+**Alarm-day coding [P].** The alarm day is stored per path as an integer $T\in\{1,\dots,M+1\}$. $T=M$ (day 549) is the last observable alarm: $D=H$, a **detection**. $T=M+1$ (550) is the sentinel for right-censoring (no alarm by day $M$, so $D>H$). Both have $D_H=H$, but only the first is a detection; a censored path is never counted as a detection by any estimator below (`chart.alarm_days`, `chart.delays_from_days`; regression-tested, including the round trip through the stored per-path file).
 
-**Paired comparisons.** With CRN, per-path differences in $D_H$ between two charts are taken over paths with $T\ge\tau$ for both. CIs come from a nonparametric bootstrap over paths (B = 2000) [P].
+### 7.1 Per-chart estimators (within one replicate)
 
-- **Populations.** Per-chart summaries are over the chart's own evaluable set $E_k=\{i:T_i^{(k)}\ge\tau\}$, which differs between charts. Paired contrasts are over $E_a\cap E_b$. A paired contrast in restricted mean delay therefore need not equal the difference of the per-chart restricted means, and it is never a difference of medians.
-- **Baseline.** Every contrast is reported with its δ = 1 (no-change) counterpart on the same paths.
-- **Scope.** Within a replicate, the intervals are Monte Carlo intervals **conditional on the trained forecasters and the calibrated $h^*$**. They exclude training variability and calibration uncertainty, and they are not adjusted for multiple comparisons.
+All are conditional on $T\ge\tau$, over the chart's own evaluable set $E_k=\{i:T_i^{(k)}\ge\tau\}$, which is identical across δ by CRN. Each has a Monte Carlo SE, sample SD$/\sqrt{|E_k|}$ (for proportions this is the binomial SE up to $\sqrt{n/(n-1)}$).
+- $\hat P(T<\tau)$ over all $N$ paths, checked against the validation $P(T<\tau)$ (A9).
+- Restricted mean delay $\mathrm{RMD}_H=\overline{D_H}$, **labelled "restricted to H"** and never called ARL₁.
+- $\hat P(D\le k)$ for $k\in\{5,20,60\}$, and the censored fraction $P(T>M)$.
+- **Excess detection** (baseline-adjusted, paired with the no-change counterfactual of the same path) [P]:
+$$ \hat X(k)=\frac1{|E|}\sum_{i\in E}\Big[\mathbb 1\{D_i(\delta)\le k\}-\mathbb 1\{D_i(1)\le k\}\Big],\qquad SE=\frac{\widehat{sd}}{\sqrt{|E|}} . \tag{24} $$
+  At δ = 1 it is 0 by construction. Because $E$ is the same at δ and at 1, $\hat X(k)=\hat P(D(\delta)\le k)-\hat P(D(1)\le k)$, but the SE uses the paired differences.
+- **Conditional quantiles of $D$** under administrative censoring at $H$ [P]: inverted empirical CDF over $E$, with censored paths in the denominator but never treated as detections,
+$$ \hat q_p=D_{(\lceil p|E|\rceil)}^{\text{det}}\ \text{ if }\ \lceil p|E|\rceil\le\#\{i\in E:\ T_i\le M\},\ \text{ else not identifiable (not reported)}, \tag{25} $$
+  where $D^{\text{det}}_{(j)}$ is the $j$-th smallest detected delay; $p\in\{0.25,0.5,0.75\}$. No interpolation; the value $H$ of a censored path is never returned.
+- $P(20<D\le H\mid D>20)$ (late detection) and, over all $N$ paths, **alarm occupancy** in the sustained window with its paired excess over δ = 1 (§8).
+
+### 7.2 Paired comparisons between charts
+
+With CRN, per-path differences between two charts are taken over the paths with $T\ge\tau$ for **both**, $E_a\cap E_b$:
+$$ \hat\Delta(a,b)=\frac1n\sum_{i\in E_a\cap E_b}(y_i^{a}-y_i^{b}),\qquad SE=\frac{\widehat{sd}(y^{a}-y^{b})}{\sqrt n},\qquad \text{95\% CI } \hat\Delta\pm1.96\,SE, \tag{23} $$
+with $y=D_H$ (restricted-mean contrast) or $y_i=\mathbb 1\{D_i(\delta)\le k\}-\mathbb 1\{D_i(1)\le k\}$ (paired excess-detection contrast, $X_a(k)-X_b(k)$ on $E_a\cap E_b$). The normal paired SE replaces the pilot's percentile bootstrap [P]; a percentile bootstrap over paths (B = 2000) is retained as a check (`boot_ci95`).
+- **Populations.** Per-chart summaries are over $E_k$; contrasts over $E_a\cap E_b$. A paired contrast therefore need not equal the difference of the per-chart summaries, and it is never a difference of medians.
+- **Baseline.** Every $D_H$ contrast is reported with its δ = 1 (no-change) counterpart on the same paths; $X(k)$ contrasts are 0 at δ = 1 by construction.
+- **Scope.** Within a replicate, intervals are Monte Carlo intervals **conditional on the trained forecasters and the calibrated $h^*$**. They exclude training variability (handled across replicates, §10.2) and calibration uncertainty, and are not adjusted for multiple comparisons.
+
+### 7.3 Horizon H = 500
+
+$H=500$ (not 1,000) [P, readiness review]: with no change, 64–67% of evaluable pilot paths alarmed within 500 days after τ, so later alarms are dominated by false-alarm timing; $H=500$ also halves the out-of-control cost. Every delay quantity is labelled restricted to $H$.
+
+### 7.4 Pre-registered primary endpoints
+
+*Pre-specified after the exploratory pilot, before production (user decision, 14 Oct 2026); recorded in the run configuration (`config["primary"]`), so each run's `config.json` captures them before computation.*
+
+The **12 primary contrasts** are (23) at λ = 0.1 for
+- the pairs RF − GARCH and RF − conventional,
+- the metrics $\mathrm{RMD}_{500}$ and the paired excess detection $X(20)$,
+- δ ∈ {1.5, 2, 3}, each shown with its δ = 1 counterpart,
+
+each aggregated over training replicates as in §10.2. Only these paired $\mathrm{RMD}_{500}$ and $X(20)$ contrasts are primary. Everything else is secondary or descriptive: λ = 0.2, GARCH − conventional, $X(5)$ and $X(60)$ (including their paired contrasts), quantiles, occupancy, masking, per-chart levels including per-chart $X(20)$, and **every result of the ARL₀ = 100 sensitivity run**. No multiplicity adjustment is applied; the article must say so.
 
 ## 8. Adaptation masking (pre-registered analysis)
 
@@ -175,7 +202,11 @@ computed on full paths whether or not an alarm occurred; data generation never d
 
 $$ M=\frac{\bar u_S(\delta)/\bar u_S(1)-1}{\delta-1}\qquad(\text{fraction of the shift still visible after adaptation}). \tag{19} $$
 
-For the conventional chart $u$ scales exactly by δ, so $M=1$ identically. The paired form removes the sampling noise that an unpaired in-control mean would add.
+For the conventional chart $u$ scales exactly by δ, so $M=1$ identically (**by construction**, an exactness check that carries no comparative evidence). The paired form removes the sampling noise that an unpaired in-control mean would add.
+
+**Uncertainty of M [P].** With per-path window means $A_i=\bar u_{S,i}(\delta)$ and $B_i=\bar u_{S,i}(1)$ over all $N$ paths, $\hat R=\bar A/\bar B$ and, by the delta method,
+$$ SE(\hat R)\approx\frac{1}{\bar B}\sqrt{\frac{\sum_{i=1}^N(A_i-\hat RB_i)^2}{N(N-1)}},\qquad SE(\hat M)=\frac{SE(\hat R)}{\delta-1}. \tag{26} $$
+The same formula gives the SE of the early-window ratio. For the conventional chart $A_i=\delta B_i$, so $SE=0$ up to floating point (tested).
 
 **First-order theory for the frozen GARCH filter [D].**
 - Under the post-change process $E r^2=\delta\sigma^2$.
@@ -210,17 +241,55 @@ Diagnostics:
 
 ## 10. Experimental roles and random numbers
 
-| Role | Content | Pilot size |
-|---|---|---|
-| Training | 1 path, $n=3500$ | 1 |
-| Development | 1 independent path, $n=3500$ (+22 lags) | 1 |
-| Calibration | in-control paths, $W+T_{\max}$ | 300 × (250 + 3000) |
-| Validation | independent in-control paths | 300 × (250 + 3000) |
-| Out-of-control | independent paths, CRN across δ and charts | 300 × (250 + 549) |
+| Role | Content | Pilot size | Production size |
+|---|---|---|---|
+| Training | 1 path, $n=3500$ | 1 | 1 per replicate |
+| Development | 1 independent path, $n=3500$ (+22 lags) | 1 | 1 per replicate |
+| Calibration | in-control paths, $W+T_{\max}$ | 300 × (250 + 3000) | 2000 × (250 + 5000) |
+| Validation | independent in-control paths | 300 × (250 + 3000) | 2000 × (250 + 5000) |
+| Out-of-control | independent paths, CRN across δ and charts | 300 × (250 + 549) | 2000 × (250 + 549) |
 
 - Streams come from `numpy.random.SeedSequence(master, spawn_key=(replicate, role))`. The RF `random_state` is drawn from its own stream.
 - Seeds and spawn keys are written to every run directory.
 - Bit-for-bit reproducibility is claimed only where `run.py verify` demonstrates it (same machine and environment).
+- Per-path outputs (alarm day, occupancy count, window means; δ = 1 included) are stored in `paths.npz`. The detection, occupancy and empirical masking statistics of a replicate (§7.1–7.2, §8) are deterministic functions of them and can be recomputed (tested). The bootstrap check intervals additionally require the same configuration ($B$) and the replicate's fresh bootstrap stream. Complete daily score profiles cannot be reconstructed: only their path averages are stored (in `results.json`).
+
+### 10.1 Production and sensitivity configurations
+
+| | Production (primary) | Sensitivity (secondary) | Benchmark (performance only) |
+|---|---|---|---|
+| Mode | `production` | `sensitivity_arl100` | `benchmark` |
+| Target ARL₀ | 500 | **100** | 500 |
+| Replicates R | 10 | 10 | 1 |
+| Master seed | **20261014** | 20261014 (same models and paths as production; limits calibrated and validated separately, on the same paths, to the other target) | 20261013 |
+| Other settings | $n_{\text{train}}=n_{\text{dev}}=3500$; 2,000 calibration, 2,000 validation and 2,000 OOC paths per replicate; $T_{\max}=5000$; $\tau=50$; $H=500$; δ ∈ {1, 1.5, 2, 3}; λ ∈ {0.1 (primary), 0.2}; RF 500 trees, grid as §4.3; B = 2000 | as production | as production |
+
+- The production seed 20261014 is new [P, user decision 14 Oct 2026], so production evidence shares no random numbers with the exploratory pilot (seed 20261013, whose replicate 0 would otherwise reuse the pilot's training path and leading draws).
+- **Production and sensitivity are matched, not independent experiments.** They reuse the same simulation streams (training, development, calibration, validation and out-of-control paths, and the fitted forecasters) and differ only in the target ARL₀ and hence in the separately calibrated control limits. Differences between them isolate the effect of the target, but their Monte Carlo errors are correlated, so their results must not be treated as independent replications. Every sensitivity result is secondary.
+- The **benchmark** is a production-scale performance benchmark (R = 1, seed 20261013). It is not a reproduction of the original pilot, and its outputs are **excluded** from the primary production inference and from the ARL₀ = 100 sensitivity results.
+- Production, sensitivity and benchmark refuse to start without `--approved`. The flag is a technical safeguard only; each run needs the student's explicit authorization.
+
+### 10.2 Aggregation over training replicates
+
+Within a replicate, every quantity is conditional on its trained system: θ̂, the selected and fitted forest, s² and the calibrated h*. The method-level estimand is $\theta=E_r[\theta_r]$, estimated with **equal weights** over the $R$ independently trained and calibrated systems; paths are never pooled across replicates [P]:
+$$ \bar\theta=\frac1R\sum_{r=1}^R\hat\theta_r,\qquad s_b^2=\frac{1}{R-1}\sum_r(\hat\theta_r-\bar\theta)^2,\qquad \text{95\% CI } \bar\theta\pm t_{R-1,0.975}\,\frac{s_b}{\sqrt R}, \tag{27} $$
+with $t_9=2.262$ ($t_4=2.776$). With $w_r$ the within-replicate (evaluation) Monte Carlo SE of $\hat\theta_r$, $\operatorname{Var}(\hat\theta_r)\approx\sigma^2_{\text{sys}}+E[w_r^2]$, hence
+$$ \hat\sigma^2_{\text{sys}}=\max\Big(0,\ s_b^2-\frac1R\sum_r w_r^2\Big),\qquad \hat\sigma_{\text{sys}}=\sqrt{\hat\sigma^2_{\text{sys}}} . \tag{28} $$
+$\hat\sigma^2_{\text{sys}}$ is the **residual between-system variability (training, model selection, forest randomness and calibration), after subtracting the estimated evaluation Monte Carlo variance** (`var_between_resid`, `sd_between_resid`). It does **not** isolate training-sample variability: each replicate also has its own calibration paths, so its h* varies, and this variation is included. This holds for every chart, including the conventional chart, whose s² and calibrated limit both vary across replicates, so its residual component need not be zero. Equation (28) is a descriptive method-of-moments approximation, not a separately identified (causal) decomposition of model-training uncertainty; the truncation at 0 and the small R make it imprecise. The mean of the squared SEs is used, not the square of the mean SE ($\bar w^2\le\overline{w^2}$ by Jensen, so $\bar w^2$ would overstate $\hat\sigma_{\text{sys}}$). The t interval (27) uses $s_b$ alone and does not depend on (28).
+
+Also reported: every replicate value, the range, and the sign counts with an exact two-sided sign test. Only an explicit list of estimands is aggregated (`aggregate.schema`); validation pass flags and frozen-model checks are reported as counts of replicates, sample sizes ($|E|$, paired $n$) as ranges, and seeds and other metadata are not aggregated. A quantity not identifiable in some replicate (e.g. a conditional quantile) is listed per replicate without an aggregate.
+
+**Smoke runs are not validation.** `smoke` and `verify` check that the pipeline executes and is reproducible at toy size (60 paths, ARL₀ = 50); ARL₀ validation can fail there and failures are reported, never dropped. Calibration and validation adequacy are judged only on the production-size runs.
+
+**Limitations.** With R = 10 the t interval rests on approximate normality of $\hat\theta_r$, which cannot be checked well; $s_b$ is imprecise; results are conditional on the DGP and $n_{\text{train}}$.
+
+### 10.3 Original objectives, pilot-motivated refinements and secondary analyses
+
+| Category | Items |
+|---|---|
+| **Original research objectives** (research plan, approved 13 Oct) | RQ1–RQ4; three charts on a common score with frozen forecasters; empirical calibration to a common ARL₀ with independent validation; CRN out-of-control evaluation at δ ∈ {1.5, 2, 3}; adaptation masking M (eq. 19) |
+| **Pilot-motivated refinements** (readiness review and audit; fixed before production) | replicates R = 10 with equal-weight aggregation (§10.2); H = 500 (§7.3); X(k) (eq. 24) and occupancy excess; normal paired SE with bootstrap check (eq. 23); masking SE (eq. 26); censoring-aware quantiles (eq. 25); δ = 1 counterpart for every contrast; pre-registered primary endpoints (§7.4); new production seed |
+| **Secondary sensitivity** | ARL₀ = 100 (§10.1), testing whether the ranking depends on ARL₀. A reversal is declared only if the aggregate CIs exclude 0 with opposite signs at ARL₀ = 500 and 100; otherwise "inconclusive"; never a causal claim |
 
 ## 11. SPY application protocol (executed after pilot approval)
 
@@ -239,7 +308,7 @@ Diagnostics:
 
 1. The DGP is correctly specified for GARCH (home advantage). The RF can at best tie in simulation.
 2. Information is symmetric; the leverage effect is ignored by both forecasters.
-3. Performance is conditional on the training replicate(s).
+3. Within-replicate results are conditional on the trained system; method-level statements rest on R = 10 training replicates (§10.2), with $n_{\text{train}}=3500$ and the simulated DGP.
 4. The masking theory (20) is a first-order approximation.
 5. The model-based SPY calibration assumes the training GARCH-t is the in-control law.
 6. MacGregor & Harris (1993) and Lu & Reynolds (1999) are cited at metadata level only.

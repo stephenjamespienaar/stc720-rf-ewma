@@ -1,13 +1,21 @@
 """Experiment driver.
 
-    python run.py smoke  [--out DIR]   tiny end-to-end run (< 1 min)
-    python run.py pilot  [--out DIR]   reduced feasibility pilot (Phase 1)
-    python run.py production           refuses until a configuration is approved
+    python run.py smoke  [--out DIR]   tiny end-to-end run, 2 replicates (< 1 min)
+    python run.py pilot  [--out DIR]   reduced feasibility pilot (Phase 1, historical)
     python run.py verify [--out DIR]   runs smoke twice and compares result hashes
+    python run.py production         --approved [--out DIR]   primary simulation (R = 10, ARL0 = 500)
+    python run.py sensitivity_arl100 --approved [--out DIR]   secondary ARL0 = 100 sensitivity
+    python run.py benchmark          --approved [--out DIR]   production-scale performance benchmark (R = 1)
+
+The last three refuse to start without --approved. The flag is a technical
+safeguard against accidental launches; it never replaces the student's explicit
+authorization of each run.
 
 Normally launched through scripts/run_simulation.sh, which records wall/CPU
 time, peak memory, logs and provenance. Refuses to write into a directory that
 already holds experiment artifacts (the wrapper's provenance and log files are fine).
+Writes config.json (before computing), results.json, paths.npz (per-path
+outputs), tables.md and figures.
 """
 
 import argparse
@@ -24,7 +32,7 @@ from pathlib import Path
 import numpy as np
 from scipy import stats
 
-from src import chart, report, sim
+from src import aggregate, chart, report, sim
 from src import forecast as fc
 
 DGP = {"omega": 0.02, "alpha": 0.07, "beta": 0.91, "nu": 6.0}  # default D1, methodology §2
@@ -42,24 +50,45 @@ BASE = {
     "n_boot": 2000,
     "n_jobs": 16,
     "replicates": 1,
+    "ks": [5, 20, 60],
+    # Primary endpoints (methodology §7.4): paired contrasts of these metrics for these
+    # pairs, at this lambda and every delta in the config, each with its delta = 1 counterpart.
+    "primary": {"lam": 0.1, "pairs": ["rf - garch", "rf - conventional"], "metrics": ["dH", "x_20"],
+                "label": "pre-specified after the exploratory pilot, before production"},
 }
+
+# Production sizes (production-plan.md); seed 20261014 keeps production evidence disjoint from the pilot's.
+PRODUCTION = {**BASE, "master_seed": 20261014, "n_train": 3500, "n_dev": 3500, "n_cal": 2000, "n_val": 2000,
+              "n_ooc": 2000, "t_max": 5000, "target_arl": 500, "tau": 50, "H": 500, "deltas": [1.5, 2.0, 3.0],
+              "lams": [0.1, 0.2], "sustained": [100, 499], "rf_trees": 500, "replicates": 10}
 
 CONFIGS = {
     "smoke": {**BASE, "n_train": 1000, "n_dev": 1000, "n_cal": 60, "n_val": 60, "n_ooc": 60, "t_max": 600,
               "target_arl": 50, "tau": 20, "H": 100, "deltas": [2.0], "lams": [0.1], "rf_trees": 20,
-              "rf_leaf": [50, 200], "rf_max_features": [1], "sustained": [40, 99], "n_jobs": 4, "n_boot": 200},
+              "rf_leaf": [50, 200], "rf_max_features": [1], "sustained": [40, 99], "n_jobs": 4, "n_boot": 200,
+              "replicates": 2},
     "pilot": {**BASE, "n_train": 3500, "n_dev": 3500, "n_cal": 300, "n_val": 300, "n_ooc": 300, "t_max": 3000,
               "target_arl": 500, "tau": 50, "H": 500, "deltas": [1.5, 2.0, 3.0], "lams": [0.1, 0.2],
               "sustained": [100, 499]},
-    # Sized from measured pilot timings; requires the student's approval.
-    "production": None,
+    # Guarded modes: each run needs the student's explicit authorization and --approved.
+    "production": {**PRODUCTION, "label": "primary production simulation (ARL0 = 500)"},
+    "sensitivity_arl100": {**PRODUCTION, "target_arl": 100,
+                           "label": "secondary sensitivity: ARL0 = 100 with the production seed, models and paths; "
+                                    "limits calibrated and validated separately on the same matched paths, so it is "
+                                    "matched to production, not an independent experiment"},
+    "benchmark": {**PRODUCTION, "replicates": 1, "master_seed": 20261013,
+                  "label": "production-scale performance benchmark (R = 1, seed 20261013); not a reproduction of "
+                           "the original pilot; excluded from the primary production inference and from the "
+                           "ARL0 = 100 sensitivity results"},
 }
+GUARDED = ("production", "sensitivity_arl100", "benchmark")
 
 # Files and directories run.py writes into an output directory; existing ones are never overwritten.
-ARTIFACTS = ("config.json", "results.json", "tables.md", "fig_delay.png", "fig_profile.png",
-             "verify.txt", "verify_a", "verify_b")
+ARTIFACTS = ("config.json", "results.json", "paths.npz", "tables.md", "fig_delay.png", "fig_profile.png",
+             "fig_replicates.png", "verify.txt", "verify_a", "verify_b")
 ROLES = {"train": 0, "dev": 1, "cal": 2, "val": 3, "ooc": 4, "rf": 5, "boot": 6}
 CHARTS = ("conventional", "garch", "rf", "oracle")
+PAIRS = (("rf", "garch"), ("rf", "conventional"), ("garch", "conventional"))
 
 
 class Timer:
@@ -89,7 +118,7 @@ def acf(u, lags=(1, 5, 22)):
     """Average within-path autocorrelation of u at the given lags."""
     x = u - u.mean(axis=1, keepdims=True)
     v = (x**2).mean(axis=1)
-    return [float(((x[:, L:] * x[:, :-L]).mean(axis=1) / v).mean()) for L in lags]
+    return {f"lag{L}": float(((x[:, L:] * x[:, :-L]).mean(axis=1) / v).mean()) for L in lags}
 
 
 def scores(r, s2, gp, p_true, rf, cfg, timer, tag):
@@ -112,7 +141,10 @@ def scores(r, s2, gp, p_true, rf, cfg, timer, tag):
     return d, u, binds
 
 
-def replicate(cfg, rep, timer):
+def replicate(cfg, rep, timer, paths=None):
+    """One independently trained system: train, calibrate, validate, evaluate.
+    Returns a JSON-serializable dict; if `paths` is a dict, the per-path arrays
+    (see evaluate) are added to it under keys r{rep}_{name}."""
     p = sim.check(sim.Garch(**cfg["dgp"]))
     g = streams(cfg, rep)
     W, tau, H = cfg["warmup"], cfg["tau"], cfg["H"]
@@ -208,42 +240,39 @@ def replicate(cfg, rep, timer):
 
     # --- out-of-control evaluation (role 5), CRN across delta and charts.
     # delta = 1 is the no-change counterfactual of the same paths: it gives the
-    # false-alarm baseline and the paired denominator of the masking ratio (eq. 19).
+    # false-alarm baseline, X(k) and the paired denominator of the masking ratio (eq. 19).
     M = tau - 1 + H
+    deltas = [1.0, *cfg["deltas"]]
+    n, nd, nl, nc = cfg["n_ooc"], len(deltas), len(cfg["lams"]), len(CHARTS)
+    pp = {"T": np.empty((nd, nl, nc, n), np.int32), "occ": np.empty((nd, nl, nc, n), np.int32),
+          "uS": np.empty((nd, nc, n)), "uE": np.empty((nd, nc, n))}
     with timer("simulate_ooc"):
-        r0, h0 = sim.simulate(p, cfg["n_ooc"], W + M, g["ooc"], cfg["burn"])
-    out.update({"ooc": {}, "masking": {}, "profile": {}, "paired": {}})
+        r0, h0 = sim.simulate(p, n, W + M, g["ooc"], cfg["burn"])
+    out["profile"] = {}
     early, sus = cfg["early"], cfg["sustained"]
-    base = {}
-    for delta in [1.0, *cfg["deltas"]]:
-        key = str(delta)
+    for i, delta in enumerate(deltas):
         r, _ = sim.scale_shift(r0, h0, W + tau - 1, delta)
         _, u, _ = scores(r, s2, gp, p, rf, cfg, timer, "ooc")
-        out["profile"][key] = {k: [round(float(v), 5) for v in u[k][:, tau - 1:].mean(axis=0)] for k in CHARTS}
-        uE = {k: chart.window_mean(u[k], tau, *early) for k in CHARTS}
-        uS = {k: chart.window_mean(u[k], tau, *sus) for k in CHARTS}
-        if delta == 1.0:
-            base = {"uE": uE, "uS": uS}
-        else:
-            out["masking"][key] = {k: {"u0_incontrol": u0[k], "uE": uE[k], "uS": uS[k],
-                                       "uE_ratio": uE[k] / base["uE"][k], "uS_ratio": uS[k] / base["uS"][k],
-                                       "M": chart.masking_ratio(uS[k], base["uS"][k], delta)} for k in CHARTS}
-            for k, pp in (("garch", gp), ("oracle", p)):
-                out["masking"][key][k]["R_theory"], out["masking"][key][k]["M_theory"] = \
-                    chart.garch_masking_theory(pp, p.var, delta)
-        out["ooc"][key], out["paired"][key] = {}, {}
+        out["profile"][str(delta)] = {k: [round(float(v), 5) for v in u[k][:, tau - 1:].mean(axis=0)] for k in CHARTS}
+        for m, k in enumerate(CHARTS):
+            pp["uE"][i, m] = chart.window_mean(u[k], tau, *early)
+            pp["uS"][i, m] = chart.window_mean(u[k], tau, *sus)
         with timer("ewma_ooc"):
-            for lam in cfg["lams"]:
-                res, dly = {}, {}
-                for k in CHARTS:
+            for j, lam in enumerate(cfg["lams"]):
+                for m, k in enumerate(CHARTS):
                     z = chart.ewma(u[k], lam)
-                    dly[k], cens = chart.delays(z, hstar[lam][k], tau, H)
-                    res[k] = chart.delay_summary(dly[k], cens) | {
-                        "occupancy_S": float((z[:, tau - 1 + sus[0]: tau + sus[1]] > hstar[lam][k]).mean())}
-                out["ooc"][key][str(lam)] = res
-                out["paired"][key][str(lam)] = {
-                    f"{a} - {b}": chart.paired_diff(dly[a], dly[b], g["boot"], cfg["n_boot"])
-                    for a, b in (("rf", "garch"), ("rf", "conventional"), ("garch", "conventional"))}
+                    pp["T"][i, j, m] = chart.alarm_days(z, hstar[lam][k])
+                    pp["occ"][i, j, m] = (z[:, tau - 1 + sus[0]: tau + sus[1]] > hstar[lam][k]).sum(axis=1)
+    with timer("evaluate"):
+        out.update(evaluate(pp, cfg, g["boot"]))
+    for key, mk in out["masking"].items():
+        for k in CHARTS:
+            mk[k]["u0_incontrol"] = u0[k]
+        for k, pk in (("garch", gp), ("oracle", p)):
+            mk[k]["R_theory"], mk[k]["M_theory"] = chart.garch_masking_theory(pk, p.var, float(key))
+    out["perpath_sha256"] = perpath_hash(pp)
+    if paths is not None:
+        paths.update({f"r{rep}_{k}": v for k, v in pp.items()})
 
     # Frozen-model checks: nothing was refitted during monitoring.
     out["frozen_checks"] = {
@@ -251,6 +280,64 @@ def replicate(cfg, rep, timer):
             b"".join(e.tree_.value.tobytes() for e in rf.estimators_)).hexdigest(),
         "garch_unchanged": garch_frozen == (gp.omega, gp.alpha, gp.beta, gp.nu)}
     return out
+
+
+def evaluate(pp, cfg, rng):
+    """Out-of-control estimators of one replicate (C2-C3), computed only from its
+    per-path arrays. Detection, occupancy and empirical masking statistics can
+    therefore be recomputed from paths.npz; the bootstrap intervals additionally
+    need the same config (n_boot) and the replicate's fresh bootstrap stream,
+    streams(cfg, rep)["boot"]. Daily score profiles are not reconstructible (only
+    their path averages are stored in results.json). Arrays:
+      T[delta, lam, chart, path]   alarm day, coded as in chart.alarm_days
+                                   (M = tau - 1 + H monitored days; M + 1 = censored)
+      occ[delta, lam, chart, path] days in the sustained window with Z > h*
+      uS, uE[delta, chart, path]   per-path mean score in the sustained / early window
+    Index 0 of the delta axis is delta = 1, the no-change counterfactual of the
+    same CRN paths. Paired contrasts use the paths evaluable for both charts."""
+    tau, H, ks = cfg["tau"], cfg["H"], cfg["ks"]
+    n_sus = cfg["sustained"][1] - cfg["sustained"][0] + 1
+    res = {"ooc": {}, "paired": {}, "masking": {}}
+    for i, delta in enumerate([1.0, *cfg["deltas"]]):
+        key = str(delta)
+        res["ooc"][key], res["paired"][key] = {}, {}
+        for j, lam in enumerate(cfg["lams"]):
+            summ, per = {}, {}
+            for m, k in enumerate(CHARTS):
+                d, c = chart.delays_from_days(pp["T"][i, j, m], tau, H)
+                base = chart.delays_from_days(pp["T"][0, j, m], tau, H)
+                occ, occ0 = pp["occ"][i, j, m] / n_sus, pp["occ"][0, j, m] / n_sus
+                summ[k] = (chart.delay_summary(d, c, base=base, ks=ks) | chart.mean_se("occupancy_S", occ)
+                           | chart.mean_se("occupancy_excess", occ - occ0))
+                per[k] = {"dH": d} | {f"x_{q}": chart.detected(d, c, q) - chart.detected(*base, q) for q in ks}
+            res["ooc"][key][str(lam)] = summ
+            res["paired"][key][str(lam)] = {
+                f"{a} - {b}": {mt: chart.paired_diff(per[a][mt], per[b][mt], rng, cfg["n_boot"]) for mt in per[a]}
+                for a, b in PAIRS}
+        if i:
+            res["masking"][key] = {}
+            for m, k in enumerate(CHARTS):
+                rs, se_rs = chart.ratio_se(pp["uS"][i, m], pp["uS"][0, m])
+                re, se_re = chart.ratio_se(pp["uE"][i, m], pp["uE"][0, m])
+                res["masking"][key][k] = {"uS": float(pp["uS"][i, m].mean()), "uE": float(pp["uE"][i, m].mean()),
+                                          "uS_ratio": rs, "se_uS_ratio": se_rs, "uE_ratio": re, "se_uE_ratio": se_re,
+                                          "M": chart.masking_ratio(rs, 1.0, delta), "se_M": se_rs / (delta - 1.0)}
+    return res
+
+
+def perpath_hash(pp):
+    return hashlib.sha256(b"".join(f"{k}{pp[k].dtype}{pp[k].shape}".encode() + np.ascontiguousarray(pp[k]).tobytes()
+                                   for k in sorted(pp))).hexdigest()
+
+
+def save_paths(path, paths):
+    np.savez_compressed(path, **paths)
+
+
+def load_paths(path, rep):
+    """Per-path arrays of replicate `rep` from paths.npz, keyed as in evaluate()."""
+    with np.load(path) as f:
+        return {k.split("_", 1)[1]: f[k] for k in f.files if k.startswith(f"r{rep}_")}
 
 
 def environment():
@@ -283,11 +370,23 @@ def run(mode, cfg, out):
     out.mkdir(parents=True, exist_ok=True)
     timer = Timer()
     res = {"mode": mode, "config": cfg, "started": datetime.now().isoformat(timespec="seconds"),
-           "seeds": {"master_seed": cfg["master_seed"], "spawn_keys": {r: [rep, k] for rep in range(cfg["replicates"])
-                                                                       for r, k in ROLES.items()}}}
+           "seeds": {"master_seed": cfg["master_seed"],
+                     "spawn_keys": {str(rep): {r: [rep, k] for r, k in ROLES.items()} for rep in range(cfg["replicates"])}}}
     (out / "config.json").write_text(json.dumps({k: res[k] for k in ("mode", "config", "seeds")}, indent=1))
+    paths = {}
     with timer("total"):
-        res["replicates"] = [replicate(cfg, rep, timer) for rep in range(cfg["replicates"])]
+        res["replicates"] = [replicate(cfg, rep, timer, paths) for rep in range(cfg["replicates"])]
+    M = cfg["tau"] - 1 + cfg["H"]
+    res["perpath_axes"] = {
+        "file": "paths.npz", "keys": "r{replicate}_{T|occ|uS|uE}", "T": ["delta", "lam", "chart", "path"],
+        "occ": ["delta", "lam", "chart", "path"], "uS": ["delta", "chart", "path"], "uE": ["delta", "chart", "path"],
+        "delta": [1.0, *cfg["deltas"]], "lam": cfg["lams"], "chart": list(CHARTS),
+        "T_coding": f"1-based alarm day over M = tau - 1 + H = {M} monitored days; T = {M} is the last observable "
+                    f"detection (D = H); T = {M + 1} = right-censored (no alarm by day {M}); T < tau = pre-change alarm",
+        "occ_coding": f"days with Z > h* in the sustained window k in {cfg['sustained']}",
+        "uS_uE": f"per-path mean score u over the sustained window {cfg['sustained']} / early window {cfg['early']}"}
+    res["aggregate"] = aggregate.collect(res["replicates"], aggregate.schema(cfg, CHARTS, PAIRS))
+    save_paths(out / "paths.npz", paths)
     res["timing"] = timer.stages
     res["environment"] = environment()
     res["results_sha256"] = results_hash(res)
@@ -299,13 +398,16 @@ def run(mode, cfg, out):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("mode", choices=["smoke", "pilot", "production", "verify"])
+    ap.add_argument("mode", choices=[*CONFIGS, "verify"])
     ap.add_argument("--out", default=None)
+    ap.add_argument("--approved", action="store_true",
+                    help=f"required for {', '.join(GUARDED)}; pass it only after the student has explicitly "
+                         "authorized this specific run")
     a = ap.parse_args()
+    if a.mode in GUARDED and not a.approved:
+        sys.exit(f"{a.mode} refused: it requires --approved, given only after the student's explicit "
+                 "authorization of this run. Nothing was run or written.")
     out = Path(a.out or f"results/runs/{a.mode}_{datetime.now():%Y%m%dT%H%M%S}")
-
-    if a.mode == "production" and CONFIGS["production"] is None:
-        sys.exit("Production configuration not yet approved: size it from the pilot report first.")
     try:
         refuse_overwrite(out)
     except FileExistsError as e:

@@ -2,7 +2,8 @@
 
 The authoritative full definitions are in [`docs/methodology.md`](../../../../docs/methodology.md) (equations 1–22, labelled [E]/[L]/[P]/[D]) and [`docs/research_plan.md`](../../../../docs/research_plan.md). This file summarises them and adds the corrections from the production-readiness review.
 - **Applied on 14 Oct 2026** to the pilot report and methodology (independent-audit remediation): corrected interpretations 1, 2, 4 and 5 below, and errata A2 and A6–A8.
-- **Still pending (C7):** A1 (full 8-row table), A3 ("= 1 by construction" label), A4 and A5.
+- **Applied on 14 Oct 2026 (session 3, C7):** A1 (8-row table), A3 ("1 by construction"), A4 (M has no SE in the pilot) and A5 (X̂(k) derived from stored values); no pilot rerun.
+- **Phase 2 estimators (14 Oct 2026):** methodology v1.2 eqs. 23–28 — normal paired SE, X(k), censoring-aware quantiles, masking delta-method SE, equal-weight replicate aggregation with the residual between-system SD σ̂_sys (training, model selection, forest randomness and calibration; descriptive, after the Phase 2 audit relabelling); 12 pre-registered primary contrasts (§7.4); production seed 20261014 (§10.1).
 
 ## Research questions
 

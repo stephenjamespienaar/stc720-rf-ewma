@@ -37,18 +37,18 @@ description: Resume and continue the STC 720 (University of Pretoria) Random For
 - **Do not silently change the approved scientific design.** Proposals go to the user. Never tune parameters to rescue weak results. Report negative or mixed results as they are.
 - **A task is "complete" only when** the code exists, the relevant tests pass, the outputs have been checked, and the status record is updated. Code written but not yet verified is "in progress".
 - **Literature:** never attribute equations, results or conclusions to the metadata-only papers (MacGregor & Harris 1993; Lu & Reynolds 1999). Never invent references, DOIs or quotes.
-- **Keep production guarded.** When the production config is added (correction C1), keep an explicit opt-in such as an `--approved` flag, so production can never start by accident.
+- **Keep production guarded.** `production`, `sensitivity_arl100` and `benchmark` refuse without `--approved` (in `run.py` and in the wrapper). The flag never replaces the user's explicit authorization in the current session.
 - New dependencies, trading or backtesting code, and extra ML models are out of scope without approval.
 
 ## Approval gates (summary; details in the status record)
 
-| Work | Status (13 Oct 2026) |
+| Work | Status (14 Oct 2026) |
 |---|---|
 | Phase 1 (docs, code, tests, smoke, pilot) | **Done and verified** |
-| Preparing production corrections C1–C7 | **Authorized by the user** (session-closing statement). The detailed "production-preparation prompt" it refers to is **not in this record**: ask the user to re-supply it or confirm the scope before starting |
+| Preparing production corrections C1–C7 | **Done and verified 14 Oct 2026** (session 3); independently audited twice (Codex) and **remediated**, including the final reporting corrections (72 tests); awaiting the user's commit review |
 | Full production simulation | **Not authorized** |
 | ARL₀ = 100 sensitivity run | **Not authorized** (design recorded) |
-| R = 10 runtime benchmark | Precondition stated by the user; **confirm before running** |
+| Production-scale benchmark (`benchmark` mode, R = 1) | **Not authorized**; proposal in production-plan.md; ask before running |
 | SPY download and application | **Not authorized** (later, separate phase) |
 | Git writes | **Never** (user only) |
 

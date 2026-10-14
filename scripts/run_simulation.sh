@@ -1,20 +1,34 @@
 #!/usr/bin/env bash
 # Run one experiment with resource accounting, logs and provenance.
 #
-#   scripts/run_simulation.sh {smoke|pilot|production|verify}
+#   scripts/run_simulation.sh {smoke|pilot|verify}
+#   scripts/run_simulation.sh {production|sensitivity_arl100|benchmark} --approved
+#
+# The guarded modes refuse to start, before creating any directory, unless
+# --approved is given. Pass it only after the student has explicitly authorized
+# that specific run; the flag is a safeguard, not an authorization.
 #
 # Creates results/runs/<mode>_<timestamp>_<pid>/ containing:
 #   provenance.txt   host, CPUs, memory, Python, Git commit (read-only), thread limits
 #   time.txt         full GNU /usr/bin/time -v report
 #   resources.txt    wall clock, CPU time, CPU %, peak RSS, exit status
 #   stdout.log / stderr.log, exit_status.txt, pip_freeze.txt, git_status.txt
-#   config.json, results.json, tables.md, figures (written by run.py)
+#   source_sha256.txt  SHA-256 of the executed source and lock file
+#   config.json, results.json, paths.npz, tables.md, figures (written by run.py)
 #
 # Git use is read-only (rev-parse, branch --show-current, status, diff --stat).
 # Logs are preserved when the run fails; the script exits with the run's status.
 set -uo pipefail
 
-MODE="${1:?usage: scripts/run_simulation.sh MODE (smoke, pilot, production or verify)}"
+MODE="${1:?usage: scripts/run_simulation.sh MODE [--approved] (smoke, pilot, verify; production, sensitivity_arl100, benchmark need --approved)}"
+shift
+case "$MODE" in
+  production|sensitivity_arl100|benchmark)
+    if [ "${1:-}" != "--approved" ]; then
+      echo "[run_simulation] $MODE refused: requires --approved, given only after the student's explicit authorization of this run. Nothing was created." >&2
+      exit 2
+    fi ;;
+esac
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT" || exit 1
 PY="$ROOT/.venv/bin/python"
@@ -30,6 +44,7 @@ export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_TH
 
 {
   echo "mode: $MODE"
+  echo "args: $*"
   echo "run_dir: $RUN_DIR"
   echo "started: $(date -Iseconds)"
   echo "host: $(hostname)"
@@ -45,9 +60,10 @@ export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_TH
 git status --porcelain > "$RUN_DIR/git_status.txt" 2>&1
 git diff --stat > "$RUN_DIR/git_diff_stat.txt" 2>&1
 "$PY" -m pip freeze > "$RUN_DIR/pip_freeze.txt" 2>&1
+sha256sum run.py src/*.py scripts/run_simulation.sh requirements-lock.txt > "$RUN_DIR/source_sha256.txt" 2>&1
 
 echo "[run_simulation] $MODE -> $RUN_DIR"
-"$TIME" -v -o "$RUN_DIR/time.txt" "$PY" run.py "$MODE" --out "$RUN_DIR" \
+"$TIME" -v -o "$RUN_DIR/time.txt" "$PY" run.py "$MODE" --out "$RUN_DIR" "$@" \
   > "$RUN_DIR/stdout.log" 2> "$RUN_DIR/stderr.log"
 STATUS=$?
 
