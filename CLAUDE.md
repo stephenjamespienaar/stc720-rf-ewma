@@ -566,7 +566,7 @@ Avoid unnecessary approval requests for routine, already-authorized coding, docu
 
 ## 18. Current Project Status
 
-*Updated 14 October 2026 (session 3). The detailed, authoritative progress record is `docs/project-status.md`.*
+*Updated 14 October 2026 (final production-design preparation). The detailed, authoritative progress record is `docs/project-status.md`.*
 
 Completed and verified:
 
@@ -585,7 +585,14 @@ Completed and verified:
   - M2: figures omit unidentified points and never zero-fill SEs
   - M3: the variance component is the *residual between-system variability (training, model selection, forest randomness and calibration) after subtracting estimated evaluation Monte Carlo variance*; arithmetic and t intervals unchanged
 - **Second independent audit:** M1 and M3 confirmed resolved, M2 plotting fixes confirmed, estimators verified; residual reporting and documentation inconsistencies corrected (14 Oct 2026): report cells distinguish `n/i` (not identifiable), `–` (not applicable) and valid zeros; δ = 1 X(k) cells read the stored estimand; headings are mode-sensitive (only `production` claims primary endpoints; sensitivity all secondary; benchmark performance-only).
-- **Tests: 72 passing** (`.venv/bin/python -m pytest -q`): 34 Phase 1, 24 Phase 2, 7 audit-remediation and 7 report-cell regression tests. Smoke and verify pass with identical hashes. The canonical pilot artifacts are unchanged.
+- **Phase 2 committed** by the user as `9b286e1` (current HEAD).
+- **Production-scale performance benchmark run once** (authorized, 14 Oct 2026): `results/runs/benchmark_20261014T041247_106190`, results hash `77e20ffa…`. It is performance evidence only and excluded from inference. Measured: 50.7 s per replicate, 53 s for the command, peak RSS 1.64 GiB. Under the original validation rule, 2 of 6 primary configurations passed; this outcome is recorded unchanged.
+- **Final production design (user decision, 14 Oct 2026, before production; uncommitted):**
+  - **A:** production R = 20, with the ARL₀ = 100 sensitivity matched by inheritance; the benchmark config stays at R = 1.
+  - **B:** amended IC validation (`docs/methodology.md` §6, eq. 29). A configuration passes iff its whole independent-validation 95% CI lies in [A₀(1−0.15), A₀(1+0.15)] = [425, 575] (sensitivity [85, 115]). The bounds are exact and inclusive. It is labelled a post-pilot, post-benchmark amendment, conditional on h* and not a complete equivalence test.
+  - **Failure policy:** run all 20 replicates; never drop, replace or recalibrate; report and flag every failure.
+  - **Provenance:** `scripts/git_provenance.sh` separates tracked changes, unclassified untracked files (potentially execution-relevant), ignored Python files and `.serena/` tool state.
+- **Tests: 80 passing** (`.venv/bin/python -m pytest -q`). Smoke and verify pass with identical hashes (`0ff5992f…`). The canonical pilot and benchmark artifacts are unchanged.
 - **Design decisions (user, 14 Oct 2026):**
   - production master seed **20261014**, shared by the matched ARL₀ = 100 sensitivity run (not an independent experiment); pilot seed 20261013 unchanged
   - 12 pre-registered primary contrasts: paired RMD₅₀₀ and X(20), RF − GARCH and RF − conventional, λ = 0.1, δ ∈ {1.5, 2, 3}, each with its δ = 1 counterpart; X(5), X(60) and the sensitivity run are secondary
@@ -594,20 +601,24 @@ Completed and verified:
 
 Current Git state:
 
-- All Phase 2 and audit-remediation changes are **uncommitted** on `main` (HEAD `87c4dc7`): modified `run.py`, `src/chart.py`, `src/report.py`, `scripts/run_simulation.sh`, `tests/test_core.py`, docs, skill references and this file; new `src/aggregate.py`. The user commits.
+- HEAD `9b286e1` on `main`. The final production-design changes are **uncommitted**: modified `run.py`, `src/chart.py`, `src/report.py`, `scripts/run_simulation.sh`, `tests/test_core.py`, docs, skill references and this file; new `scripts/git_provenance.sh`. The user commits.
 
 Outstanding:
 
-- User commit review of the Phase 2 changes; then a clean-worktree launch of the production-scale benchmark, only after explicit authorization.
-- Remaining limitations: unmeasured runtime and memory (estimated benchmark ≈ 1 min, upper bound 6 min; peak RSS ≈ 1.4–1.8 GiB, upper 3 GiB); 12 primary contrasts not adjusted for multiplicity; smoke-size ARL₀ validation failures are expected and do not validate production.
+- User commit of the final production-design changes. Then the mandatory production warning, and a clean-worktree launch (`git_tracked_modified: no`, `git_untracked_unclassified: none`, `git_ignored_python: none`) only after explicit authorization.
+- Remaining limitations:
+  - the R = 20 runtime is extrapolated, not measured (≈ 17 min, upper ≈ 30 min; peak RSS ≈ 1.7 GiB, upper ≈ 2.2 GiB)
+  - the validation rule is conditional on h* and gives no family-wise coverage
+  - the 12 primary contrasts are not adjusted for multiplicity
+  - smoke-size validation failures are expected (0 of 6 pass under eq. 29) and do not validate production
 - **SPY application phase (not started):** data-integrity checks, pipeline, simulation-based control limits, pre-registered reference dates.
 
 Authorization boundaries:
 
-- **Benchmark readiness:** code ready; the benchmark has **not** been run and is **not authorized**.
+- **Benchmark:** run once (authorized); **do not repeat**.
 - **Not authorized:**
-  - the production-scale benchmark (`benchmark` mode)
-  - full production simulations
+  - another benchmark (`benchmark` mode)
+  - full production simulations (R = 20)
   - the ARL₀ = 100 sensitivity run
   - SPY data download or application
 - `production`, `sensitivity_arl100` and `benchmark` refuse to start without `--approved`. The flag is a technical safeguard and never replaces the user's explicit authorization of each run.
@@ -620,7 +631,7 @@ At the start of every session:
 1. Read this file.
 2. Use the project skill `stc720-project` (`.claude/skills/stc720-project/`) and read `docs/project-status.md`.
 3. Inspect the repository with read-only Git commands. Verify the recorded status against the actual code and artifacts, and treat anything unverified as incomplete.
-4. Summarise the verified state, the next authorized task and pending decisions to the user. Ask for approval before any work outside the authorized scope. Production and sensitivity runs, the runtime benchmark and SPY work stay gated (§18), and Git writes stay reserved to the user (§13).
+4. Summarise the verified state, the next authorized task and pending decisions to the user. Ask for approval before any work outside the authorized scope. Production and sensitivity runs, any further benchmark and SPY work stay gated (§18), and Git writes stay reserved to the user (§13).
 5. After each meaningful milestone, update `docs/project-status.md` (verified checkpoint and update log). Do not mark work complete until it is tested and verified.
 
 Restart instruction:

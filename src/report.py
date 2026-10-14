@@ -114,6 +114,18 @@ def flag(res, *path):
     return f"{f['n_true']}/{f['R']}"
 
 
+def validation_failures(res, lams=None, charts=PRIMARY):
+    """'chart λ = lam: replicates [...]' for every configuration whose stored IC validation failed; [] if none."""
+    reps = res["replicates"]
+    out = []
+    for lam in lams or res["config"]["lams"]:
+        for k in charts:
+            bad = [r for r, rep in enumerate(reps) if not rep["validation"][str(lam)][k]["passed"]]
+            if bad:
+                out.append(f"{LABEL[k]} λ = {lam}: replicate(s) {bad} of {len(reps)}")
+    return out
+
+
 def tables(res):
     cfg, reps = res["config"], res["replicates"]
     R, lams, deltas, pr = len(reps), cfg["lams"], cfg["deltas"], cfg["primary"]
@@ -165,9 +177,10 @@ def tables(res):
             for k in PRIMARY:
                 c, v = rep["calibration"][str(lam)][k], rep["validation"][str(lam)][k]
                 rows.append([lam, r, LABEL[k], c["h"], c["arl_cal"], c["censored_cal"], v["arl_restricted"],
-                             f"[{v['ci95'][0]:.1f}, {v['ci95'][1]:.1f}]", v["censored"], v["p_lt_tau"], v["passed"]])
-    s.append(md_table(["λ", "rep", "chart", "h*", "ARL cal", "cens. cal", "ARL val (restricted)", "95% CI", "cens. val",
-                       "P(T<τ)", "pass"], rows))
+                             f"[{v['ci95'][0]:.1f}, {v['ci95'][1]:.1f}]", f"{100 * v['rel_dev']:+.1f}%", v["n_paths"],
+                             v["censored"], v["p_lt_tau"], v["passed"]])
+    s.append(md_table(["λ", "rep", "chart", "h*", "ARL cal", "cens. cal", "ARL val (restricted)", "95% CI", "rel. dev.",
+                       "N val", "cens. val", "P(T<τ)", "pass"], rows))
     s.append("\nAcross replicates:\n")
     rows = []
     for lam in lams:
@@ -179,9 +192,18 @@ def tables(res):
     s.append(md_table(["λ", "chart", "h* mean (s_b)", "ARL val [95% CI]", "MC SE", RESID, "P(T<τ)", "passed"], rows))
     fl = [f for key, f in res["aggregate"]["flags"].items() if key.startswith("validation/") and "/oracle/" not in key]
     n_ok, n_all = sum(f["n_true"] for f in fl), sum(f["R"] for f in fl)
+    iv = cfg["ic_validation"]
+    acc = reps[0]["validation"][str(lams[0])]["conventional"]["accept"]
+    fails = validation_failures(res)
     s.append(f"\n**Independent ARL₀ validation passed in {n_ok} of {n_all}** primary chart × λ × replicate "
-             "configurations (pass: target inside the 95% CI and within ±15%). A run that completes is not thereby "
-             "validated; failures are reported, never dropped.\n")
+             f"configurations. Rule: {iv['rule']} = [{acc[0]:g}, {acc[1]:g}] (tol = {iv['tol']}); {iv['label']}. Each "
+             "CI is conditional on the replicate's calibrated h* and excludes the calibration uncertainty of h*, so the "
+             "rule operationalizes practical adequacy and is not a complete formal equivalence test; the individual 95% "
+             "CIs give no simultaneous (family-wise) coverage over the configurations checked. Thresholds are never "
+             "recalibrated on validation paths. A run that completes is not thereby validated; failures are reported, "
+             "never dropped.\n")
+    s.append("**Validation failures:** " + ("none.\n" if not fails else "; ".join(fails) + ". These configurations "
+             "remain in every table; nominal ARL₀ control is not established for them.\n"))
 
     s.append(f"\n## Table 4. Out-of-control detection (change at day τ = {cfg['tau']}; delays restricted to H = "
              f"{cfg['H']}; δ = 1 is the no-change counterfactual of the same paths) — mean (s_b) or mean [95% CI] "
@@ -262,6 +284,11 @@ def tables(res):
         s.append(f"\n## Table 7a. Contrasts pre-registered for the production run — {tag}\n")
         s.append(what + f" They are the production run's pre-registered endpoints; in this `{res['mode']}` run they "
                  "carry no primary status.\n")
+    pf = validation_failures(res, lams=[pr["lam"]])
+    s.append(f"**IC-validation flag for the charts in these contrasts (λ = {pr['lam']}):** " + (
+        f"all {R} replicate(s) passed for every chart.\n" if not pf else "; ".join(pf) + ". The contrasts are "
+        "reported unchanged, over every replicate; their comparability and nominal ARL₀ control are limited for the "
+        "failed configurations.\n"))
     prim = [(dl, pr["lam"], p, m) for p in pr["pairs"] for m in pr["metrics"] for dl in all_d]
     s.append(md_table(hdr, [contrast_row(*x) for x in prim]))
     s.append(f"\n## Table 7b. {'Secondary' if production else 'Other'} paired contrasts (over E_a ∩ E_b)\n")

@@ -3,6 +3,7 @@
 import copy
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -404,6 +405,7 @@ def test_across_replicates_formulas():
     assert a["mean"] == 3.0 and a["sd_between"] == pytest.approx(sb) and a["ci95"] == pytest.approx([3 - half, 3 + half])
     assert a["values"] == v and (a["min"], a["max"]) == (1.0, 6.0)
     assert stats.t.ppf(0.975, 9) == pytest.approx(2.262, abs=1e-3) and stats.t.ppf(0.975, 4) == pytest.approx(2.776, abs=1e-3)
+    assert stats.t.ppf(0.975, 19) == pytest.approx(2.093, abs=1e-3)  # production R = 20
     mw2 = np.mean(np.square(w))  # 1.125, whereas mean(w)^2 = 1.0 (Jensen)
     assert a["rms_mc_se"] == pytest.approx(np.sqrt(mw2)) and a["var_between_resid"] == pytest.approx(sb**2 - mw2)
     assert a["var_between_resid"] != pytest.approx(sb**2 - np.mean(w) ** 2)
@@ -507,11 +509,15 @@ def test_production_sensitivity_and_benchmark_configurations():
     assert {k: P[k] for k in ("n_train", "n_dev", "n_cal", "n_val", "n_ooc", "t_max", "tau", "H", "rf_trees",
                               "replicates", "target_arl", "master_seed")} == {
         "n_train": 3500, "n_dev": 3500, "n_cal": 2000, "n_val": 2000, "n_ooc": 2000, "t_max": 5000, "tau": 50,
-        "H": 500, "rf_trees": 500, "replicates": 10, "target_arl": 500, "master_seed": 20261014}
+        "H": 500, "rf_trees": 500, "replicates": 20, "target_arl": 500, "master_seed": 20261014}
     assert P["deltas"] == [1.5, 2.0, 3.0] and P["lams"] == [0.1, 0.2] and P["dgp"] == run.DGP
     assert P["primary"]["lam"] == 0.1 and P["primary"]["pairs"] == ["rf - garch", "rf - conventional"]
     assert P["primary"]["metrics"] == ["dH", "x_20"] and "before production" in P["primary"]["label"]
     assert {k for k in P if P[k] != S[k]} == {"target_arl", "label"} and S["target_arl"] == 100  # same seed and paths
+    assert S["replicates"] == 20 and S["master_seed"] == 20261014  # sensitivity inherits R = 20: matched to production
+    assert P["ic_validation"] == S["ic_validation"] == B["ic_validation"] and P["ic_validation"]["tol"] == 0.15
+    assert "post-pilot, post-benchmark methodological amendment made before production" in P["ic_validation"]["label"]
+    assert chart.ic_equivalence((0, 0), S["target_arl"], S["ic_validation"]["tol"])[0] == [85.0, 115.0]
     assert {k for k in P if P[k] != B[k]} == {"replicates", "master_seed", "label"}
     assert B["replicates"] == 1 and B["master_seed"] == 20261013
     assert "not a reproduction of the original pilot" in B["label"] and "excluded from the primary" in B["label"]
@@ -815,3 +821,92 @@ def test_production_report_identifies_the_primary_endpoints(tiny2):
     want = {(p, report.METRIC[m], f"{d:.3f}", f"{pr['lam']:.3f}") for p in pr["pairs"] for m in pr["metrics"]
             for d in [1.0, *cfg["deltas"]]}
     assert got == want and len(rows) == len(want)
+
+
+# === Final production design: R = 20, amended IC validation rule, provenance ==================
+
+@pytest.mark.parametrize("target, lo, hi", [(500, 425.0, 575.0), (100, 85.0, 115.0)])
+def test_ic_equivalence_exact_boundaries(target, lo, hi):
+    """Eq. 29: pass iff the whole CI lies in [A0(1 - 0.15), A0(1 + 0.15)], both bounds included."""
+    ok = lambda a, b: chart.ic_equivalence((a, b), target, 0.15)[1]  # noqa: E731
+    assert chart.ic_equivalence((target, target), target, 0.15)[0] == [lo, hi]
+    up, down = np.inf, -np.inf
+    assert ok(lo, hi) and ok(lo, target) and ok(target, hi)                       # exactly on the bounds
+    assert ok(np.nextafter(lo, up), np.nextafter(hi, down))                       # one ulp inside
+    assert not ok(np.nextafter(lo, down), target) and not ok(target, np.nextafter(hi, up))  # one ulp outside
+    assert ok(target * (1 - 0.15), target * (1 + 0.15))  # float products (100 * 1.15 = 114.99999999999999) are inside
+    assert not ok(target - 0.2 * target, target + 0.05 * target)                  # point on target, CI crosses lo
+    assert not ok(target - 0.05 * target, target + 0.2 * target)                  # point on target, CI crosses hi
+    assert not ok(lo - 50, lo - 10) and not ok(hi + 10, hi + 50) and not ok(lo - 10, hi + 10)  # clearly outside
+
+
+@pytest.mark.parametrize("days, arl, se, ci, rel, passed, old_rule", [
+    ([400, 500, 500, 600], 500.0, 40.824829046386, (419.983335069, 580.016664931), 0.0, False, True),
+    ([460, 470, 470, 480], 470.0, 4.082482904639, (461.998333507, 478.001666493), -0.06, True, False),
+    ([420, 430, 430, 440], 430.0, 4.082482904639, (421.998333507, 438.001666493), -0.14, False, False)])
+def test_validate_hand_checked_examples(days, arl, se, ci, rel, passed, old_rule):
+    """Hand values: SE = sd/sqrt(4) with sd = sqrt(20000/3) or sqrt(200/3); CI = ARL -/+ 1.96 SE."""
+    z = np.zeros((4, 1000))
+    z[np.arange(4), np.array(days) - 1] = 2.0  # first exceedance of h = 1 on the planted alarm day
+    v = chart.validate(z, 1.0, 500, tau=50, tol=0.15)
+    assert v["arl_restricted"] == arl and v["se_arl_restricted"] == pytest.approx(se, rel=1e-11)
+    assert v["ci95"] == pytest.approx(list(ci), rel=1e-11) and v["rel_dev"] == pytest.approx(rel)
+    assert (v["n_paths"], v["target"], v["tol"], v["accept"], v["passed"]) == (4, 500, 0.15, [425.0, 575.0], passed)
+    lo, hi = v["ci95"]
+    assert (lo <= 500 <= hi and abs(v["rel_dev"]) <= 0.15) == old_rule  # original rule, for contrast only
+
+
+def test_production_streams_distinct_over_twenty_replicates():
+    P, B = run.CONFIGS["production"], run.CONFIGS["benchmark"]
+    draws = [g.random(4).tobytes() for rep in range(P["replicates"]) for g in run.streams(P, rep).values()]
+    assert P["replicates"] == 20 and len(draws) == 20 * len(run.ROLES) == len(set(draws))
+    bench = {g.random(4).tobytes() for g in run.streams(B, 0).values()}  # benchmark and pilot seed 20261013
+    assert len(bench) == len(run.ROLES) and not bench & set(draws)
+
+
+def test_git_provenance_classifies_untracked_files():
+    """Read-only Git; the test only creates and removes two probe files in the worktree."""
+    root = Path(run.__file__).resolve().parent
+    tag = f"_probe_{os.getpid()}"
+    src, ign = root / "src" / f"{tag}.py", root / "data" / "processed" / f"{tag}.py"
+    try:
+        src.write_text("")
+        ign.write_text("")
+        p = subprocess.run(["bash", str(root / "scripts" / "git_provenance.sh")], capture_output=True, text=True,
+                           timeout=60)
+    finally:
+        src.unlink(missing_ok=True)
+        ign.unlink(missing_ok=True)
+    assert p.returncode == 0, p.stderr
+    line = dict(x.split(": ", 1) for x in p.stdout.splitlines())
+    assert set(line) == {"git_tracked_modified", "git_untracked_tool_state", "git_untracked_unclassified",
+                         "git_ignored_python"} and line["git_tracked_modified"] in ("yes", "no")
+    assert f"src/{tag}.py" in line["git_untracked_unclassified"].split() and "not assumed harmless" in line[
+        "git_untracked_unclassified"]
+    assert f"data/processed/{tag}.py" in line["git_ignored_python"].split()
+    assert ".serena" not in line["git_untracked_unclassified"]
+    if any((root / ".serena").rglob("*")):
+        assert line["git_untracked_tool_state"].startswith(".serena/ (")
+
+
+def test_report_lists_validation_failures_without_dropping_them(tiny2):
+    cfg, _, res = tiny2
+    out = copy.deepcopy(res) | {"mode": "production"}
+    for rep in out["replicates"]:
+        for v in rep["validation"].values():
+            for k in v:
+                v[k]["passed"] = True
+    sch = aggregate.schema(cfg, run.CHARTS, run.PAIRS)
+    out["aggregate"] = aggregate.collect(out["replicates"], sch)
+    md = report.tables(out)
+    assert "**Validation failures:** none." in md and "all 2 replicate(s) passed for every chart" in md
+    out["replicates"][1]["validation"]["0.1"]["rf"]["passed"] = False
+    out["aggregate"] = aggregate.collect(out["replicates"], sch)
+    md = report.tables(out)
+    assert md.count("RF-EWMA λ = 0.1: replicate(s) [1] of 2") == 2  # under Table 3 and before Table 7a
+    assert "nominal ARL₀ control is not established" in md and "comparability and nominal ARL₀ control are limited" in md
+    rows = _table(md, "## Table 3.")
+    assert len(rows) == 2 * len(cfg["lams"]) * len(report.PRIMARY)  # every replicate and configuration kept
+    assert _row(rows, rep="1", chart="RF-EWMA", **{"λ": "0.100"})["pass"] == "NO"
+    assert _row(_table(md, "Across replicates:"), chart="RF-EWMA", **{"λ": "0.100"})["passed"] == "1/2"
+    assert len(_table(md, "## Table 7a.")) == len(_table(report.tables(res | {"mode": "production"}), "## Table 7a."))

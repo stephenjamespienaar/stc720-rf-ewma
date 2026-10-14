@@ -10,7 +10,9 @@ This file is the persistent record of the **production-readiness review** (13 Oc
 - *A-item status is recorded below.*
 - *A source-provenance recommendation is added.*
 
-*C1–C7 implemented 14 Oct 2026 (session 3); see "Implementation status".*
+*C1–C7 implemented 14 Oct 2026 (session 3); see "Implementation status". Committed by the user as `9b286e1`.*
+
+*Updated 14 Oct 2026 (after the authorized benchmark): post-benchmark amendments A (R = 20) and B (equivalence-style IC validation, methodology eq. 29), the production failure-handling policy and the provenance classification are implemented and verified; see "Post-benchmark amendments". Production and sensitivity remain **not authorized**.*
 
 ## Review findings (errors and ambiguities)
 
@@ -37,7 +39,7 @@ As stated by the user, 13 Oct 2026. **Execution is not authorized.**
 |---|---|---|
 | Charts, DGP, fault, frozen models | as in scientific-design.md | Approved |
 | ARL₀, λ, τ, δ | 500; 0.1 (primary) / 0.2; 50; {1.5, 2, 3}, plus δ = 1 counterfactual | Approved primary simulation |
-| Training replicates R | **10 preferred, subject to a small runtime benchmark** (otherwise 5) | User preference; benchmark needs confirmation |
+| Training replicates R | **20** (production and the matched sensitivity; benchmark R = 1) | Approved 14 Oct 2026 after the benchmark (amendment A); was 10 |
 | Calibration / validation paths | 2,000 + 2,000 per replicate, shared across chart × λ | Recommended |
 | OOC paths | 2,000 per replicate, reused across δ (CRN) | Recommended |
 | In-control horizon T_max | 5,000 (3,000 would suffice) | Recommended |
@@ -82,6 +84,31 @@ User decisions and refinements this session (binding):
 | C6 | `tests/test_core.py`: 24 new tests (58 total); after the Phase 2 audit, 7 regression tests (65 total); after the second audit, 7 report-cell tests (72 total) |
 | C7 | `docs/methodology.md` v1.2 (eqs. 23–28, §7.1–7.4, §10.1–10.3); pilot-report errata A1, A3, A4, A5 (no rerun); this file; `docs/project-status.md` |
 
+## Post-benchmark amendments (user decision, 14 Oct 2026, before any production evaluation)
+
+| ID | Change | Implemented as |
+|---|---|---|
+| A | Production R = 10 → **20**: more robust between-system variability and more precise primary comparisons, feasible per the benchmark. Unchanged: seed 20261014, 500 trees, 2,000 calibration, validation and OOC paths, shifts, λ, horizons, the 12 primary contrasts, architectures and tuning | `run.py` `PRODUCTION["replicates"] = 20`. The sensitivity inherits it (matched; only `target_arl` and `label` differ). The benchmark stays R = 1 with seed 20261013 |
+| B | IC validation: pass iff the whole independent-validation 95% CI lies in [A₀(1−ε), A₀(1+ε)], ε = 0.15: [425, 575] at ARL₀ = 500 and [85, 115] at 100. A post-pilot, post-benchmark amendment made before production | `chart.ic_equivalence` (exact rational comparison, inclusive bounds); `validate` stores target, tol, bounds, rel. dev., N and outcome; `config["ic_validation"]` (rule and label) is written to `config.json` before computation; report Table 3, with failure listing |
+
+**Original rule and benchmark outcome (unchanged):**
+- The original rule was "A₀ in the 95% CI and |Â/A₀ − 1| ≤ 0.15". The benchmark recorded 2/6 primary passes (GARCH at both λ) and 2/2 diagnostic passes under it.
+- Hypothetically, all 8 benchmark CIs lie in [425, 575]. The amendment was adopted after seeing this, and methodology §6 discloses it.
+- Never relabel the benchmark's outcomes.
+
+**Caveats:**
+- each CI is conditional on h* (calibration uncertainty excluded), so the rule is not a complete equivalence test
+- individual 95% CIs give no family-wise coverage
+- at N = 2,000 passing needs Â ≈ 445–550
+
+**Production failure-handling policy (methodology §6):**
+- Run all 20 replicates. Never discard or replace failures, and never recalibrate on validation data.
+- Report every per-replicate estimate, CI, relative deviation, N and outcome, and the pass counts per chart and λ.
+- Flag failures next to the primary results (`report.validation_failures`). Never claim nominal calibration for all schemes if any failed.
+- Severe-failure interpretation goes to a separate scientific decision: no post hoc exclusions or reruns.
+
+**Provenance:** `scripts/git_provenance.sh` (see §Source provenance and reproducibility.md).
+
 ## Replication-aware estimators (avoid pseudoreplication)
 
 **Within replicate r** (Monte Carlo inference conditional on the trained models). E = {i : T_i ≥ τ}, identical across δ by CRN.
@@ -102,7 +129,7 @@ Also report, per replicate: GARCH θ̂, s², the selected RF settings, QLIKE, th
 
 **Across replicates** (method level; estimand θ = E_r[θ_r]):
 - θ̄ = mean of θ̂_r, with equal weights.
-- 95% CI θ̄ ± t_{R−1, 0.975}·s_b/√R. Here t₄ = 2.776 and t₉ = 2.262.
+- 95% CI θ̄ ± t_{R−1, 0.975}·s_b/√R. Here t₁₉ = 2.093 for production R = 20 (t₉ = 2.262, t₄ = 2.776).
 - Show every replicate value.
 - **Never** pool N × R paths with path-level SEs.
 - **Variance decomposition (descriptive).** Var(θ̂_r) ≈ σ²_sys + E[w_r²], where w_r is the evaluation Monte Carlo SE of θ̂_r. Hence σ̂²_sys = max(0, s_b² − (1/R)Σ_r w_r²) and σ̂_sys = √σ̂²_sys (`var_between_resid`, `sd_between_resid`): the **residual between-system variability (training, model selection, forest randomness and calibration), after subtracting estimated evaluation Monte Carlo variance**. It does not isolate training-sample variability, because each replicate's h* is calibrated on its own paths. It is a method-of-moments approximation, not an identified decomposition of training uncertainty. Use the mean of the squared SEs, not the square of the mean SE: by Jensen's inequality, w̄² ≤ mean(w_r²), so w̄² would overstate σ̂_sys. The t interval uses s_b only and is unaffected.
@@ -129,7 +156,20 @@ Also report, per replicate: GARCH θ̂, s², the selected RF settings, QLIKE, th
 
 **Declaring a reversal:** only if the aggregate CIs exclude 0 with opposite signs at ARL₀ = 500 and ARL₀ = 100. Otherwise call it "inconclusive". Never treat it as causal proof.
 
-## Compute estimate (from the readiness review; scaled from pilot stage timings, not measured)
+## Compute estimate
+
+**Measured (benchmark, 14 Oct 2026, R = 1, production sizes, 500 trees):**
+- one replicate: 50.7 s in process (RF prediction 37.3 s, RF grid fit 3.0 s, calibration bisection 2.5 s)
+- whole command: 53.0 s (`time -v`), CPU 245 s user + 17 s system
+- peak RSS 1,718,464 KiB (1.64 GiB)
+
+**Forecast for R = 20 (extrapolated, not measured):**
+- production ≈ 20 × 50.7 s + ≈ 3 s ≈ **17 min**; upper ≈ 30 min (allowing for replicates that select deeper forests, e.g. leaf 50 instead of the benchmark's 200, and for machine load)
+- the ARL₀ = 100 sensitivity costs about the same again
+- peak RSS ≈ 1.7 GiB, upper ≈ 2.2 GiB; per-path storage grows by ≈ 1 MB per replicate, so peak RSS is roughly independent of R
+- `free -m` showed ≈ 3.4 GiB available on 14 Oct
+
+### Original estimate (readiness review; scaled from pilot stage timings, not measured)
 
 Per replicate (N = 2,000, T_max = 5,000, H = 500, 500 trees):
 
@@ -146,22 +186,22 @@ Totals:
 - peak memory ≈ 1.6–2.0 GB, independent of R (estimate). Machine: 7,938,636 KiB ≈ 7.57 GiB RAM, 20 logical CPUs. The measured pilot peak RSS was 364,856 KiB ≈ 356 MiB
 - uncertainty: a factor of about 2–3
 
-The R = 10 decision depends on a **small runtime benchmark**, for example one production-size replicate through the wrapper. Confirm authorization before running it.
+*(Resolved: the benchmark ran on 14 Oct 2026 and the user chose R = 20; see the measured figures above.)* The R = 10 decision depended on a **small runtime benchmark**, for example one production-size replicate through the wrapper. Confirm authorization before running it.
 
 ## Source provenance (item 2 implemented 14 Oct 2026)
 
 **The limitation.** The Phase 1 pilot was run from **uncommitted** source: HEAD `2a06da8`, worktree dirty, and `src/` and `run.py` untracked. `provenance.txt` records only the commit, a dirty flag and `git diff --stat`, so the pilot-generating source cannot be recovered from the run directory. Historical provenance is left as it is.
 
 **Minimal improvements, cheapest first:**
-1. Launch production and sensitivity runs only from a **clean, committed** worktree (`git_worktree_dirty: no`), so `git_commit` identifies the source.
+1. Launch production and sensitivity runs only from a **clean, committed** worktree, so `git_commit` identifies the source. From 14 Oct 2026 the criterion is `git_tracked_modified: no`, `git_untracked_unclassified: none` and `git_ignored_python: none` in `provenance.txt` (`scripts/git_provenance.sh`). Untracked `.serena/` is reported separately as `git_untracked_tool_state` (development-tool state); it still sets the historical `git_worktree_dirty: yes`.
 2. **Implemented:** one read-only line in `scripts/run_simulation.sh` hashes the executed source: `sha256sum run.py src/*.py scripts/run_simulation.sh requirements-lock.txt > "$RUN_DIR/source_sha256.txt"`. Optionally, also copy those files (about 40 KB) into the run directory.
 
 ## Execution procedure (only after explicit authorization)
 
 1. Confirm corrections C1–C7 are complete; the status record shows tests passing and smoke/verify passing.
-2. **Benchmark first (needs its own authorization):** `scripts/run_simulation.sh benchmark --approved`. Workload: R = 1, N = 2,000 calibration + 2,000 validation + 2,000 OOC paths, T_max = 5,000, H = 500, 500 trees × 6 grid cells, seed 20261013. Its outputs are performance evidence only, never part of the production or sensitivity inference.
+2. **Benchmark: done** (authorized, 14 Oct 2026; `results/runs/benchmark_20261014T041247_106190`; do not repeat). It was run as `scripts/run_simulation.sh benchmark --approved`. Workload: R = 1, N = 2,000 calibration + 2,000 validation + 2,000 OOC paths, T_max = 5,000, H = 500, 500 trees × 6 grid cells, seed 20261013. Its outputs are performance evidence only, never part of the production or sensitivity inference.
 3. Then, after the production warning and explicit authorization: `scripts/run_simulation.sh production --approved`, and separately `scripts/run_simulation.sh sensitivity_arl100 --approved`. Each run gets its own `results/runs/<mode>_<timestamp>_<pid>/`. Launch from a clean committed worktree. Runs are not resumable: an interrupted run leaves a partial directory (logs kept, no `results.json`) and is rerun into a new directory.
-4. Check: exit status 0; per-replicate validation passes (a failing replicate is **reported, never dropped or rescued**); frozen-model checks true; results hash recorded.
+4. Check: exit status 0; per-replicate validation under rule (29) (a failing replicate is **reported, never dropped, replaced or rescued**; see the failure policy below); frozen-model checks true; results hash recorded.
 5. Record the run IDs, hashes, resources and findings in the status record. Report to the user.
 
 ## SPY application (later, separate phase; not authorized)

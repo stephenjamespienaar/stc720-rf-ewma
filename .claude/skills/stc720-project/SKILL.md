@@ -31,7 +31,7 @@ description: Resume and continue the STC 720 (University of Pretoria) Random For
 
 ## Hard invariants
 
-- **No expensive or external runs without explicit approval in the current session.** This covers `python run.py production`, `scripts/run_simulation.sh production`, the ARL₀ = 100 sensitivity run, R = 10 runtime benchmarks beyond what was authorized, and any SPY download (`src/spy.download_snapshot`). Approval from an earlier session does not carry over unless the status record says so explicitly.
+- **No expensive or external runs without explicit approval in the current session.** This covers `python run.py production`, `scripts/run_simulation.sh production`, the ARL₀ = 100 sensitivity run, any further benchmark (the single authorized one ran on 14 Oct 2026), and any SPY download (`src/spy.download_snapshot`). Approval from an earlier session does not carry over unless the status record says so explicitly.
 - **Git: read-only only.** You may use `status`, `diff`, `log`, `show`, `ls-files`, `rev-parse`, `branch --show-current`. Never `add`, `commit`, `push`, `pull`, `fetch`, `merge`, `rebase`, `reset`, `restore`, `checkout`, `switch`, `stash`, `clean` or `tag`, and never change Git config or hooks. **Never add AI co-author or attribution trailers.** At a milestone, suggest a commit message; the user commits.
 - **Never overwrite or delete simulation evidence** in `results/runs/`. Each run goes to a new directory via `scripts/run_simulation.sh`. The canonical pilot is `results/runs/pilot_20261013T075339_142070` (results hash `f92f0715…`).
 - **Do not silently change the approved scientific design.** Proposals go to the user. Never tune parameters to rescue weak results. Report negative or mixed results as they are.
@@ -45,10 +45,11 @@ description: Resume and continue the STC 720 (University of Pretoria) Random For
 | Work | Status (14 Oct 2026) |
 |---|---|
 | Phase 1 (docs, code, tests, smoke, pilot) | **Done and verified** |
-| Preparing production corrections C1–C7 | **Done and verified 14 Oct 2026** (session 3); independently audited twice (Codex) and **remediated**, including the final reporting corrections (72 tests); awaiting the user's commit review |
-| Full production simulation | **Not authorized** |
-| ARL₀ = 100 sensitivity run | **Not authorized** (design recorded) |
-| Production-scale benchmark (`benchmark` mode, R = 1) | **Not authorized**; proposal in production-plan.md; ask before running |
+| Preparing production corrections C1–C7 | **Done, verified and committed** by the user (`9b286e1`, 14 Oct 2026) |
+| Final production design (R = 20, amended IC validation rule eq. 29, failure policy, provenance classification) | **Done and verified 14 Oct 2026** (80 tests); uncommitted until the user commits |
+| Full production simulation (R = 20) | **Not authorized** |
+| ARL₀ = 100 sensitivity run (R = 20, matched) | **Not authorized** (design recorded) |
+| Production-scale benchmark (`benchmark` mode, R = 1) | **Run once** (authorized, 14 Oct 2026; `benchmark_20261014T041247_106190`); performance evidence only; **do not repeat** |
 | SPY download and application | **Not authorized** (later, separate phase) |
 | Git writes | **Never** (user only) |
 

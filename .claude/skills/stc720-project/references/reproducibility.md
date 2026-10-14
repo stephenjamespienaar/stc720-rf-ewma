@@ -13,23 +13,24 @@
 |---|---|
 | `src/sim.py` | `Garch` parameters and constraint checks (`constraint_violations`, `check`); `simulate` (vectorized GARCH-t; enforces 4th-moment margin ≤ 0.99); `scale_shift` (fault) |
 | `src/forecast.py` | `har_features` (strictly lagged); `fit_garch` (`arch`, zero mean, t; asserts constraints); `garch_filter`; `fit_rf`; `predict_rf` (fixed-order tree sum, floor count); `qlike`; `mse`; `slope` (OLS slope, one normalisation) |
-| `src/chart.py` | `mean_se` (estimate + `se_` sibling); `ewma` (lfilter); `first_alarm`; `alarm_days` (censored = n + 1); `calibrate` (bisection on restricted ARL); `validate`; `delays_from_days` / `delays`; `detected`; `cond_quantile` (censoring-aware, eq. 25); `delay_summary` (with X(k) via `base`, eq. 24); `paired_diff` (normal paired SE, optional bootstrap check, eq. 23); per-path `window_mean`; `ratio_se` (delta method, eq. 26); `masking_ratio`; `garch_masking_theory`; `brook_evans_arl` |
+| `src/chart.py` | `mean_se` (estimate + `se_` sibling); `ewma` (lfilter); `first_alarm`; `alarm_days` (censored = n + 1); `calibrate` (bisection on restricted ARL); `ic_equivalence` (amended validation rule, eq. 29, exact rational comparison); `validate` (adds target, tol, bounds, rel. dev., N); `delays_from_days` / `delays`; `detected`; `cond_quantile` (censoring-aware, eq. 25); `delay_summary` (with X(k) via `base`, eq. 24); `paired_diff` (normal paired SE, optional bootstrap check, eq. 23); per-path `window_mean`; `ratio_se` (delta method, eq. 26); `masking_ratio`; `garch_masking_theory`; `brook_evans_arl` |
 | `src/aggregate.py` | `across` (equal-weight replicate mean, t CI, s_b, residual between-system SD σ̂_sys = `sd_between_resid`, sign test; eqs. 27–28); `schema` (explicit allowlist: estimands, flags, counts); `collect` |
 | `src/spy.py` | `download_snapshot` (**do not call without authorization**); `load_snapshot` (SHA-256 check); `log_returns`; `split` |
 | `src/report.py` | Tables 1–9 (per-replicate and aggregate; primary endpoints separate; diagnostic section separate) and figures `fig_delay`, `fig_profile`, `fig_replicates` |
 | `run.py` | `CONFIGS` (`smoke` R = 2, `pilot`, guarded `production`, `sensitivity_arl100`, `benchmark`); `GUARDED` + `--approved`; `replicate()` pipeline; `evaluate()` (all out-of-control estimates from per-path arrays); `save_paths` / `load_paths` (`paths.npz`); `perpath_hash`; `ROLES` seeds; `Timer`; results hash; `refuse_overwrite` |
 | `scripts/run_simulation.sh` | Execution wrapper |
-| `tests/test_core.py` | 72 tests (as parametrized; 34 Phase 1 + 24 Phase 2 + 7 audit-remediation + 7 report-cell regression tests) |
+| `scripts/git_provenance.sh` | Read-only worktree classification appended to `provenance.txt` |
+| `tests/test_core.py` | 80 tests (as parametrized; 34 Phase 1 + 24 Phase 2 + 7 audit-remediation + 7 report-cell regression tests + 8 final-design tests: equivalence bounds, hand-checked validation, R = 20 streams, provenance classification, failure reporting) |
 
 ## Commands
 
 ```bash
-.venv/bin/python -m pytest -q                 # 72 passed (14 Oct 2026, session 3, after the final Phase 2 reporting corrections)
+.venv/bin/python -m pytest -q                 # 80 passed (14 Oct 2026, final production-design preparation)
 scripts/run_simulation.sh smoke               # tiny end-to-end run (~2 s); checks execution, not ARL0 validation
 scripts/run_simulation.sh verify              # smoke twice; compares results hashes
 scripts/run_simulation.sh pilot               # reduced pilot (~4 s); canonical hash f92f0715… came from the PRE-remediation source (see below)
 # NOT AUTHORIZED (each needs explicit user authorization, then --approved):
-#   scripts/run_simulation.sh benchmark --approved
+#   scripts/run_simulation.sh benchmark --approved      (already run once, 14 Oct 2026; do not repeat)
 #   scripts/run_simulation.sh production --approved
 #   scripts/run_simulation.sh sensitivity_arl100 --approved
 # NOT AUTHORIZED: any SPY download
@@ -39,9 +40,14 @@ scripts/run_simulation.sh pilot               # reduced pilot (~4 s); canonical 
 **What the wrapper does:**
 - Creates `results/runs/<mode>_<YYYYmmddTHHMMSS>_<pid>/`.
 - Writes:
-  - `provenance.txt` (host, `nproc --all`, memory, Python, read-only `git rev-parse` / `branch --show-current` / dirty flag, thread limits)
+  - `provenance.txt` (host, `nproc --all`, memory, Python, read-only `git rev-parse` / `branch --show-current` / dirty flag, thread limits). From 14 Oct 2026 (after the benchmark) it also carries the `scripts/git_provenance.sh` lines:
+    - `git_tracked_modified`: staged or unstaged changes to tracked files
+    - `git_untracked_tool_state`: `.serena/` only, development-tool state
+    - `git_untracked_unclassified`: every other untracked file, listed individually and treated as potentially execution-relevant
+    - `git_ignored_python`: ignored `*.py`/`*.pth` outside `.venv/`, which could shadow modules
+    - `git_worktree_dirty` keeps its old meaning (any `git status --porcelain` output). Historical provenance files are unchanged; the benchmark's `dirty: yes` came only from untracked `.serena/`
   - `time.txt` and `resources.txt` (wall, CPU, CPU%, peak RSS, exit status)
-  - `stdout.log`, `stderr.log`, `exit_status.txt`, `pip_freeze.txt`, `git_status.txt`, `git_diff_stat.txt`, `source_sha256.txt` (SHA-256 of `run.py`, `src/*.py`, the wrapper and the lock file)
+  - `stdout.log`, `stderr.log`, `exit_status.txt`, `pip_freeze.txt`, `git_status.txt`, `git_diff_stat.txt`, `source_sha256.txt` (SHA-256 of `run.py`, `src/*.py`, `scripts/*.sh` (the wrapper only, before 14 Oct 2026 post-benchmark) and the lock file)
 - `run.py` adds `config.json` (written before computing; includes the primary endpoints and the run label), `results.json`, `paths.npz` (per-path T, occupancy and window means; layout in `results.json` → `perpath_axes`; detection, occupancy and empirical masking statistics are reconstructible from it, bootstrap CIs also need the config and bootstrap stream, daily score profiles are not), `tables.md`, `fig_delay.png`, `fig_profile.png` and `fig_replicates.png`.
 - It sets `OMP/MKL/OPENBLAS/NUMEXPR_NUM_THREADS=1`; RF parallelism uses `n_jobs` = 16 threads (one controlled level).
 - Logs are preserved on failure, and the run's exit status is passed through.
@@ -54,7 +60,7 @@ scripts/run_simulation.sh pilot               # reduced pilot (~4 s); canonical 
 - **Canonical hash and current code.**
   - `f92f0715…` was produced by **uncommitted** source (HEAD `2a06da8`, dirty).
   - The **Phase 1** remediation (14 Oct, committed in `f77297b`) changed exactly one numerical output relative to the pilot source: `slope_h` now has one normalisation, which multiplies it by (n−1)/n. This was confirmed at smoke scale, where only `slope_h` differed.
-  - The **Phase 2** source (session 3, uncommitted) also changes output schemas, replicate aggregation, paired intervals and reporting. A `pilot` rerun with the current code would therefore differ in more than `slope_h`; the pilot was not rerun, and its original artifacts are preserved.
+  - The **Phase 2** source (committed by the user in `9b286e1`) also changes output schemas, replicate aggregation, paired intervals and reporting. A `pilot` rerun with the current code would therefore differ in more than `slope_h`; the pilot was not rerun, and its original artifacts are preserved.
   - Do not describe the pilot as generated from committed source. Future-run provenance: production-plan.md §Source provenance.
 - RF prediction is deterministic across thread counts (fixed tree order; tested). RF fitting is deterministic given `random_state`.
 
@@ -66,6 +72,7 @@ scripts/run_simulation.sh pilot               # reduced pilot (~4 s); canonical 
   - earlier identical pilots: `pilot_20261013T075248_140805`, `pilot_20261013T075253_141069`; `pilot_20261013T075123_139095` is before the slope diagnostic was added
   - smoke runs
   - verify: `verify_20261013T075053_138405`
+- Production-scale performance benchmark (performance evidence only, excluded from inference; never modify): `benchmark_20261014T041247_106190` (results hash `77e20ffa…`, `results.json` `970ab9ea…`, `paths.npz` `5069c9da…`; committed source `9b286e1`)
 - `data/raw/` and `data/processed/` are git-ignored and currently empty. A SPY snapshot, once authorized, must be saved once with its metadata and SHA-256. Never re-download silently.
 - `results/figures/` and `results/tables/` are git-ignored and intended for the final report outputs.
 

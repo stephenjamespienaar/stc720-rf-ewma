@@ -67,7 +67,8 @@ The chart is one-sided upper. $h$ is calibrated empirically; Gaussian limits are
 **Run lengths:**
 - One monitoring opportunity is one trading day after the history window.
 - Restricted mean $\hat A(h)=\frac1N\sum\min(T_i,T_{\max})$; $h^*=\min\{h:\hat A\ge A_0\}$ by bisection.
-- Validation passes if $A_0$ lies in the 95% CI and the estimate is within ±15%.
+- Validation (amended 14 Oct 2026, after the benchmark, before production; methodology §6, eq. 29): passes iff the whole independent-validation 95% CI lies in $[A_0(1-0.15), A_0(1+0.15)]$, i.e. [425, 575] at ARL₀ = 500 and [85, 115] at 100; bounds inclusive, compared exactly (`chart.ic_equivalence`). The CI is conditional on h* (calibration uncertainty excluded), so the rule is not a complete equivalence test, and individual CIs give no family-wise coverage. The original rule ($A_0$ in the 95% CI and within ±15%) judged the pilot and the benchmark; those recorded outcomes are unchanged.
+- Production failure handling: run all R = 20 replicates; never drop, replace or recalibrate on validation; report every per-replicate result and pass counts; flag failures next to the primary results.
 - **Pre-change false alarm:** T < τ. These are counted and excluded from delay statistics, which are conditional on T ≥ τ.
 - Delay $D=T-\tau+1$; restricted delay $D_H=\min(D,H)$; right-censored if $T>\tau+H-1$.
 - Never call a restricted mean "ARL₁".

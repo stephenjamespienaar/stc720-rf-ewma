@@ -11,6 +11,8 @@ M + 1 (D > H). For tau = 50, H = 500: day 549 is a detection, 550 is censored.
 An estimate stored under key x carries its Monte Carlo SE under se_x.
 """
 
+from fractions import Fraction
+
 import numpy as np
 from scipy.signal import lfilter
 
@@ -69,13 +71,27 @@ def calibrate(z, target, rtol=1e-7):
     return hi, float(arl(hi))
 
 
+def ic_equivalence(ci, target, tol):
+    """Amended in-control validation rule (eq. 29): pass iff the whole 95% CI lies in
+    [A0 (1 - tol), A0 (1 + tol)], both bounds included. Compared in exact rational
+    arithmetic, with tol taken as the decimal it is written as (0.15 = 3/20), so the
+    binary representation of 0.15 cannot move a bound (in floats 100 * 1.15 =
+    114.99999999999999). Returns the bounds (nearest floats) and the outcome."""
+    eps = Fraction(str(tol))
+    lo, hi = Fraction(target) * (1 - eps), Fraction(target) * (1 + eps)
+    return [float(lo), float(hi)], bool(lo <= Fraction(ci[0]) and Fraction(ci[1]) <= hi)
+
+
 def validate(z, h, target, tau, tol=0.15):
-    """In-control run-length summary on independent paths with h fixed (§6)."""
+    """In-control run-length summary on independent paths with h fixed (§6), judged
+    by ic_equivalence. The CI is conditional on h*: it excludes the calibration
+    uncertainty of h*."""
     t, cens = first_alarm(z, h)
     arl = t.mean()
     se = t.std(ddof=1) / np.sqrt(len(t))
     q10, q50, q90 = np.quantile(t, [0.1, 0.5, 0.9])
     lo, hi = arl - 1.96 * se, arl + 1.96 * se
+    accept, passed = ic_equivalence((lo, hi), target, tol)
     return {
         "arl_restricted": float(arl),
         "se_arl_restricted": float(se),
@@ -86,7 +102,12 @@ def validate(z, h, target, tau, tol=0.15):
         "q90": float(q90),
         "p_le_250": float((t <= 250).mean()),
         **mean_se("p_lt_tau", t < tau),
-        "passed": bool(lo <= target <= hi and abs(arl / target - 1) <= tol),
+        "target": target,
+        "tol": tol,
+        "accept": accept,
+        "rel_dev": float(arl / target - 1),
+        "n_paths": len(t),
+        "passed": passed,
     }
 
 

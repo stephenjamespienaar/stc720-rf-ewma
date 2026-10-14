@@ -3,7 +3,7 @@
     python run.py smoke  [--out DIR]   tiny end-to-end run, 2 replicates (< 1 min)
     python run.py pilot  [--out DIR]   reduced feasibility pilot (Phase 1, historical)
     python run.py verify [--out DIR]   runs smoke twice and compares result hashes
-    python run.py production         --approved [--out DIR]   primary simulation (R = 10, ARL0 = 500)
+    python run.py production         --approved [--out DIR]   primary simulation (R = 20, ARL0 = 500)
     python run.py sensitivity_arl100 --approved [--out DIR]   secondary ARL0 = 100 sensitivity
     python run.py benchmark          --approved [--out DIR]   production-scale performance benchmark (R = 1)
 
@@ -55,12 +55,18 @@ BASE = {
     # pairs, at this lambda and every delta in the config, each with its delta = 1 counterpart.
     "primary": {"lam": 0.1, "pairs": ["rf - garch", "rf - conventional"], "metrics": ["dH", "x_20"],
                 "label": "pre-specified after the exploratory pilot, before production"},
+    # In-control validation rule (methodology §6, eq. 29), recorded in config.json before any computation.
+    "ic_validation": {"tol": 0.15,
+                      "rule": "pass iff the independent-validation 95% CI lies within [A0(1 - tol), A0(1 + tol)]",
+                      "label": "post-pilot, post-benchmark methodological amendment made before production (user "
+                               "decision, 14 Oct 2026); the pilot and the benchmark were judged by the original rule "
+                               "(A0 inside the 95% CI and |A_val/A0 - 1| <= tol)"},
 }
 
 # Production sizes (production-plan.md); seed 20261014 keeps production evidence disjoint from the pilot's.
 PRODUCTION = {**BASE, "master_seed": 20261014, "n_train": 3500, "n_dev": 3500, "n_cal": 2000, "n_val": 2000,
               "n_ooc": 2000, "t_max": 5000, "target_arl": 500, "tau": 50, "H": 500, "deltas": [1.5, 2.0, 3.0],
-              "lams": [0.1, 0.2], "sustained": [100, 499], "rf_trees": 500, "replicates": 10}
+              "lams": [0.1, 0.2], "sustained": [100, 499], "rf_trees": 500, "replicates": 20}
 
 CONFIGS = {
     "smoke": {**BASE, "n_train": 1000, "n_dev": 1000, "n_cal": 60, "n_val": 60, "n_ooc": 60, "t_max": 600,
@@ -207,7 +213,8 @@ def replicate(cfg, rep, timer, paths=None):
     with timer("ewma_validate"):
         for lam in cfg["lams"]:
             out["validation"][str(lam)] = {k: chart.validate(chart.ewma(u_val[k], lam), hstar[lam][k],
-                                                             cfg["target_arl"], tau) for k in CHARTS}
+                                                             cfg["target_arl"], tau, cfg["ic_validation"]["tol"])
+                                          for k in CHARTS}
     h_true, r2 = h_val[:, W:], r_val[:, W:] ** 2
     fd = {}
     for k in CHARTS:

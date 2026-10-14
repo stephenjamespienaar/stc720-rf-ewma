@@ -1,6 +1,6 @@
 # Methodology — RF–EWMA Monitoring of Financial Volatility
 
-*Version 1.3, 14 Oct 2026 (v1.0: 13 Oct 2026; v1.1 revises §7 paired-comparison populations and the §9 slope interpretation after an independent audit; v1.2 adds the Phase 2 production estimators — eqs. 23–28, alarm-day coding, X(k), conditional quantiles, masking SE, replicate aggregation, pre-registered primary endpoints, production and sensitivity configurations, §10.1–10.3; v1.3 applies the Phase 2 audit: eq. 28 relabelled as residual between-system variance σ̂²_sys (arithmetic unchanged), matched sensitivity design, reconstruction scope of `paths.npz`, primary-endpoint scope, smoke versus validation). Equation numbers are stable references for code, tests and the report; v1.2 appends equations and renumbers none.*
+*Version 1.4, 14 Oct 2026 (v1.0: 13 Oct 2026; v1.1 revises §7 paired-comparison populations and the §9 slope interpretation after an independent audit; v1.2 adds the Phase 2 production estimators — eqs. 23–28, alarm-day coding, X(k), conditional quantiles, masking SE, replicate aggregation, pre-registered primary endpoints, production and sensitivity configurations, §10.1–10.3; v1.3 applies the Phase 2 audit: eq. 28 relabelled as residual between-system variance σ̂²_sys (arithmetic unchanged), matched sensitivity design, reconstruction scope of `paths.npz`, primary-endpoint scope, smoke versus validation; v1.4 records the post-benchmark amendments made before production — R = 20 training replicates and the equivalence-style in-control validation rule, eq. 29, with the production failure-handling policy). Equation numbers are stable references for code, tests and the report; v1.2 appends equations and renumbers none.*
 
 **Labels used throughout:**
 - **[E]** established method, with source
@@ -142,9 +142,28 @@ found by bisection on fixed calibration paths [P]. Because (15) is a lower bound
 - RL quantiles (10%, 50%, 90%)
 - $P(T\le250)$ and $P(T<\tau)$
 
-It passes if $A_0$ lies in the CI and $|\hat A_{\text{val}}/A_0-1|\le0.15$.
+**Validation rule (amended, v1.4).** *Post-pilot, post-benchmark methodological amendment made before production (user decision, 14 Oct 2026); recorded in each run's configuration (`config["ic_validation"]`) before any computation.* With target $A_0$, tolerance $\varepsilon=0.15$ and the independent-validation interval $[L,U]=\hat A_{\text{val}}\mp1.96\,SE$,
+$$ \text{PASS}\iff L\ge A_0(1-\varepsilon)\ \text{ and }\ U\le A_0(1+\varepsilon), \tag{29} $$
+i.e. the whole 95% CI lies in [425, 575] for $A_0=500$ and in [85, 115] for the ARL₀ = 100 sensitivity. The bounds are exactly $A_0(1\pm\varepsilon)$ and inclusive. The code compares them in exact rational arithmetic (`chart.ic_equivalence`), so the binary representation of ε cannot move a bound (tested at the bounds and one floating-point step either side). Each validation result stores $A_0$, ε, the bounds, $\hat A_{\text{val}}/A_0-1$, $N$ and the outcome.
+- **Original rule (v1.0–v1.3; historical).** $A_0$ inside the 95% CI and $|\hat A_{\text{val}}/A_0-1|\le0.15$. It judged the pilot and the production-scale benchmark, whose recorded outcomes are unchanged (benchmark: 2 of 6 primary and 2 of 2 diagnostic configurations passed).
+- **Reason for the amendment.** The CI condition of the original rule tests *exact* calibration. It ignores the Monte Carlo error of $h^*$ from the 2,000 calibration paths, which is of similar size to the validation SE, so an unbiased calibration fails it more often than 5%. Rule (29) asks instead whether the in-control ARL is demonstrably within the practical tolerance. **Disclosure:** the amendment was adopted after the benchmark had been seen. Evaluated hypothetically under (29), all eight benchmark CIs lie in [425, 575]. This does not alter the benchmark's recorded outcome, and the benchmark remains excluded from all inference.
+- **Caveats.**
+  - The CI is conditional on the replicate's calibrated $h^*$ and does not include the uncertainty of estimating $h^*$. Conditional on $h^*$, (29) is approximately a two-one-sided-tests check at level 0.025 per side. It operationalizes practical adequacy under this design and is **not** a complete formal equivalence test.
+  - It is applied to 6 primary and 2 diagnostic chart × λ configurations in each of $R$ replicates. The individual 95% CIs give no simultaneous (family-wise) coverage, so pass counts are descriptive.
+  - At $N=2000$ the validation SE is about 2.2–2.3% of $\hat A_{\text{val}}$ (benchmark), so passing requires roughly $445\lesssim\hat A_{\text{val}}\lesssim550$ for $A_0=500$. A systematic shortfall of a few percent can pass; it remains visible in the reported relative deviation.
 
-ARL₀ is **conditional on the trained forecasters** of the replicate. Variation across training samples is captured by independent training replicates (production R = 10, §10.1) and aggregated as in §10.2.
+**Production failure handling** (fixed before production; user decision, 14 Oct 2026):
+1. All 20 predefined training-and-calibration replicates are run.
+2. Replicates that fail validation are neither discarded nor selectively replaced.
+3. Thresholds are never recalibrated on validation observations, nor adjusted after validation outcomes are seen.
+4. Every per-replicate validation estimate, CI, relative deviation, $N$ and outcome is reported (report Table 3).
+5. Pass counts are reported for every chart and λ.
+6. Primary results are reported over all replicates. Failures that limit comparability or confidence in nominal ARL₀ control are flagged next to them (`report.validation_failures`: under Table 3 and before the primary-endpoint table).
+7. If any configuration fails, the report does not claim that all schemes achieved nominal calibration.
+
+Interpretation questions about severe failures go to a separate, documented scientific decision. There are no post hoc exclusions or reruns.
+
+ARL₀ is **conditional on the trained forecasters** of the replicate. Variation across training samples is captured by independent training replicates (production R = 20, §10.1) and aggregated as in §10.2.
 
 ## 7. Out-of-control evaluation
 
@@ -260,7 +279,7 @@ Diagnostics:
 |---|---|---|---|
 | Mode | `production` | `sensitivity_arl100` | `benchmark` |
 | Target ARL₀ | 500 | **100** | 500 |
-| Replicates R | 10 | 10 | 1 |
+| Replicates R | **20** (amended from 10 after the benchmark, before production) | 20 (inherits production) | 1 |
 | Master seed | **20261014** | 20261014 (same models and paths as production; limits calibrated and validated separately, on the same paths, to the other target) | 20261013 |
 | Other settings | $n_{\text{train}}=n_{\text{dev}}=3500$; 2,000 calibration, 2,000 validation and 2,000 OOC paths per replicate; $T_{\max}=5000$; $\tau=50$; $H=500$; δ ∈ {1, 1.5, 2, 3}; λ ∈ {0.1 (primary), 0.2}; RF 500 trees, grid as §4.3; B = 2000 | as production | as production |
 
@@ -273,22 +292,23 @@ Diagnostics:
 
 Within a replicate, every quantity is conditional on its trained system: θ̂, the selected and fitted forest, s² and the calibrated h*. The method-level estimand is $\theta=E_r[\theta_r]$, estimated with **equal weights** over the $R$ independently trained and calibrated systems; paths are never pooled across replicates [P]:
 $$ \bar\theta=\frac1R\sum_{r=1}^R\hat\theta_r,\qquad s_b^2=\frac{1}{R-1}\sum_r(\hat\theta_r-\bar\theta)^2,\qquad \text{95\% CI } \bar\theta\pm t_{R-1,0.975}\,\frac{s_b}{\sqrt R}, \tag{27} $$
-with $t_9=2.262$ ($t_4=2.776$). With $w_r$ the within-replicate (evaluation) Monte Carlo SE of $\hat\theta_r$, $\operatorname{Var}(\hat\theta_r)\approx\sigma^2_{\text{sys}}+E[w_r^2]$, hence
+with $t_{19}=2.093$ for production R = 20. With $w_r$ the within-replicate (evaluation) Monte Carlo SE of $\hat\theta_r$, $\operatorname{Var}(\hat\theta_r)\approx\sigma^2_{\text{sys}}+E[w_r^2]$, hence
 $$ \hat\sigma^2_{\text{sys}}=\max\Big(0,\ s_b^2-\frac1R\sum_r w_r^2\Big),\qquad \hat\sigma_{\text{sys}}=\sqrt{\hat\sigma^2_{\text{sys}}} . \tag{28} $$
 $\hat\sigma^2_{\text{sys}}$ is the **residual between-system variability (training, model selection, forest randomness and calibration), after subtracting the estimated evaluation Monte Carlo variance** (`var_between_resid`, `sd_between_resid`). It does **not** isolate training-sample variability: each replicate also has its own calibration paths, so its h* varies, and this variation is included. This holds for every chart, including the conventional chart, whose s² and calibrated limit both vary across replicates, so its residual component need not be zero. Equation (28) is a descriptive method-of-moments approximation, not a separately identified (causal) decomposition of model-training uncertainty; the truncation at 0 and the small R make it imprecise. The mean of the squared SEs is used, not the square of the mean SE ($\bar w^2\le\overline{w^2}$ by Jensen, so $\bar w^2$ would overstate $\hat\sigma_{\text{sys}}$). The t interval (27) uses $s_b$ alone and does not depend on (28).
 
 Also reported: every replicate value, the range, and the sign counts with an exact two-sided sign test. Only an explicit list of estimands is aggregated (`aggregate.schema`); validation pass flags and frozen-model checks are reported as counts of replicates, sample sizes ($|E|$, paired $n$) as ranges, and seeds and other metadata are not aggregated. A quantity not identifiable in some replicate (e.g. a conditional quantile) is listed per replicate without an aggregate.
 
-**Smoke runs are not validation.** `smoke` and `verify` check that the pipeline executes and is reproducible at toy size (60 paths, ARL₀ = 50); ARL₀ validation can fail there and failures are reported, never dropped. Calibration and validation adequacy are judged only on the production-size runs.
+**Smoke runs are not validation.** `smoke` and `verify` check that the pipeline executes and is reproducible at toy size (60 paths, ARL₀ = 50); ARL₀ validation can fail there and failures are reported, never dropped. Under rule (29) a smoke configuration essentially cannot pass: its CI half-width exceeds the ±15% margin. Calibration and validation adequacy are judged only on the production-size runs.
 
-**Limitations.** With R = 10 the t interval rests on approximate normality of $\hat\theta_r$, which cannot be checked well; $s_b$ is imprecise; results are conditional on the DGP and $n_{\text{train}}$.
+**Limitations.** With R = 20 the t interval rests on approximate normality of $\hat\theta_r$, which cannot be checked well; $s_b$ is imprecise; results are conditional on the DGP and $n_{\text{train}}$.
 
 ### 10.3 Original objectives, pilot-motivated refinements and secondary analyses
 
 | Category | Items |
 |---|---|
 | **Original research objectives** (research plan, approved 13 Oct) | RQ1–RQ4; three charts on a common score with frozen forecasters; empirical calibration to a common ARL₀ with independent validation; CRN out-of-control evaluation at δ ∈ {1.5, 2, 3}; adaptation masking M (eq. 19) |
-| **Pilot-motivated refinements** (readiness review and audit; fixed before production) | replicates R = 10 with equal-weight aggregation (§10.2); H = 500 (§7.3); X(k) (eq. 24) and occupancy excess; normal paired SE with bootstrap check (eq. 23); masking SE (eq. 26); censoring-aware quantiles (eq. 25); δ = 1 counterpart for every contrast; pre-registered primary endpoints (§7.4); new production seed |
+| **Pilot-motivated refinements** (readiness review and audit; fixed before production) | replicates R = 10 (amended to 20, next row) with equal-weight aggregation (§10.2); H = 500 (§7.3); X(k) (eq. 24) and occupancy excess; normal paired SE with bootstrap check (eq. 23); masking SE (eq. 26); censoring-aware quantiles (eq. 25); δ = 1 counterpart for every contrast; pre-registered primary endpoints (§7.4); new production seed |
+| **Post-benchmark amendments** (user decision 14 Oct 2026, after the performance benchmark, before production) | production and sensitivity R = 10 → 20; in-control validation rule (29) replacing the original rule (§6); production failure-handling policy (§6); provenance distinguishes tracked changes, untracked files and development-tool state |
 | **Secondary sensitivity** | ARL₀ = 100 (§10.1), testing whether the ranking depends on ARL₀. A reversal is declared only if the aggregate CIs exclude 0 with opposite signs at ARL₀ = 500 and 100; otherwise "inconclusive"; never a causal claim |
 
 ## 11. SPY application protocol (executed after pilot approval)
@@ -308,7 +328,8 @@ Also reported: every replicate value, the range, and the sign counts with an exa
 
 1. The DGP is correctly specified for GARCH (home advantage). The RF can at best tie in simulation.
 2. Information is symmetric; the leverage effect is ignored by both forecasters.
-3. Within-replicate results are conditional on the trained system; method-level statements rest on R = 10 training replicates (§10.2), with $n_{\text{train}}=3500$ and the simulated DGP.
+3. Within-replicate results are conditional on the trained system; method-level statements rest on R = 20 training replicates (§10.2), with $n_{\text{train}}=3500$ and the simulated DGP.
 4. The masking theory (20) is a first-order approximation.
 5. The model-based SPY calibration assumes the training GARCH-t is the in-control law.
 6. MacGregor & Harris (1993) and Lu & Reynolds (1999) are cited at metadata level only.
+7. In-control validation (29) is conditional on each calibrated $h^*$, excludes calibration uncertainty, gives no family-wise coverage, and was adopted after the benchmark (§6).

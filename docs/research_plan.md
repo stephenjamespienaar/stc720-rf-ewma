@@ -49,7 +49,7 @@ These are fixed before the pilot is run. Directional statements follow from theo
 | ID | Statement | Basis |
 |---|---|---|
 | H1 | Forecast accuracy (QLIKE against true h_t): oracle < GARCH ≤ RF < constant. GARCH is correctly specified, so the RF is not expected to beat it. | Correct specification of GARCH under the DGP |
-| H2 | All charts can be calibrated to ARL₀ = 500 and validated on independent paths within ±15%. | Empirical calibration (methodology §6) |
+| H2 | All charts can be calibrated to ARL₀ = 500 and validated on independent paths within ±15% (operationalized before production by the amended rule, methodology §6 eq. 29: the whole validation 95% CI inside [425, 575]). | Empirical calibration (methodology §6) |
 | H3 | The GARCH-standardized chart shows a transient after the change, with ū_E/ū₀ near δ. Its sustained masking ratio M_G is near the first-order prediction: 0.16, 0.125 and 0.09 for δ = 1.5, 2, 3 under the pilot DGP. The conventional chart has M ≈ 1. | Derived (methodology eq. 20) |
 | H3-RF | Exploratory, no directional hypothesis. RF saturation (no extrapolation) may give M_RF > M_G for large δ, at the cost of a higher in-control spread. | Derived property of RF predictions |
 | H4 | No directional hypothesis between charts for detection delay. Paired differences with CIs are reported. | Prior evidence (Schipper & Schmid 2001) favours the residual chart, but under known parameters, change at t = 1, normal innovations and ARL₀ = 60, which differs from our design |

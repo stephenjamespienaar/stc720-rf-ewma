@@ -9,14 +9,15 @@
 # that specific run; the flag is a safeguard, not an authorization.
 #
 # Creates results/runs/<mode>_<timestamp>_<pid>/ containing:
-#   provenance.txt   host, CPUs, memory, Python, Git commit (read-only), thread limits
+#   provenance.txt   host, CPUs, memory, Python, Git commit (read-only), thread limits and the
+#                    worktree classification of scripts/git_provenance.sh
 #   time.txt         full GNU /usr/bin/time -v report
 #   resources.txt    wall clock, CPU time, CPU %, peak RSS, exit status
 #   stdout.log / stderr.log, exit_status.txt, pip_freeze.txt, git_status.txt
-#   source_sha256.txt  SHA-256 of the executed source and lock file
+#   source_sha256.txt  SHA-256 of the executed source, the scripts and the lock file
 #   config.json, results.json, paths.npz, tables.md, figures (written by run.py)
 #
-# Git use is read-only (rev-parse, branch --show-current, status, diff --stat).
+# Git use is read-only (rev-parse, branch --show-current, status, diff --stat, ls-files).
 # Logs are preserved when the run fails; the script exits with the run's status.
 set -uo pipefail
 
@@ -55,12 +56,13 @@ export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_TH
   echo "git_commit: $(git rev-parse HEAD 2>/dev/null || echo unavailable)"
   echo "git_branch: $(git branch --show-current 2>/dev/null || echo unavailable)"
   echo "git_worktree_dirty: $([ -n "$(git status --porcelain 2>/dev/null)" ] && echo yes || echo no)"
+  scripts/git_provenance.sh
   echo "threads: OMP=$OMP_NUM_THREADS MKL=$MKL_NUM_THREADS OPENBLAS=$OPENBLAS_NUM_THREADS"
 } > "$RUN_DIR/provenance.txt"
 git status --porcelain > "$RUN_DIR/git_status.txt" 2>&1
 git diff --stat > "$RUN_DIR/git_diff_stat.txt" 2>&1
 "$PY" -m pip freeze > "$RUN_DIR/pip_freeze.txt" 2>&1
-sha256sum run.py src/*.py scripts/run_simulation.sh requirements-lock.txt > "$RUN_DIR/source_sha256.txt" 2>&1
+sha256sum run.py src/*.py scripts/*.sh requirements-lock.txt > "$RUN_DIR/source_sha256.txt" 2>&1
 
 echo "[run_simulation] $MODE -> $RUN_DIR"
 "$TIME" -v -o "$RUN_DIR/time.txt" "$PY" run.py "$MODE" --out "$RUN_DIR" "$@" \
