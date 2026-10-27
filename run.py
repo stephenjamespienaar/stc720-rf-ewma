@@ -6,8 +6,9 @@
     python run.py production         --approved [--out DIR]   primary simulation (R = 20, ARL0 = 500)
     python run.py sensitivity_arl100 --approved [--out DIR]   secondary ARL0 = 100 sensitivity
     python run.py benchmark          --approved [--out DIR]   production-scale performance benchmark (R = 1)
+    python run.py spy                --approved [--out DIR]   SPY real-data application (methodology §11)
 
-The last three refuse to start without --approved. The flag is a technical
+The last four refuse to start without --approved. The flag is a technical
 safeguard against accidental launches; it never replaces the student's explicit
 authorization of each run.
 
@@ -32,7 +33,7 @@ from pathlib import Path
 import numpy as np
 from scipy import stats
 
-from src import aggregate, chart, report, sim
+from src import aggregate, application, chart, report, sim
 from src import forecast as fc
 
 DGP = {"omega": 0.02, "alpha": 0.07, "beta": 0.91, "nu": 6.0}  # default D1, methodology §2
@@ -87,11 +88,40 @@ CONFIGS = {
                            "the original pilot; excluded from the primary production inference and from the "
                            "ARL0 = 100 sensitivity results"},
 }
-GUARDED = ("production", "sensitivity_arl100", "benchmark")
+GUARDED = ("production", "sensitivity_arl100", "benchmark", "spy")
+
+# SPY application (methodology §11; user decisions D1-D6, 27 Oct 2026). Reference dates were verified
+# against the cited sources and frozen before any SPY monitoring output existed.
+SPY = {
+    "master_seed": 20261028, "ticker": "SPY", "snapshot": "data/raw/SPY.csv",
+    "first_price": "1993-01-29", "download_end_exclusive": "2026-10-01",
+    "train_start": "1993-02-01", "dev_start": "2004-01-01", "train_end": "2006-12-29",
+    "monitor_start": "2007-01-03", "monitor_end": "2026-09-30", "expected_rows": [8480, 8490],
+    "burn": 2000, "warmup": 250, "floor_c": 1e-4, "rf_trees": 500, "rf_leaf": [50, 200, 800], "rf_max_features": [1, 3],
+    "n_jobs": 16, "n_cal": 2000, "n_val": 2000, "t_max": 5000, "target_arl": 500, "tau": 50,
+    "lams": [0.1, 0.2], "primary_lam": 0.1, "event_window": 63,
+    "ic_validation": {"tol": 0.15, "rule": BASE["ic_validation"]["rule"],
+                      "label": "eq. 29, applied to validation paths simulated from the fitted SPY GARCH-t"},
+    "reference_dates": [
+        {"date": "2007-08-09", "event": "BNP Paribas suspends three ABS funds"},
+        {"date": "2008-09-15", "event": "Lehman Brothers Chapter 11 filing"},
+        {"date": "2010-05-06", "event": "Flash Crash"},
+        {"date": "2011-08-08", "event": "first session after the S&P US downgrade"},
+        {"date": "2015-08-24", "event": "China-led global sell-off"},
+        {"date": "2018-02-05", "event": "volatility shock (record VIX jump)"},
+        {"date": "2020-02-24", "event": "COVID-19 sell-off as cases spread outside China"},
+        {"date": "2024-08-05", "event": "yen carry-trade unwind sell-off"},
+        {"date": "2025-04-03", "event": "sell-off after the 2 April tariff announcement"},
+    ],
+    "label": "SPY real-data application: illustrative and descriptive; limits from simulation under the fitted "
+             "1993-2006 GARCH(1,1)-t, which favours GARCH",
+}
+CONFIGS["spy"] = SPY
 
 # Files and directories run.py writes into an output directory; existing ones are never overwritten.
 ARTIFACTS = ("config.json", "results.json", "paths.npz", "tables.md", "fig_delay.png", "fig_profile.png",
-             "fig_replicates.png", "verify.txt", "verify_a", "verify_b")
+             "fig_replicates.png", "verify.txt", "verify_a", "verify_b", "frozen.json", "monitor.csv",
+             "fig_spy_charts.png", "fig_spy_variance.png")
 ROLES = {"train": 0, "dev": 1, "cal": 2, "val": 3, "ooc": 4, "rf": 5, "boot": 6}
 CHARTS = ("conventional", "garch", "rf", "oracle")
 PAIRS = (("rf", "garch"), ("rf", "conventional"), ("garch", "conventional"))
@@ -426,7 +456,30 @@ def main():
         (out / "verify.txt").write_text(f"run_a {h1}\nrun_b {h2}\nidentical {ok}\n")
         print(f"[verify] identical results: {ok}")
         sys.exit(0 if ok else 1)
+    if a.mode == "spy":
+        sys.exit(run_spy(CONFIGS["spy"], out))
     run(a.mode, CONFIGS[a.mode], out)
+
+
+def run_spy(cfg, out, root="."):
+    """SPY application (src/application.py): config.json first, then results.json with a
+    results hash. Exit status 3 if the fitted GARCH-t fails the strict fourth-moment gate
+    (nothing calibrated, no monitoring return used)."""
+    out = Path(out)
+    refuse_overwrite(out)
+    out.mkdir(parents=True, exist_ok=True)
+    timer = Timer()
+    res = {"mode": "spy", "config": cfg, "started": datetime.now().isoformat(timespec="seconds"),
+           "seeds": {"master_seed": cfg["master_seed"], "spawn_keys": {k: [v] for k, v in application.ROLES.items()}}}
+    (out / "config.json").write_text(json.dumps({k: res[k] for k in ("mode", "config", "seeds")}, indent=1))
+    with timer("total"):
+        res.update(application.run(cfg, out, root))
+    res["timing"] = timer.stages
+    res["environment"] = environment()
+    res["results_sha256"] = results_hash(res)
+    (out / "results.json").write_text(json.dumps(res, indent=1, default=float))
+    print(f"[spy] {res['status']} in {timer.stages['total']['wall']:.1f} s -> {out}  sha256={res['results_sha256'][:16]}")
+    return 0 if res["status"] == "complete" else 3
 
 
 if __name__ == "__main__":

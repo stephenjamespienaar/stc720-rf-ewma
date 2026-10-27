@@ -522,7 +522,7 @@ def test_production_sensitivity_and_benchmark_configurations():
     assert B["replicates"] == 1 and B["master_seed"] == 20261013
     assert "not a reproduction of the original pilot" in B["label"] and "excluded from the primary" in B["label"]
     assert run.CONFIGS["pilot"]["master_seed"] == run.CONFIGS["smoke"]["master_seed"] == 20261013
-    assert set(run.GUARDED) == {"production", "sensitivity_arl100", "benchmark"}
+    assert set(run.GUARDED) == {"production", "sensitivity_arl100", "benchmark", "spy"}  # spy added 27 Oct 2026
 
 
 @pytest.mark.parametrize("mode", ["production", "sensitivity_arl100", "benchmark"])

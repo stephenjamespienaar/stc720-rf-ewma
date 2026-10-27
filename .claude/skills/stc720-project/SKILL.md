@@ -9,7 +9,7 @@ description: Resume and continue the STC 720 (University of Pretoria) Random For
 **Due:** Thu **5 Nov 2026, 23:59 SAST**, via ClickUP. Internal target is to submit on 4 Nov. Turnitin similarity must be ≤ 20%, and a generative-AI declaration goes below the keywords.
 **Repository:** `/home/stephen/projects/stc720-rf-ewma` (Python 3.14.4, `.venv/`, WSL2).
 
-## Current stage (27 Oct 2026): FIRST FULL PRODUCTION COMPLETE — P1–P5 DONE; NEXT: SPY APPLICATION (NOT YET AUTHORIZED) AND FINAL PAPER
+## Current stage (27 Oct 2026): P1–P5 DONE; SPY STAGE A DONE; AWAITING `START SPY APPLICATION`
 
 - The scientific architecture and configuration are **frozen**. Phase 1 (pilot) and Phase 2 (production preparation, audits, final R = 20 design) are complete and committed (production source `3529ddd`). The post-production docs are committed as `fb73ecd`, P1 as `53552a9`, P2 as `9e9c30a`, and P3 as `8ef46aa`, the current HEAD (verified 27 Oct 2026).
 - The R = 20, ARL₀ = 500 production run is complete and **frozen**: `results/runs/production_20261014T060921_145897/`, results hash `44410144…`. Its numbers, hashes and caveats are in [references/production-results.md](references/production-results.md). **P1 independent audit: PASS (27 Oct 2026; `docs/p1_audit_report.md`).**
@@ -69,7 +69,7 @@ description: Resume and continue the STC 720 (University of Pretoria) Random For
 | Post-production analysis P1–P5 (independent audit, Holm, figure repair, heterogeneity, run-length comparison; no new simulation) | **P1–P5 DONE (27 Oct 2026).** Code changes (e.g. P3 in `src/report.py`) follow the normal test-and-verify rules |
 | ARL₀ = 100 sensitivity run (R = 20, matched) | **Deferred** (user, 27 Oct 2026); not authorized, not permanently dropped (design recorded; P6) |
 | Production-scale benchmark (`benchmark` mode, R = 1) | **Run once** (authorized, 14 Oct 2026; `benchmark_20261014T041247_106190`); performance evidence only; **do not repeat** |
-| SPY download and application | **Next priority, not yet authorized** (preparation items S1–S3 open; P6) |
+| SPY download and application | **Stage A implemented and tested (27 Oct 2026; S1–S3 done; methodology v1.6 §11). Execution needs the user's explicit `START SPY APPLICATION`** (P6) |
 | Git writes | **Never** (user only) |
 
 ## Reference files

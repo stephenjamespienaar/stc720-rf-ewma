@@ -50,6 +50,20 @@ def alarm_days(z, h):
     return np.where(cens, z.shape[1] + 1, t)
 
 
+def episodes(z, h, z0=1.0):
+    """Continuous chart without resets (SPY application, methodology §11):
+    exceedance days Z_t > h, and alarm episodes, each starting on a day with
+    Z_t > h >= Z_{t-1} (Z_0 = z0) and lasting while Z stays above h.
+    Returns (exceedance flags, [(first, last)] 0-based inclusive)."""
+    z = np.asarray(z, dtype=float)
+    if z0 > h:
+        raise ValueError("the chart must start at or below its limit")
+    ex = z > h
+    start = ex & ~np.concatenate([[False], ex[:-1]])
+    end = ex & ~np.concatenate([ex[1:], [False]])
+    return ex, list(zip(np.flatnonzero(start).tolist(), np.flatnonzero(end).tolist()))
+
+
 def calibrate(z, target, rtol=1e-7):
     """h* = min{h: restricted ARL(h) >= target} (eqs. 15-16) by bisection on
     fixed in-control paths. Run lengths are nondecreasing in h path-wise."""

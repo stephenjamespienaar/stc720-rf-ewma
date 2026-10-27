@@ -566,7 +566,7 @@ Avoid unnecessary approval requests for routine, already-authorized coding, docu
 
 ## 18. Current Project Status
 
-**FIRST FULL PRODUCTION COMPLETE — P1–P5 DONE; NEXT: SPY APPLICATION (NOT YET AUTHORIZED) AND FINAL PAPER**
+**P1–P5 DONE; SPY STAGE A IMPLEMENTED AND TESTED; AWAITING `START SPY APPLICATION`; THEN FINAL PAPER**
 
 *Updated 27 October 2026, after P4/P5. The detailed, authoritative progress record and task list is `docs/project-status.md`. The frozen production numbers, hashes and caveats are in `.claude/skills/stc720-project/references/production-results.md`.*
 
@@ -631,7 +631,7 @@ Outstanding (details in `docs/project-status.md`):
 - **P2: DONE (27 October 2026).** Supplementary post hoc Holm analysis; the unadjusted results are kept.
 - **P3: DONE (27 October 2026).** Replicate-figure repair; the repaired figure is in `results/derived/p3_figures/`.
 - **P4 and P5: DONE (27 October 2026).**
-- **Priority 1, the SPY application (P6):** rubric §5. It is **not yet authorized**: it needs the user's explicit authorization and preparation items S1–S3.
+- **Priority 1, the SPY application (P6):** rubric §5. SPY Stage A (implementation and synthetic tests): DONE (27 Oct 2026); awaiting the user's explicit `START SPY APPLICATION`. The guarded `spy` mode is in `run.py`, `src/application.py` and `src/spy.py` (S1), with the episode definition in `src/chart.py`, and is tested by `tests/test_spy.py` (16 tests). The design and the 9 verified reference dates are frozen in methodology v1.6 §11. No SPY data has been downloaded and no real model has been fitted. **Execution needs the user's explicit `START SPY APPLICATION`.** Run with `scripts/run_simulation.sh spy --approved`. It stops with exit 3 at the strict fourth-moment gate if the fitted GARCH-t fails it (D2).
 - **Priority 2:** the final research paper.
 - **ARL₀ = 100 sensitivity: DEFERRED** (user, 27 October 2026). It is not authorized and not permanently dropped.
 

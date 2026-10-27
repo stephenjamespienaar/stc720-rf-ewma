@@ -2,7 +2,7 @@
 # Run one experiment with resource accounting, logs and provenance.
 #
 #   scripts/run_simulation.sh {smoke|pilot|verify}
-#   scripts/run_simulation.sh {production|sensitivity_arl100|benchmark} --approved
+#   scripts/run_simulation.sh {production|sensitivity_arl100|benchmark|spy} --approved
 #
 # The guarded modes refuse to start, before creating any directory, unless
 # --approved is given. Pass it only after the student has explicitly authorized
@@ -21,10 +21,10 @@
 # Logs are preserved when the run fails; the script exits with the run's status.
 set -uo pipefail
 
-MODE="${1:?usage: scripts/run_simulation.sh MODE [--approved] (smoke, pilot, verify; production, sensitivity_arl100, benchmark need --approved)}"
+MODE="${1:?usage: scripts/run_simulation.sh MODE [--approved] (smoke, pilot, verify; production, sensitivity_arl100, benchmark, spy need --approved)}"
 shift
 case "$MODE" in
-  production|sensitivity_arl100|benchmark)
+  production|sensitivity_arl100|benchmark|spy)
     if [ "${1:-}" != "--approved" ]; then
       echo "[run_simulation] $MODE refused: requires --approved, given only after the student's explicit authorization of this run. Nothing was created." >&2
       exit 2

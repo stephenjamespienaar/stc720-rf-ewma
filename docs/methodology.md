@@ -1,6 +1,6 @@
 # Methodology — RF–EWMA Monitoring of Financial Volatility
 
-*Version 1.5, 27 Oct 2026 (v1.5 adds the supplementary post hoc Holm analysis note in §7.4; v1.0: 13 Oct 2026; v1.1 revises §7 paired-comparison populations and the §9 slope interpretation after an independent audit; v1.2 adds the Phase 2 production estimators — eqs. 23–28, alarm-day coding, X(k), conditional quantiles, masking SE, replicate aggregation, pre-registered primary endpoints, production and sensitivity configurations, §10.1–10.3; v1.3 applies the Phase 2 audit: eq. 28 relabelled as residual between-system variance σ̂²_sys (arithmetic unchanged), matched sensitivity design, reconstruction scope of `paths.npz`, primary-endpoint scope, smoke versus validation; v1.4 records the post-benchmark amendments made before production — R = 20 training replicates and the equivalence-style in-control validation rule, eq. 29, with the production failure-handling policy). Equation numbers are stable references for code, tests and the report; v1.2 appends equations and renumbers none.*
+*Version 1.6, 27 Oct 2026 (v1.6 freezes the SPY application design and reference dates in §11 before any SPY data; v1.5 adds the supplementary post hoc Holm analysis note in §7.4; v1.0: 13 Oct 2026; v1.1 revises §7 paired-comparison populations and the §9 slope interpretation after an independent audit; v1.2 adds the Phase 2 production estimators — eqs. 23–28, alarm-day coding, X(k), conditional quantiles, masking SE, replicate aggregation, pre-registered primary endpoints, production and sensitivity configurations, §10.1–10.3; v1.3 applies the Phase 2 audit: eq. 28 relabelled as residual between-system variance σ̂²_sys (arithmetic unchanged), matched sensitivity design, reconstruction scope of `paths.npz`, primary-endpoint scope, smoke versus validation; v1.4 records the post-benchmark amendments made before production — R = 20 training replicates and the equivalence-style in-control validation rule, eq. 29, with the production failure-handling policy). Equation numbers are stable references for code, tests and the report; v1.2 appends equations and renumbers none.*
 
 **Labels used throughout:**
 - **[E]** established method, with source
@@ -318,18 +318,56 @@ Also reported: every replicate value, the range, and the sign counts with an exa
 | **Post-benchmark amendments** (user decision 14 Oct 2026, after the performance benchmark, before production) | production and sensitivity R = 10 → 20; in-control validation rule (29) replacing the original rule (§6); production failure-handling policy (§6); provenance distinguishes tracked changes, untracked files and development-tool state |
 | **Secondary sensitivity** | ARL₀ = 100 (§10.1), testing whether the ranking depends on ARL₀. A reversal is declared only if the aggregate CIs exclude 0 with opposite signs at ARL₀ = 500 and 100; otherwise "inconclusive"; never a causal claim |
 
-## 11. SPY application protocol (executed after pilot approval)
+## 11. SPY application protocol (v1.6: design frozen 27 Oct 2026, before any SPY data was downloaded)
+
+*Original design approved 13 Oct 2026; the binding decisions D1–D6 were made by the user on 27 Oct 2026. Implemented as the guarded `spy` mode (`run.py`, `src/application.py`, `src/spy.py`) and tested on synthetic prices only.*
 
 | Element | Choice |
 |---|---|
-| Source | Yahoo Finance via `yfinance` (1.7.0), ticker SPY, `auto_adjust=True` (split- and dividend-adjusted close) |
-| Snapshot | One download saved to `data/raw/` with access timestamp and SHA-256. The analysis reads only the snapshot |
-| Training | 1993-02-01 → 2006-12-29. RF grid chosen by chronological split (fit 1993–2003, validate 2004–2006, QLIKE), then refit on 1993–2006 and frozen. GARCH(1,1)-t fitted on 1993–2006 and frozen |
-| Monitoring | 2007-01-03 → 2026-09-30. Filter and features update daily; no refits |
-| UCL | Calibrated to ARL₀ = 500 on in-control paths simulated from the training GARCH-t fit, with the frozen SPY forecasters applied. **This assumption favours GARCH and is disclosed** |
-| Output | Z paths with UCL; QLIKE/MSE against the $r^2$ proxy; alarm days per year; first signal after pre-registered reference dates |
+| Source (D1) | Yahoo Finance via `yfinance` 1.7.0, ticker SPY. `auto_adjust=True` (split- and dividend-adjusted), `multi_level_index=False`, `repair=False`, `keepna=True` (missing rows surface instead of being dropped), `ignore_tz=True` |
+| Snapshot (D6) | A single download, `end` exclusive 2026-10-01, saved as `data/raw/SPY.csv` with all adjusted columns. `SPY.meta.json` records the access time (UTC), software versions, the download arguments and the SHA-256. The analysis reads only the snapshot, and a snapshot is never overwritten. It is not committed to Git. Yahoo back-adjusts its history, so a later download can differ: the frozen file and its hash are the record, and the report discloses this |
+| Integrity (S1) | **Hard errors stop the analysis:** an empty series, duplicate or non-increasing dates, a timezone-aware index, non-finite or non-positive prices, a first date other than 1993-01-29, or a last date after 2026-09-30. **Diagnostics only:** the row count (expected 8,480–8,490) and calendar gaps over 4 days. Nothing is inserted, interpolated or deleted; a multi-day closure stays a single return. The 10 largest absolute returns are listed for an independent check |
+| Returns | $r_t=100\ln(P_t/P_{t-1})$ of the adjusted close, demeaned by the **training** mean only. The run stops unless the first training return is 1993-02-01, the last training return is 2006-12-29, the first monitoring return is 2007-01-03, and no return lies between them |
+| Training (D5) | 1993-02-01 → 2006-12-29 (training only). $s^2$ = the mean of demeaned $r^2$. GARCH(1,1)-t is fitted by ML with zero mean and frozen. RF: the six-cell grid (`min_samples_leaf` ∈ {50, 200, 800} × `max_features` ∈ {1, 3}, 500 trees, floor $10^{-4}s^2$) is fitted on 1993–2003 and selected by mean QLIKE against $r^2$ on 2004–2006 (rows dated ≥ 2004-01-01, with features from the continuous training series). The selected cell is then refitted on 1993–2006 and frozen. Master seed **20261028**, with streams `SeedSequence(20261028, spawn_key=(role,))` for rf, cal and val |
+| Fourth-moment gate (D2) | Before any limit is calibrated, the fitted $\hat\theta$ is checked with the production simulator's **unchanged** strict check (ν > 4 and $\beta^2+2\alpha\beta+\kappa\alpha^2\le0.99$). If it fails, the run stops (status `stopped_at_fourth_moment_gate`, exit 3): no limit is calibrated and no monitoring return is used. Only then may a narrowly scoped finite-variance option be implemented, which requires ω > 0, α, β ≥ 0, α + β < 1 and ν > 2. It must preserve the production defaults, be regression-tested and be documented. Parameters are never clipped |
+| Limits | $h^*$ by bisection to ARL₀ = 500 (eqs. 15–16) on 2,000 in-control paths of W + 5,000 days, **simulated from the fitted SPY GARCH-t** (burn-in 2,000, longer than the simulation's 500 because the persistence may be near 1), with the frozen SPY $s^2$, GARCH filter and RF applied. These are validated on 2,000 independent simulated paths (eq. 29). **This calibration model favours GARCH, and the report must say so prominently.** Monitoring data are never used for limits, and there is no recalibration after a validation failure: failures are reported |
+| Monitoring (D3) | 2007-01-03 → 2026-09-30. The last W = 250 training returns are the pre-monitoring history, as in the simulation, and the GARCH state and RF lag features update daily from past returns only. Parameters, trees, $s^2$ and $h^*$ are fixed. **Continuous chart:** $Z_0=1$ on the first monitoring day, with no reset after alarms and no restarts at events. λ = 0.1 is primary; λ = 0.2 is secondary and reported briefly |
+| Alarms | An **exceedance day** has $Z_t>h^*$. An **episode** begins on a day with $Z_t>h^*\ge Z_{t-1}$ ($Z_0=1$) and lasts while $Z>h^*$ (`chart.episodes`). ARL₀ = 500 is a first-alarm target: it does not determine the expected number of continuous-chart episodes, and no episode-count benchmark is reported |
+| Reference dates (D4) | For each date below: $Z_t/h^*$ on the date, whether an episode is active, and, within the **63 trading days** starting on the date, the first exceedance (days from the date), the number of exceedance days, the number of threshold crossings (episode starts), the maximum $Z/h^*$, and the mean score $u$. These are descriptive only: they are **not** detection delays, and the events are **not** verified change points. A date that is not a monitoring day stops the run; dates are never moved |
+| Outputs | Tables S1–S5 (data and fits; limits and validation; exceedance days and episodes; reference-date states; forecast diagnostics: QLIKE and MSE against $r^2$, mean, median and ACF₁ of $u$, RF floor binds). Two figures: $Z_t/h^*$ for the three charts, and returns with the variance denominators. `frozen.json` is written before monitoring and checked afterwards; `monitor.csv` holds the daily series; all files are hashed |
 
-**Interpretation limits.** Alarms are descriptive. They are **not** validated predictions of market events, and imply nothing about trading profitability. No trading or backtesting code is in scope.
+**Frozen reference dates (D4).** These were selected retrospectively as major, well-documented US equity-market stress dates. They were verified against the sources below on 27 Oct 2026, before any SPY data or monitoring output existed. All nine were checked by web search of the cited sources. Entries 1, 2 and 8 were also confirmed by reading the cited page. The student should spot-check the list before the run. They are descriptive anchors, and their selection involves hindsight.
+
+| # | Date | Event | Why it is a useful anchor | Source |
+|---|---|---|---|---|
+| 1 | 2007-08-09 | BNP Paribas suspends redemptions from three funds exposed to US subprime securitisations | Widely dated as the start of the 2007–09 crisis | Marketplace, "When did the financial crisis begin? Some say August 9, 2007 — in France", 9 Aug 2017 (marketplace.org/story/2017/08/09/…); contemporaneous: Marketplace, 9 Aug 2007, and NPR, 10 Aug 2007 |
+| 2 | 2008-09-15 | Lehman Brothers files for Chapter 11 | The largest US bankruptcy; the acute phase of the crisis | Wikipedia, "Bankruptcy of Lehman Brothers" ("filed for Chapter 11 bankruptcy protection on Monday, September 15, 2008"); background: Bernanke, testimony of 20 Apr 2010 (federalreserve.gov) |
+| 3 | 2010-05-06 | "Flash Crash" | An intraday market-wide liquidity collapse | SEC–CFTC joint staff report, *Findings Regarding the Market Events of May 6, 2010* (30 Sep 2010; sec.gov/files/marketevents-report.pdf) |
+| 4 | 2011-08-08 | First trading session after S&P's downgrade of the US to AA+ (announced Fri 5 Aug 2011); S&P 500 about −6.7% | Sovereign-risk shock with a large one-day fall | CNNMoney, 8 Aug 2011 (money.cnn.com/2011/08/08/markets/markets_newyork/) |
+| 5 | 2015-08-24 | China-led global sell-off; Dow −1,089 points in the first minutes | Global shock transmitted to US equities | Fortune, 24 Aug 2015 (fortune.com/2015/08/24/dow-plunges-1000-points-stocks-markets) |
+| 6 | 2018-02-05 | Volatility shock: Dow −1,175 points, a record one-day VIX jump | A volatility-specific event after a long calm period | Bloomberg, "The Day the VIX Doubled", 6 Feb 2019 |
+| 7 | 2020-02-24 | COVID-19 sell-off as cases spread outside China; Dow about −1,030 points | Onset of the 2020 crash | Fox Business / NPR, 24 Feb 2020 |
+| 8 | 2024-08-05 | Global sell-off with the yen carry-trade unwind: S&P 500 down more than 3%, Nikkei down more than 12%, VIX at a four-year high | A short, sharp volatility spike | CNN, "Markets saw a massive shift this week. Here's what happened", 9 Aug 2024 |
+| 9 | 2025-04-03 | Sell-off after the 2 April tariff announcement; S&P 500 −4.8% | Policy shock; the largest fall since 2020 at that time | Axios, 3 Apr 2025 |
+
+From the earlier candidate list, 2007-02-27 (China-led sell-off) and 2016-06-24 (Brexit result) were **removed for concision** before any SPY data existed. Both are documented events, but they are less central to US equity volatility than those kept. No date was selected, removed or moved on the basis of chart outcomes.
+
+**Carried over from the simulation:**
+- the score (eq. 12), the EWMA (eq. 13), λ, the RF features, grid, floor and QLIKE selection
+- the frozen-model protocol and the W = 250 history
+- calibration by bisection, and validation by eq. 29
+
+**Adapted, with the reasons recorded here:**
+- chronological RF selection with a refit on all of training, since no independent development path exists
+- a limit calibrated under a fitted real-data model
+- a burn-in of 2,000
+- continuous monitoring with episodes and reference-date states, instead of first-alarm run lengths
+- no oracle chart, since the true parameters are unknown
+- training-mean demeaning
+
+**Interpretation limits.**
+- Alarms are descriptive. They are **not** validated predictions of market events, alarm counts do not rank the methods, and they imply nothing about trading profitability.
+- No trading or backtesting code is in scope.
 
 ## 12. Known limitations (to be stated in the report)
 
