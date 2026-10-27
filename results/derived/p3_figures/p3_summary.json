@@ -1,0 +1,205 @@
+{
+ "verdict": "PASS",
+ "source_results_sha256": "716862ab41d08c581d2bd65c63979c046a9d9cb5930c111381b3eeb6506b708b",
+ "results_sha256_field": "44410144e3feb4a762dd2044fec07a2ddc64fdc742d43637332cc03f731431b8",
+ "plotting_change": "src/report.py: replicate jitter = 0.6 * min gap * (r/(R-1) - 1/2) (report.jitter) instead of 0.03 * (r - (R-1)/2); x limits from the gap",
+ "jitter_offsets": [
+  -0.15,
+  -0.13421052631578947,
+  -0.11842105263157894,
+  -0.10263157894736842,
+  -0.0868421052631579,
+  -0.07105263157894737,
+  -0.05526315789473685,
+  -0.03947368421052632,
+  -0.023684210526315797,
+  -0.00789473684210527,
+  0.007894736842105255,
+  0.023684210526315797,
+  0.03947368421052631,
+  0.05526315789473685,
+  0.07105263157894735,
+  0.0868421052631579,
+  0.10263157894736841,
+  0.11842105263157894,
+  0.13421052631578945,
+  0.15
+ ],
+ "gap": 0.5,
+ "original_sha256": {
+  "fig_delay.png": "e3ff5f011f9d7a215407740b1eaa8b18d5797f6dd9f24eeeaa886a519bbe6533",
+  "fig_profile.png": "a409411c285eab910ff5f126cef3c9e95ab51047ba23ea436adca9f7226a3f4c",
+  "fig_replicates.png": "1af6a11058e6e014397befbbff7a0d6c060f96a277a64293aaeda8456225aecb"
+ },
+ "regenerated_sha256": {
+  "fig_delay.png": "e3ff5f011f9d7a215407740b1eaa8b18d5797f6dd9f24eeeaa886a519bbe6533",
+  "fig_profile.png": "a409411c285eab910ff5f126cef3c9e95ab51047ba23ea436adca9f7226a3f4c",
+  "fig_replicates.png": "6e4fbcde288886ebc271bdf4bc54ee8284618e0bc6d24cb91c86bb5a16893e30"
+ },
+ "checks": [
+  {
+   "check": "results.json SHA-256 is the frozen file",
+   "ok": true
+  },
+  {
+   "check": "legend present on the first panel",
+   "ok": true
+  },
+  {
+   "check": "4 panels (metrics x pairs)",
+   "ok": true
+  },
+  {
+   "check": "rf - garch dH: title and labels",
+   "ok": true
+  },
+  {
+   "check": "rf - garch dH: one point series per replicate (R = 20)",
+   "ok": true
+  },
+  {
+   "check": "rf - garch dH: every replicate value equals the stored per-replicate mean exactly",
+   "ok": true
+  },
+  {
+   "check": "rf - garch dH: x = delta + jitter offset of its replicate",
+   "ok": true
+  },
+  {
+   "check": "rf - garch dH: all points inside the axis limits (no clipping)",
+   "ok": true
+  },
+  {
+   "check": "rf - garch dH: x limits contain every delta",
+   "ok": true
+  },
+  {
+   "check": "rf - garch dH: clouds of neighbouring delta disjoint",
+   "ok": true
+  },
+  {
+   "check": "rf - garch dH: mean markers at delta, equal to the stored aggregate means",
+   "ok": true
+  },
+  {
+   "check": "rf - garch dH: error bars equal the stored t19 CIs (1e-12)",
+   "ok": true
+  },
+  {
+   "check": "rf - conventional dH: title and labels",
+   "ok": true
+  },
+  {
+   "check": "rf - conventional dH: one point series per replicate (R = 20)",
+   "ok": true
+  },
+  {
+   "check": "rf - conventional dH: every replicate value equals the stored per-replicate mean exactly",
+   "ok": true
+  },
+  {
+   "check": "rf - conventional dH: x = delta + jitter offset of its replicate",
+   "ok": true
+  },
+  {
+   "check": "rf - conventional dH: all points inside the axis limits (no clipping)",
+   "ok": true
+  },
+  {
+   "check": "rf - conventional dH: x limits contain every delta",
+   "ok": true
+  },
+  {
+   "check": "rf - conventional dH: clouds of neighbouring delta disjoint",
+   "ok": true
+  },
+  {
+   "check": "rf - conventional dH: mean markers at delta, equal to the stored aggregate means",
+   "ok": true
+  },
+  {
+   "check": "rf - conventional dH: error bars equal the stored t19 CIs (1e-12)",
+   "ok": true
+  },
+  {
+   "check": "rf - garch x_20: title and labels",
+   "ok": true
+  },
+  {
+   "check": "rf - garch x_20: one point series per replicate (R = 20)",
+   "ok": true
+  },
+  {
+   "check": "rf - garch x_20: every replicate value equals the stored per-replicate mean exactly",
+   "ok": true
+  },
+  {
+   "check": "rf - garch x_20: x = delta + jitter offset of its replicate",
+   "ok": true
+  },
+  {
+   "check": "rf - garch x_20: all points inside the axis limits (no clipping)",
+   "ok": true
+  },
+  {
+   "check": "rf - garch x_20: x limits contain every delta",
+   "ok": true
+  },
+  {
+   "check": "rf - garch x_20: clouds of neighbouring delta disjoint",
+   "ok": true
+  },
+  {
+   "check": "rf - garch x_20: mean markers at delta, equal to the stored aggregate means",
+   "ok": true
+  },
+  {
+   "check": "rf - garch x_20: error bars equal the stored t19 CIs (1e-12)",
+   "ok": true
+  },
+  {
+   "check": "rf - conventional x_20: title and labels",
+   "ok": true
+  },
+  {
+   "check": "rf - conventional x_20: one point series per replicate (R = 20)",
+   "ok": true
+  },
+  {
+   "check": "rf - conventional x_20: every replicate value equals the stored per-replicate mean exactly",
+   "ok": true
+  },
+  {
+   "check": "rf - conventional x_20: x = delta + jitter offset of its replicate",
+   "ok": true
+  },
+  {
+   "check": "rf - conventional x_20: all points inside the axis limits (no clipping)",
+   "ok": true
+  },
+  {
+   "check": "rf - conventional x_20: x limits contain every delta",
+   "ok": true
+  },
+  {
+   "check": "rf - conventional x_20: clouds of neighbouring delta disjoint",
+   "ok": true
+  },
+  {
+   "check": "rf - conventional x_20: mean markers at delta, equal to the stored aggregate means",
+   "ok": true
+  },
+  {
+   "check": "rf - conventional x_20: error bars equal the stored t19 CIs (1e-12)",
+   "ok": true
+  },
+  {
+   "check": "all 280 replicate points drawn (20 x (4 + 3) x 2 pairs)",
+   "ok": true
+  },
+  {
+   "check": "original production figures unchanged",
+   "ok": true
+  }
+ ]
+}

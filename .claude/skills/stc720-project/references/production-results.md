@@ -1,6 +1,6 @@
 # Frozen production results (R = 20, ARL₀ = 500)
 
-**Status: FIRST FULL PRODUCTION COMPLETE — INDEPENDENT AUDIT P1 PASSED (27 Oct 2026).** The 12 primary contrasts and their 4 δ = 1 baselines were recomputed from `paths.npz` without project estimators. 1,768/1,768 comparisons are bit-identical to the values below. See [`docs/p1_audit_report.md`](../../../../docs/p1_audit_report.md); 518/518 integrity and design checks passed, and the frozen artifacts are unchanged (17/17 hashes). **Limitation:** P1 verified the downstream calculations from the stored alarm times. It did not verify the upstream simulation (DGP, forecasters, EWMA, calibration) that produced them. **P2 supplementary post hoc Holm analysis: PASS (27 Oct 2026; `docs/p2_multiplicity_report.md`). Holm (FWER 0.05, two-sided t₁₉, family of 12) rejects 6/12: all six RF − conventional contrasts. No RF − GARCH contrast is rejected; RF − GARCH RMD₅₀₀ has Holm p = 0.0533 at each δ (unadjusted p 0.009–0.011). The unadjusted primary estimates and CIs are unchanged.** Next open task: P3; P3–P6 are not yet authorized for execution. *(Original status: no independent numerical audit had been done; open task P1 in [`docs/project-status.md`](../../../../docs/project-status.md), which is the authoritative checkpoint and task list).)* Every number below was read from the run's `results.json` (aggregate over replicates). The full tables are in the run's `tables.md`.
+**Status: FIRST FULL PRODUCTION COMPLETE — INDEPENDENT AUDIT P1 PASSED (27 Oct 2026).** The 12 primary contrasts and their 4 δ = 1 baselines were recomputed from `paths.npz` without project estimators. 1,768/1,768 comparisons are bit-identical to the values below. See [`docs/p1_audit_report.md`](../../../../docs/p1_audit_report.md); 518/518 integrity and design checks passed, and the frozen artifacts are unchanged (17/17 hashes). **Limitation:** P1 verified the downstream calculations from the stored alarm times. It did not verify the upstream simulation (DGP, forecasters, EWMA, calibration) that produced them. **P2 supplementary post hoc Holm analysis: PASS (27 Oct 2026; `docs/p2_multiplicity_report.md`). Holm (FWER 0.05, two-sided t₁₉, family of 12) rejects 6/12: all six RF − conventional contrasts. No RF − GARCH contrast is rejected; RF − GARCH RMD₅₀₀ has Holm p = 0.0533 at each δ (unadjusted p 0.009–0.011). The unadjusted primary estimates and CIs are unchanged.** **P3 figure repair: PASS (27 Oct 2026).** Next open task: P4; P4–P6 are not yet authorized for execution. *(Original status: no independent numerical audit had been done; open task P1 in [`docs/project-status.md`](../../../../docs/project-status.md), which is the authoritative checkpoint and task list).)* Every number below was read from the run's `results.json` (aggregate over replicates). The full tables are in the run's `tables.md`.
 
 ## Identity: how to locate and authenticate the frozen run
 
@@ -14,7 +14,7 @@
 | `config.json` | `897cf519889a117a7282592b9f7108e74eba4ef0bd047201e37261fba340c130` |
 | `tables.md` | `7757c948017b6ee2ef6ed04411534404fe03ea77774ac2de517b8a93ead0dc39` |
 | `source_sha256.txt` | `746e9cf88ecbbb127b2bfc4806e4212baa68e8783062cf3184bbb707520f6747` |
-| `fig_replicates.png` (defective, P3) | `1af6a11058e6e014397befbbff7a0d6c060f96a277a64293aaeda8456225aecb` |
+| `fig_replicates.png` (defective; repaired copy from P3 in `results/derived/p3_figures/`, `6e4fbcde288886ebc271bdf4bc54ee8284618e0bc6d24cb91c86bb5a16893e30`) | `1af6a11058e6e014397befbbff7a0d6c060f96a277a64293aaeda8456225aecb` |
 | `fig_delay.png` / `fig_profile.png` | `e3ff5f011f9d7a21…` / `a409411c285eab91…` |
 
 Check: `sha256sum results/runs/production_20261014T060921_145897/*`, then compare with this table.
@@ -137,7 +137,7 @@ Pre-change false-alarm probability P(T < τ) [all paths]: conventional 0.125, RF
 - Restricted delays are administratively censored at H = 500; GARCH censoring is 21% at δ = 1.5. RMD is a restricted mean, never ARL₁.
 - The GARCH-generated DGP favours the GARCH forecaster and limits generalization.
 - IC validation (eq. 29) uses CIs conditional on the calibrated h*, so the full uncertainty of the estimated control limits is excluded. It is a post-pilot, post-benchmark amendment.
-- `fig_replicates.png` is defective at R = 20: jitter clips replicates 0 and 19 at δ = 1 and 3 (P3). The tables are unaffected.
+- The original `fig_replicates.png` is defective at R = 20: replicates 0–1 (δ = 1) and 18–19 (δ = 3) lie outside the axes, and the δ = 1.5 and 2 clouds overlap. The tables are unaffected. **Use the repaired `results/derived/p3_figures/fig_replicates.png`** (P3, 27 Oct 2026; every plotted value verified against the stored values).
 
 ## Data available for the open tasks (no new simulation needed)
 

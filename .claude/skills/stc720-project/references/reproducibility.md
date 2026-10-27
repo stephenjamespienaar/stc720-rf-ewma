@@ -25,7 +25,7 @@
 ## Commands
 
 ```bash
-.venv/bin/python -m pytest -q                 # 80 passed (14 Oct 2026, final production-design preparation)
+.venv/bin/python -m pytest -q                 # 85 passed (27 Oct 2026, after the P3 jitter regression test; 80 on 14 Oct)
 scripts/run_simulation.sh smoke               # tiny end-to-end run (~2 s); checks execution, not ARL0 validation
 scripts/run_simulation.sh verify              # smoke twice; compares results hashes
 scripts/run_simulation.sh pilot               # reduced pilot (~4 s); canonical hash f92f0715… came from the PRE-remediation source (see below)

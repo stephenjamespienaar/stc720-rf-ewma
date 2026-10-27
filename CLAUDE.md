@@ -566,9 +566,9 @@ Avoid unnecessary approval requests for routine, already-authorized coding, docu
 
 ## 18. Current Project Status
 
-**FIRST FULL PRODUCTION COMPLETE — P1 AUDIT PASSED; P2 SUPPLEMENTARY HOLM ANALYSIS DONE; P3–P6 OPEN, NOT YET AUTHORIZED**
+**FIRST FULL PRODUCTION COMPLETE — P1 AUDIT PASSED; P2 HOLM DONE; P3 FIGURE REPAIR DONE; P4–P6 OPEN, NOT YET AUTHORIZED**
 
-*Updated 27 October 2026, after P2. The detailed, authoritative progress record and task list is `docs/project-status.md`. The frozen production numbers, hashes and caveats are in `.claude/skills/stc720-project/references/production-results.md`.*
+*Updated 27 October 2026, after P3. The detailed, authoritative progress record and task list is `docs/project-status.md`. The frozen production numbers, hashes and caveats are in `.claude/skills/stc720-project/references/production-results.md`.*
 
 Completed and verified:
 
@@ -606,6 +606,11 @@ Completed and verified:
   - **Not rejected:** RF − GARCH RMD₅₀₀ (unadjusted p 0.009–0.011; Holm p 0.0533 at each δ, borderline) and RF − GARCH X(20) (Holm p = 1).
   - **Target:** the mean contrast over fitted systems in this design, not consistent per-system or real-market superiority. The unadjusted primary estimates and CIs are unchanged.
   - **Records:** `docs/p2_multiplicity_report.md`, `scripts/p2_holm.py`, `results/derived/p2_holm/`.
+- **P3 production figure repair (27 October 2026):** the fixed 0.03 replicate jitter hid replicates 0–1 (δ = 1) and 18–19 (δ = 3) outside the axes at R = 20, and mixed the δ = 1.5 and 2 clouds.
+  - **Fix:** plotting only, `src/report.py` `jitter`, with a regression test.
+  - **Output:** regenerated from the frozen `results.json` into `results/derived/p3_figures/` (`fig_replicates.png` `6e4fbcde…`; the original `1af6a110…` is untouched).
+  - **Checks:** 41/41 passed; all 280 plotted replicate values equal the stored values; `fig_delay` and `fig_profile` are bit-identical.
+  - **Records:** `docs/p3_figure_report.md`, `scripts/p3_figures.py`.
 - **Binding design decisions (user, 14 October 2026):**
   - production seed **20261014**, shared by the matched ARL₀ = 100 sensitivity (not an independent experiment)
   - 12 pre-registered primary contrasts: paired RMD₅₀₀ and X(20), RF − GARCH and RF − conventional, λ = 0.1, δ ∈ {1.5, 2, 3}, each with its δ = 1 counterpart; everything else is secondary
@@ -614,15 +619,15 @@ Completed and verified:
 
 Current Git state:
 
-- HEAD `53552a9` on `main` (verified 27 October 2026; the user committed P1 there). The P2 files and these documentation updates are uncommitted until the user commits. `.serena/` is untracked development-tool state. The user performs all Git staging, commits and pushes.
+- HEAD `9e9c30a` on `main` (verified 27 October 2026; the user committed P2 there). The P3 files and these documentation updates are uncommitted until the user commits. `.serena/` is untracked development-tool state. The user performs all Git staging, commits and pushes.
 
 Outstanding (details in `docs/project-status.md`):
 
 - **P1: DONE (PASS, 27 October 2026).**
 - **P2: DONE (27 October 2026).** Supplementary post hoc Holm analysis; the unadjusted results are kept.
-- **P3–P6 remain OPEN and are not yet authorized for execution.**
-- **P3, the next open task (only on the user's authorization):** repair `fig_replicates.png` (jitter clips at R = 20). Regenerate it from the frozen results into a separate directory.
-- **P4:** descriptive, post hoc investigation of RF − GARCH heterogeneity across fitted systems. Never tune RF on production outcomes.
+- **P3: DONE (27 October 2026).** Replicate-figure repair; the repaired figure is in `results/derived/p3_figures/`.
+- **P4–P6 remain OPEN and are not yet authorized for execution.**
+- **P4, the next open task (only on the user's authorization):** descriptive, post hoc investigation of RF − GARCH heterogeneity across fitted systems. Never tune RF on production outcomes.
 - **P5:** run-length distribution comparison from stored data. Per-path validation run lengths are not stored.
 - **P6:** the ARL₀ = 100 sensitivity and the SPY application (preparation items S1–S3) are **not authorized**.
 
@@ -647,10 +652,10 @@ At the start of every session:
 3. Read `docs/project-status.md`, the authoritative checkpoint and open-task list.
 4. Read the frozen production results reference, `.claude/skills/stc720-project/references/production-results.md`.
 5. Verify the actual state with read-only commands: `git branch --show-current`, `git rev-parse HEAD`, `git status --short`. Check the production artifacts, e.g. that `sha256sum results/runs/production_20261014T060921_145897/*` matches the recorded hashes and that the recomputed results hash is `44410144…`. Treat anything unverified as incomplete.
-6. Summarise the verified state, then resume from the **highest-priority OPEN task** (currently P3, the figure repair, which needs the user's authorization), within its authorized scope.
+6. Summarise the verified state, then resume from the **highest-priority OPEN task** (currently P4, the descriptive heterogeneity investigation, which needs the user's authorization), within its authorized scope.
 7. **Never rerun production and never start the sensitivity, a benchmark or SPY work without the user's explicit authorization in the current session.** Git writes stay reserved to the user (§13).
 8. After each meaningful milestone, update `docs/project-status.md` (verified checkpoint and update log). Do not mark work complete until it is tested and verified.
 
 Restart instruction:
 
-> Use the stc720-project skill, inspect the current repository state and resume from the last verified checkpoint (highest-priority OPEN task; currently P3, the figure repair, which needs the user's authorization). Do not rerun production or start the sensitivity, benchmark or SPY work without my explicit authorization.
+> Use the stc720-project skill, inspect the current repository state and resume from the last verified checkpoint (highest-priority OPEN task; currently P4, the descriptive heterogeneity investigation, which needs the user's authorization). Do not rerun production or start the sensitivity, benchmark or SPY work without my explicit authorization.

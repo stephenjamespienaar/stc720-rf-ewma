@@ -668,6 +668,19 @@ def test_figure_series_omits_unidentified_points_and_never_zero_fills():
     assert pts[0][2] == 1.0 and np.isnan(pts[1][2]) and pts[2][2] == pytest.approx(1.96 * 0.5)
 
 
+@pytest.mark.parametrize("R", [1, 2, 10, 20, 50])
+def test_replicate_jitter_stays_inside_axis_and_own_shift(R):
+    """P3 regression: the old fixed 0.03 jitter put replicates 0 and 19 outside the axis
+    at delta = 1 and 3 when R = 20, and mixed the delta = 1.5 and 2 clouds."""
+    xs = [1.0, 1.5, 2.0, 3.0]
+    offs, gap = report.jitter(xs, R)
+    assert len(offs) == R and gap == 0.5 and len(set(offs)) == R
+    assert (np.abs(offs) <= 0.3 * gap + 1e-12).all() and (R > 1 or offs[0] == 0.0)
+    pos = np.add.outer(xs, offs)                                   # [x, replicate]
+    assert (pos > xs[0] - gap / 2).all() and (pos < xs[-1] + gap / 2).all()
+    assert (pos[:-1].max(axis=1) < pos[1:].min(axis=1)).all()      # clouds of neighbouring shifts disjoint
+
+
 def test_paired_excess_contrast_hand_counted_over_two_shifts_and_two_lambdas():
     """rf - garch X(k) and RMD contrasts from alarm days counted by hand (tau = 10, H = 40:
     D = T - 9, T = 49 is a detection with D = 40, T = 50 is censored, T < 10 is a pre-change alarm)."""

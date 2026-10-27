@@ -355,6 +355,14 @@ def series(xs, entries, ses_r1):
     return out
 
 
+def jitter(xs, R):
+    """Horizontal offsets of R replicate points around each x, spread evenly over 60% of
+    the smallest gap between x values: for any R every point stays nearer its own x than
+    a neighbouring one and inside x[0] - gap/2 .. x[-1] + gap/2. Returns (offsets, gap)."""
+    gap = float(np.min(np.diff(sorted(xs)))) if len(xs) > 1 else 1.0
+    return (np.zeros(R) if R == 1 else 0.6 * gap * (np.arange(R) / (R - 1) - 0.5)), gap
+
+
 def _plot(ax, pts, fmt, **kw):
     if pts:
         x, y, e = zip(*pts)
@@ -410,14 +418,14 @@ def figures(res, out):
     plt.close(fig)
 
     lam, omitted = pr["lam"], 0
+    offs, gap = jitter(xs, len(reps))
     fig, axes = plt.subplots(len(pr["metrics"]), len(pr["pairs"]), figsize=(5.0 * len(pr["pairs"]), 3.8 * len(pr["metrics"])),
                              squeeze=False)
     for row, m in zip(axes, pr["metrics"]):
         for ax, p in zip(row, pr["pairs"]):
             ds = xs if m == "dH" else deltas
             label = "replicate"
-            for r, rep in enumerate(reps):
-                off = 0.03 * (r - (len(reps) - 1) / 2)
+            for off, rep in zip(offs, reps):
                 v = [(d + off, rep["paired"][str(d)][str(lam)][p][m]["mean"]) for d in ds]
                 v = [(x, y) for x, y in v if y is not None]
                 omitted += len(ds) - len(v)
@@ -429,7 +437,7 @@ def figures(res, out):
             omitted += len(ds) - len(pts)
             _plot(ax, pts, "ks", label="mean over replicates")
             ax.axhline(0, color="grey", lw=0.8)
-            ax.set_xlim(0.75, max(xs) + 0.25)
+            ax.set_xlim(xs[0] - gap / 2, xs[-1] + gap / 2)
             ax.set_xlabel("δ (δ = 1: no change)")
             ax.set_ylabel(METRIC[m])
             ax.set_title(f"{p}, λ = {lam}")
