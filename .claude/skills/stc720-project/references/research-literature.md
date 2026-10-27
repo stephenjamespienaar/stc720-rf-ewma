@@ -54,3 +54,9 @@ The authoritative bibliography, with what may and may not be claimed for each so
 - Read at least 3 articles. Citations and references count for 5 + 5 + 5 marks.
 - The Introduction (about 1 page) must include a literature review of SPC and/or ML.
 - Similarity must stay ≤ 20%, and AI use must be declared.
+
+## Variance-targeting references (27 Oct 2026; not in Zotero; bibliographic only)
+
+- Francq, C., Horváth, L., & Zakoïan, J.-M. (2011). Merits and drawbacks of variance targeting in GARCH models. *Journal of Financial Econometrics*, 9(4), 619–656. https://doi.org/10.1093/jjfinec/nbr004. The main reference for variance targeting (SPY model B).
+- Engle, R. F., & Mezrich, J. (1996). GARCH for groups. *Risk*, 9(8), 36–40. The conventional attribution only.
+- Both bibliographic records were verified by the student. **Full texts have not been reviewed**, and neither is in Zotero: cite at title level only (`docs/references.md` [11], [12]).

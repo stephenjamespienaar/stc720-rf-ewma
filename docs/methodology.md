@@ -1,6 +1,6 @@
 # Methodology — RF–EWMA Monitoring of Financial Volatility
 
-*Version 1.6, 27 Oct 2026 (v1.6 freezes the SPY application design and reference dates in §11 before any SPY data; v1.5 adds the supplementary post hoc Holm analysis note in §7.4; v1.0: 13 Oct 2026; v1.1 revises §7 paired-comparison populations and the §9 slope interpretation after an independent audit; v1.2 adds the Phase 2 production estimators — eqs. 23–28, alarm-day coding, X(k), conditional quantiles, masking SE, replicate aggregation, pre-registered primary endpoints, production and sensitivity configurations, §10.1–10.3; v1.3 applies the Phase 2 audit: eq. 28 relabelled as residual between-system variance σ̂²_sys (arithmetic unchanged), matched sensitivity design, reconstruction scope of `paths.npz`, primary-endpoint scope, smoke versus validation; v1.4 records the post-benchmark amendments made before production — R = 20 training replicates and the equivalence-style in-control validation rule, eq. 29, with the production failure-handling policy). Equation numbers are stable references for code, tests and the report; v1.2 appends equations and renumbers none.*
+*Version 1.8, 27 Oct 2026 (v1.8 adds the approved finite-variance calibration design and diagnostics a–i in §11; v1.7 records the post-stop variance-targeting refinement in §11; v1.6 freezes the SPY application design and reference dates in §11 before any SPY data; v1.5 adds the supplementary post hoc Holm analysis note in §7.4; v1.0: 13 Oct 2026; v1.1 revises §7 paired-comparison populations and the §9 slope interpretation after an independent audit; v1.2 adds the Phase 2 production estimators — eqs. 23–28, alarm-day coding, X(k), conditional quantiles, masking SE, replicate aggregation, pre-registered primary endpoints, production and sensitivity configurations, §10.1–10.3; v1.3 applies the Phase 2 audit: eq. 28 relabelled as residual between-system variance σ̂²_sys (arithmetic unchanged), matched sensitivity design, reconstruction scope of `paths.npz`, primary-endpoint scope, smoke versus validation; v1.4 records the post-benchmark amendments made before production — R = 20 training replicates and the equivalence-style in-control validation rule, eq. 29, with the production failure-handling policy). Equation numbers are stable references for code, tests and the report; v1.2 appends equations and renumbers none.*
 
 **Labels used throughout:**
 - **[E]** established method, with source
@@ -364,6 +364,31 @@ From the earlier candidate list, 2007-02-27 (China-led sell-off) and 2016-06-24 
 - continuous monitoring with episodes and reference-date states, instead of first-alarm run lengths
 - no oracle chart, since the true parameters are unknown
 - training-mean demeaning
+
+**Post-stop refinement (v1.7, 27 Oct 2026; user-authorized, training data only).** The first SPY run stopped at the strict fourth-moment gate: the unrestricted fit had m4 1.0089 and implied variance 1.920, against s² 1.144. The SPY configuration now selects a **variance-targeted** GARCH-t: ω = s²(1 − α − β), with α, β and ν by ML, h₁ = s², and admissibility by parameterization (`forecast.fit_garch_vt`; `docs/spy_vt_remediation.md`). It removes the level mismatch at a likelihood cost of 0.24, but **still fails the fourth-moment condition** (m4 1.0039). Any finite-variance calibration option, its diagnostics and a relaunch need separate approval. References for variance targeting (Engle & Mezrich 1996; Francq, Horváth & Zakoïan 2011) are not yet in the library.
+
+**Finite-variance calibration (v1.8, 27 Oct 2026; post-stop refinement; implemented and tested, not yet executed).** The user approved model B, the variance-targeted GARCH-t, as the fixed SPY specification. The choice rests on the training-data variance mismatch and the likelihood comparison, not on monitoring outcomes. The main reference for variance targeting is Francq, Horváth & Zakoïan (2011), with the method conventionally attributed to Engle & Mezrich (1996); both are bibliographic only (`references.md` [11], [12]).
+
+Model B has a **finite unconditional variance** (α + β < 1) but **no finite unconditional fourth moment** (β² + 2αβ + κα² ≥ 1). Calibration and validation paths are therefore drawn with the simulator's explicit opt-in `need_m4=False`, used only when `finite_variance_simulation` is set (SPY configuration). That opt-in still requires ω > 0, α, β ≥ 0, α + β < 1 and ν > 2, refuses non-finite or non-positive simulated values, and never clips parameters. The production default is unchanged and bit-identical.
+
+**Target.** h* is calibrated to the **restricted** mean run length $E[\min(T, 5000)] = 500$ (eqs. 15–16; a path without an alarm by day 5,000 counts 5,000). This is **not** the unrestricted ARL₀ = E[T], and the two are not claimed to be equal: the restricted mean is a lower bound on E[T], and the gap is controlled by the calibration-censoring criterion d. Independent validation uses the calibrated h* unchanged, judged by eq. 29 conditional on h*. Every failure is kept and disclosed.
+
+**Diagnostics** (fixed in `run.SPY["diagnostics"]` before any calibration; recorded machine-readably in `results.json["diagnostics"]`):
+
+| ID | Criterion | Action |
+|---|---|---|
+| a | ω > 0, α, β ≥ 0, α + β < 1, ν > 2 | stop |
+| b | (α + β)^burn ≤ 10⁻³ (burn = 2,000) | stop |
+| c | All simulated r, h, d and u finite and h > 0 | stop |
+| d | Calibration censoring ≤ 0.01 per chart and λ (full precision) | stop before monitoring |
+| e | h* finite and > 0; minimal (restricted ARL(h*) ≥ 500 > ARL(h*(1 − 10⁻⁶))); consistent restricted-mean computation; bracketing and bisection succeed | stop |
+| e_overshoot | \|restricted ARL(h*)/500 − 1\| ≤ 10⁻³; exact overshoot, achieved restricted ARL and deviation recorded | warn (refined; see note) |
+| f | Restricted ARL of each half of the calibration paths at the full-sample h* in [425, 575] (exact bounds) | warn only; never recalibrates |
+| g | Eq. 29 on 2,000 independent validation paths | report and keep |
+| h | Validation SE / restricted ARL ≤ 0.04 | warn |
+| i | Run-length CV, quantiles and maximum of u, maximum h | descriptive |
+
+**Note on e.** Criterion e refined (user decision, 27 Oct 2026, **before any SPY calibration**). These remain **hard stops**: a non-finite or non-positive h*, a failed minimality condition (restricted ARL(h*) ≥ 500 > restricted ARL(h*(1 − 10⁻⁶))), an inconsistent restricted-mean computation, and failed bracketing or bisection (`CalibrationError`). Only the overshoot |restricted ARL(h*)/500 − 1| > 10⁻³ became a **recorded warning** (`e_overshoot`), keeping the exact overshoot, achieved restricted ARL, target deviation and status in `results.json`. Justification: in the frozen production run, 24 of 160 calibrations exceeded 10⁻³ (maximum 0.16%) through the discreteness of the empirical ARL. There is no recalibration, no seed change and no selective rerun, and validation is unchanged.
 
 **Interpretation limits.**
 - Alarms are descriptive. They are **not** validated predictions of market events, alarm counts do not rank the methods, and they imply nothing about trading profitability.

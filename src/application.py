@@ -14,6 +14,7 @@ The pipeline runs in this order, and the monitoring returns are first used in st
 
 import hashlib
 import json
+from fractions import Fraction
 from pathlib import Path
 
 import matplotlib
@@ -62,7 +63,12 @@ def fit(train, cfg, rf_seed):
     """Training-only fits (step 3)."""
     r = train.to_numpy()
     s2 = float(np.mean(r**2))
-    gp, ginfo = fc.fit_garch(r)
+    # The variance-targeted fit (post-stop refinement, methodology §11) only when explicitly selected.
+    if cfg.get("garch_estimator", "mle") == "variance_targeted":
+        gp, ginfo = fc.fit_garch_vt(r, s2)
+    else:
+        gp, ginfo = fc.fit_garch(r)
+        ginfo = {"estimator": "mle", **ginfo}
     dev = (train.index >= pd.Timestamp(cfg["dev_start"])).nonzero()[0]
     x, floor = fc.har_features(r), cfg["floor_c"] * s2
     grid = []
@@ -91,27 +97,98 @@ def scores(r, s2, gp, rf, cfg):
     return d, u, binds
 
 
+class CalibrationError(Exception):
+    """Numerical bracketing or bisection of h* failed (diagnostic e, hard stop)."""
+
+
 def limits(f, cfg, g):
     """h* by bisection on simulated in-control paths from the fitted GARCH-t, then an
-    independent validation with h* fixed (eqs. 15, 16, 29)."""
-    W, T = cfg["warmup"], cfg["t_max"]
-    r_cal, _ = sim.simulate(f["gp"], cfg["n_cal"], W + T, g["cal"], cfg["burn"])
+    independent validation with h* fixed (eqs. 15, 16, 29). Calibration and validation use
+    their own streams. The target is the restricted mean run length E[min(T, t_max)]
+    (horizon t_max = 5000; a path without an alarm counts t_max), not E[T]. Also returns
+    the inputs of diagnostics c-i; nothing here is recalibrated on any diagnostic."""
+    W, T, A0 = cfg["warmup"], cfg["t_max"], cfg["target_arl"]
+    need_m4 = not cfg.get("finite_variance_simulation", False)
+    r_cal, h_cal = sim.simulate(f["gp"], cfg["n_cal"], W + T, g["cal"], cfg["burn"], need_m4=need_m4)
     _, u, _ = scores(r_cal, f["s2"], f["gp"], f["rf"], cfg)
-    del r_cal
+    num = {"cal_max_h": float(h_cal.max()), "cal_max_u": {k: float(v.max()) for k, v in u.items()}}
+    del r_cal, h_cal
     hstar, cal = {}, {}
     for lam in cfg["lams"]:
         hstar[str(lam)], cal[str(lam)] = {}, {}
         for k in CHARTS:
             z = chart.ewma(u[k], lam)
-            h, arl = chart.calibrate(z, cfg["target_arl"])
+            try:
+                h, arl = chart.calibrate(z, A0)
+            except (ValueError, ArithmeticError) as e:
+                raise CalibrationError(f"bisection failed for {k}, lambda {lam}: {e}") from e
+            t, cens = chart.first_alarm(z, h)            # min(T, t_max) per path; censored paths count t_max
+            below = chart.first_alarm(z, h * (1 - 1e-6))[0].mean()
+            m = len(t) // 2
             hstar[str(lam)][k] = h
-            cal[str(lam)][k] = {"h": h, "arl_cal": arl, "censored_cal": float(chart.first_alarm(z, h)[1].mean())}
+            cal[str(lam)][k] = {"h": h, "arl_cal": arl, "restricted_mean_check": float(t.mean()),
+                                "censored_cal": float(cens.mean()), "overshoot_rel": arl / A0 - 1,
+                                "target_deviation": arl - A0,
+                                "arl_just_below_h": float(below),
+                                "split_half_arl": [float(t[:m].mean()), float(t[m:].mean())]}
     del u
-    r_val, _ = sim.simulate(f["gp"], cfg["n_val"], W + T, g["val"], cfg["burn"])
+    r_val, h_val = sim.simulate(f["gp"], cfg["n_val"], W + T, g["val"], cfg["burn"], need_m4=need_m4)
     _, u, binds = scores(r_val, f["s2"], f["gp"], f["rf"], cfg)
-    val = {str(lam): {k: chart.validate(chart.ewma(u[k], lam), hstar[str(lam)][k], cfg["target_arl"], cfg["tau"],
-                                        cfg["ic_validation"]["tol"]) for k in CHARTS} for lam in cfg["lams"]}
-    return hstar, cal, val, binds
+    num["val_max_h"] = float(h_val.max())
+    del r_val, h_val
+    qs = cfg.get("diagnostics", {}).get("u_quantiles", [0.5, 0.99, 0.999])
+    val, tails = {}, {k: {"u_quantiles": dict(zip(map(str, qs), map(float, np.quantile(u[k], qs)))),
+                          "u_max": float(u[k].max())} for k in CHARTS}
+    for lam in cfg["lams"]:
+        val[str(lam)] = {}
+        for k in CHARTS:
+            v = chart.validate(chart.ewma(u[k], lam), hstar[str(lam)][k], A0, cfg["tau"], cfg["ic_validation"]["tol"])
+            v["rel_se"] = v["se_arl_restricted"] / v["arl_restricted"]
+            v["cv_run_length"] = v["se_arl_restricted"] * np.sqrt(v["n_paths"]) / v["arl_restricted"]
+            val[str(lam)][k] = v
+    return hstar, cal, val, binds, num, tails
+
+
+def diagnose(cal, val, num, cfg):
+    """Diagnostics d-i on the calibration and validation outputs, with the thresholds and
+    actions fixed in cfg['diagnostics'] before any calibration. 'stop' ends the run before
+    monitoring; 'warn' and 'report' are recorded and change nothing (no recalibration,
+    no selective rerun)."""
+    D, A0, out = cfg["diagnostics"], cfg["target_arl"], []
+
+    def add(i, name, scope, value, threshold, ok, action):
+        out.append({"id": i, "name": name, "scope": scope, "value": value, "threshold": threshold,
+                    "passed": bool(ok), "action": action})
+    finite = all(np.isfinite(x) for x in [num["cal_max_h"], num["val_max_h"], *num["cal_max_u"].values()])
+    add("c", "numerical: simulated variances and scores finite", "all", finite, "finite", finite, "stop")
+    tol = Fraction(str(D["split_half_tol"]))             # exact bounds, as in chart.ic_equivalence
+    lo, hi = float(Fraction(A0) * (1 - tol)), float(Fraction(A0) * (1 + tol))
+    for lam, row in cal.items():
+        for k, c in row.items():
+            sc = f"{k}, lambda {lam}"
+            add("d", "calibration censoring fraction", sc, c["censored_cal"], f"<= {D['cal_censoring_max']}",
+                c["censored_cal"] <= D["cal_censoring_max"], "stop")
+            ok = (bool(np.isfinite(c["h"])) and c["h"] > 0 and c["arl_cal"] >= A0 and c["arl_just_below_h"] < A0
+                  and c["arl_cal"] == c["restricted_mean_check"])
+            add("e", "control limit: finite and positive h*, minimal h* with restricted ARL >= target "
+                "(ARL just below h* < target), consistent restricted-mean computation", sc, c["h"],
+                "finite, > 0, minimal", ok, "stop")
+            # Overshoot is a recorded warning (user decision, 27 Oct 2026, before any SPY calibration): in the
+            # frozen production run 24/160 calibrations exceeded 1e-3 through the discreteness of the empirical ARL.
+            add("e_overshoot", "calibration overshoot |restricted ARL(h*) / target - 1|", sc,
+                {"overshoot_rel": c["overshoot_rel"], "achieved_restricted_arl": c["arl_cal"],
+                 "target_deviation": c["arl_cal"] - A0}, f"<= {D['bisection_rel_tol']}",
+                abs(c["overshoot_rel"]) <= D["bisection_rel_tol"], D["overshoot_action"])
+            add("f", "split-half restricted ARL at the full-sample h*", sc, c["split_half_arl"], [lo, hi],
+                all(lo <= x <= hi for x in c["split_half_arl"]), "warn")
+    for lam, row in val.items():
+        for k, v in row.items():
+            sc = f"{k}, lambda {lam}"
+            add("g", "independent validation, eq. 29 (conditional on h*)", sc, v["ci95"], v["accept"], v["passed"], "report")
+            add("h", "validation precision SE / restricted ARL", sc, v["rel_se"], f"<= {D['val_rel_se_max']}",
+                v["rel_se"] <= D["val_rel_se_max"], "warn")
+    stop = next((c["id"] for c in out if c["action"] == "stop" and not c["passed"]), None)
+    return out, stop
 
 
 def monitor_series(train, monitor, f, cfg):
@@ -178,18 +255,57 @@ def run(cfg, out, root="."):
     f = fit(train, cfg, int(g["rf"].integers(2**31 - 1)))
     gp, fp = f["gp"], fingerprint(f["rf"])
     strict = sim.constraint_violations(gp)
+    fv = cfg.get("finite_variance_simulation", False)
+    D = cfg.get("diagnostics", {})
     res["fit"] = {"s2": f["s2"], "garch": {"omega": gp.omega, "alpha": gp.alpha, "beta": gp.beta, "nu": gp.nu,
                                            "unconditional_var": gp.var, **f["garch_info"]},
                   "strict_simulator_check": {"violations": strict, "passed": not strict, "m4": gp.m4, "kappa": gp.kappa},
+                  "moments": sim.moments(gp),
                   "rf_grid": f["rf_grid"], "rf_seed": f["rf_seed"], "rf_fingerprint": fp,
                   "rf_selection": {"fit_rows": f["n_fit_rf_selection"], "dev_rows": f["n_dev"], "dev_first": f["dev_first"]}}
-    if strict:
-        res["status"] = "stopped_at_fourth_moment_gate"
+    if not fv:                                            # original design: strict gate (first SPY run)
+        if strict:
+            res["status"] = "stopped_at_fourth_moment_gate"
+            return res
+        checks = []
+    else:                                                 # post-stop refinement: finite-variance simulation, a-i
+        adm = sim.constraint_violations(gp, need_m4=False)
+        mem = float((gp.alpha + gp.beta) ** cfg["burn"])
+        checks = [{"id": "a", "name": "admissibility: omega > 0, alpha, beta >= 0, alpha + beta < 1, nu > 2",
+                   "scope": "fit", "value": adm, "threshold": "no violations", "passed": not adm, "action": "stop"},
+                  {"id": "b", "name": "burn-in memory (alpha + beta)^burn", "scope": "fit", "value": mem,
+                   "threshold": f"<= {D['burn_memory_max']}", "passed": mem <= D["burn_memory_max"], "action": "stop"}]
+        res["diagnostics"] = {"criteria": D, "checks": checks}
+        bad = next((c["id"] for c in checks if not c["passed"]), None)
+        if bad:
+            res["status"] = f"stopped_at_diagnostic_{bad}"
+            return res
+    try:
+        hstar, cal, val, vbinds, num, tails = limits(f, cfg, g)
+    except CalibrationError as e:                         # diagnostic e: bracketing or bisection failed
+        checks.append({"id": "e", "name": "bracketing / bisection", "scope": "calibration", "value": str(e),
+                       "threshold": "converged", "passed": False, "action": "stop"})
+        res["diagnostics"] = {"criteria": D, "checks": checks}
+        res["status"] = "stopped_at_diagnostic_e"
         return res
-
-    hstar, cal, val, vbinds = limits(f, cfg, g)
+    except FloatingPointError as e:                       # diagnostic c: non-finite simulation or scores
+        checks.append({"id": "c", "name": "numerical", "scope": "simulation", "value": str(e), "threshold": "finite",
+                       "passed": False, "action": "stop"})
+        res["diagnostics"] = {"criteria": D, "checks": checks}
+        res["status"] = "stopped_at_diagnostic_c"
+        return res
     res["limits"] = {"h": hstar, "calibration": cal, "validation": val, "validation_floor_binds": vbinds,
+                     "numerical": num, "tails": tails,
+                     "target_definition": f"restricted mean run length E[min(T, {cfg['t_max']})], not E[T]",
                      "passed": {lam: {k: val[lam][k]["passed"] for k in CHARTS} for lam in val}}
+    if fv:
+        more, stop = diagnose(cal, val, num, cfg)
+        checks += more
+        res["diagnostics"] = {"criteria": D, "checks": checks,
+                              "warnings": [c for c in checks if not c["passed"] and c["action"] in ("warn", "report")]}
+        if stop:
+            res["status"] = f"stopped_at_diagnostic_{stop}"
+            return res
     frozen = {"train_mean": mu, "fit": res["fit"], "h": hstar}
     (out / "frozen.json").write_text(json.dumps(frozen, indent=1, default=float))
     res["frozen_sha256"] = hashlib.sha256((out / "frozen.json").read_bytes()).hexdigest()
@@ -256,13 +372,30 @@ def tables(res, cfg):
          f"persistence {g['persistence']:.4f}; fourth-moment coefficient {F['strict_simulator_check']['m4']:.4f} |",
          f"| RF grid: development QLIKE, 2004–2006 | " + ", ".join(f"leaf {c['min_samples_leaf']}/mf {c['max_features']}: {c['dev_qlike']:.4f}"
                                             + (" **(selected)**" if c["selected"] else "") for c in F["rf_grid"]) + " |",
-         "", "## Table S2. Control limits (ARL₀ = 500, simulated from the fitted GARCH-t) and independent validation", "",
-         "| λ | Chart | h* | Validated ARL₀ [95% CI] | Eq. 29 |", "|---|---|---|---|---|"]
+         "", f"## Table S2. Control limits and independent validation (target: restricted mean run length "
+             f"E[min(T, {cfg['t_max']})] = {cfg['target_arl']}, simulated from the fitted GARCH-t; not E[T])", "",
+         "| λ | Chart | h* | Calibration overshoot | Calibration censoring | Split-half restricted ARL | "
+         "Validated restricted ARL [95% CI] | Rel. SE | CV of run length | Eq. 29 |",
+         "|---|---|---|---|---|---|---|---|---|---|"]
     for lam, v in L["validation"].items():
         for k in CHARTS:
-            x = v[k]
-            s.append(f"| {lam} | {LABEL[k]} | {L['h'][lam][k]:.4f} | {x['arl_restricted']:.1f} "
-                     f"[{x['ci95'][0]:.1f}, {x['ci95'][1]:.1f}] | {'pass' if x['passed'] else 'FAIL'} |")
+            x, c = v[k], L["calibration"][lam][k]
+            sh = c.get("split_half_arl")
+            s.append(f"| {lam} | {LABEL[k]} | {L['h'][lam][k]:.4f} | {c.get('overshoot_rel', float('nan')):+.2e} | "
+                     f"{c['censored_cal']:.4f} | " + (f"{sh[0]:.1f} / {sh[1]:.1f}" if sh else "–") +
+                     f" | {x['arl_restricted']:.1f} [{x['ci95'][0]:.1f}, {x['ci95'][1]:.1f}] | {x.get('rel_se', float('nan')):.3f} | "
+                     f"{x.get('cv_run_length', float('nan')):.3f} | {'pass' if x['passed'] else 'FAIL'} |")
+    if "diagnostics" in res:
+        s += ["", "## Table S2b. Pre-specified calibration diagnostics (thresholds fixed before calibration)", "",
+              "| ID | Diagnostic | Scope | Value | Threshold | Result | Action on failure |", "|---|---|---|---|---|---|---|"]
+        for c in res["diagnostics"]["checks"]:
+            val = c["value"]
+            if isinstance(val, dict):
+                val = ", ".join(f"{k} {v:.4g}" for k, v in val.items())
+            val = f"{val:.4g}" if isinstance(val, float) else (", ".join(f"{x:.4g}" for x in val) if isinstance(val, list)
+                                                               and val and isinstance(val[0], float) else str(val))
+            s.append(f"| {c['id']} | {c['name']} | {c['scope']} | {val} | {c['threshold']} | "
+                     f"{'pass' if c['passed'] else 'FAIL'} | {c['action']} |")
     M = res["monitoring"]
     s += ["", "## Table S3. Continuous monitoring 2007–2026 (no resets)", "",
           "| Chart | Exceedance days (λ = 0.1) | Share of days | Episodes (λ = 0.1) | Longest episode | "

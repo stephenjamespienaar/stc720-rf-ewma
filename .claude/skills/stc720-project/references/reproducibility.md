@@ -63,6 +63,7 @@ scripts/run_simulation.sh pilot               # reduced pilot (~4 s); canonical 
   - The **Phase 2** source (committed by the user in `9b286e1`) also changes output schemas, replicate aggregation, paired intervals and reporting. A `pilot` rerun with the current code would therefore differ in more than `slope_h`; the pilot was not rerun, and its original artifacts are preserved.
   - Do not describe the pilot as generated from committed source. Future-run provenance: production-plan.md §Source provenance.
 - RF prediction is deterministic across thread counts (fixed tree order; tested). RF fitting is deterministic given `random_state`.
+- The `arch` GARCH-t fit is bit-reproducible only with single-threaded BLAS, as the wrapper sets (`OMP/MKL/OPENBLAS=1`). Multi-threaded BLAS changes it at about 10⁻⁵ relative (found 27 Oct 2026). `forecast.fit_garch_vt` is thread-invariant. Run fit-dependent checks under the wrapper's thread settings.
 
 ## Artifacts and data
 

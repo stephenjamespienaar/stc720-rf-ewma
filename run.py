@@ -100,6 +100,19 @@ SPY = {
     "burn": 2000, "warmup": 250, "floor_c": 1e-4, "rf_trees": 500, "rf_leaf": [50, 200, 800], "rf_max_features": [1, 3],
     "n_jobs": 16, "n_cal": 2000, "n_val": 2000, "t_max": 5000, "target_arl": 500, "tau": 50,
     "lams": [0.1, 0.2], "primary_lam": 0.1, "event_window": 63,
+    # Post-stop refinement (user, 27 Oct 2026): variance-targeted GARCH-t, omega = s^2 (1 - alpha - beta).
+    # The strict fourth-moment gate is unchanged; calibration under this fit is not yet authorized.
+    "garch_estimator": "variance_targeted",
+    # Post-stop refinement (user, 27 Oct 2026): the fitted model has finite variance but an infinite
+    # fourth moment, so calibration paths use the simulator's explicit finite-variance opt-in, guarded
+    # by diagnostics a-i whose thresholds and actions are fixed here before any calibration.
+    "finite_variance_simulation": True,
+    # Criterion e: a non-finite, non-positive or non-minimal h*, or a failed bisection, stops the run; the
+    # overshoot |restricted ARL(h*)/500 - 1| > 1e-3 is a recorded warning (user decision, 27 Oct 2026, before
+    # any SPY calibration; 24/160 production calibrations exceeded it through ARL discreteness).
+    "diagnostics": {"burn_memory_max": 1e-3, "cal_censoring_max": 0.01, "bisection_rel_tol": 1e-3,
+                    "overshoot_action": "warn", "split_half_tol": 0.15, "val_rel_se_max": 0.04,
+                    "u_quantiles": [0.5, 0.99, 0.999]},
     "ic_validation": {"tol": 0.15, "rule": BASE["ic_validation"]["rule"],
                       "label": "eq. 29, applied to validation paths simulated from the fitted SPY GARCH-t"},
     "reference_dates": [

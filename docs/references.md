@@ -121,6 +121,21 @@
 - **May be claimed.** EWMA charts for monitoring the mean of autocorrelated processes have been studied (title level).
 - **Must not be claimed.** Any statement about residual-based versus observation-based charts, ARL values or recommendations.
 
+## Variance-targeting references (SPY post-stop refinement, 27 Oct 2026)
+
+These are **not in the Zotero library**, and their full texts **have not been reviewed**. The bibliographic details below were verified independently by the student on 27 Oct 2026 and located by web search (IDEAS/RePEc; MPRA). Status: **bibliographic only** (weaker than MD: no abstract was read through Zotero).
+
+**[11] Francq, C., Horváth, L., & Zakoïan, J.-M. (2011).** Merits and drawbacks of variance targeting in GARCH models. *Journal of Financial Econometrics*, 9(4), 619–656. https://doi.org/10.1093/jjfinec/nbr004
+
+- **Role.** The main theoretical reference for variance targeting in the SPY application.
+- **May be claimed.** Variance targeting reparameterizes the GARCH model so that the unconditional variance is set equal to a first-step sample estimate, with the remaining parameters estimated in a second step. The paper studies the method's statistical properties (title and bibliographic level; consistent with the publisher's and RePEc abstracts as seen in search results).
+- **Must not be claimed.** Any specific theorem, asymptotic condition (such as moment requirements), numerical result or recommendation, until the full text has been read.
+
+**[12] Engle, R. F., & Mezrich, J. (1996).** GARCH for groups. *Risk*, 9(8), 36–40.
+
+- **Role.** The conventional attribution of variance targeting, cited only as the origin of the term and method.
+- **Must not be claimed.** Any content of the article; it has not been seen.
+
 ## Library items not cited (for reference)
 
 - Montgomery, D. C., & Mastrangelo, C. M. (1991). Some statistical process control methods for autocorrelated data. *JQT*, 23(3), 179–193. https://doi.org/10.1080/00224065.1991.11979321. In the library (`JJZE5AS3`) but outside the collection, with no PDF (MD only).

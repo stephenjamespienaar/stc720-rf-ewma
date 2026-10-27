@@ -15,6 +15,7 @@ from src import application as app
 from src import chart, sim, spy
 from src import forecast as fc
 
+# Toy sizes; the diagnostics are exactly those of the real SPY configuration.
 SMALL = {**run.SPY, "rf_trees": 10, "rf_leaf": [50, 200], "rf_max_features": [1], "n_jobs": 2, "n_cal": 40,
          "n_val": 40, "t_max": 600, "target_arl": 50, "burn": 200}
 SYNTH = sim.Garch(0.05, 0.05, 0.90, 8.0)  # unit variance, m4 = 0.911: passes the strict gate
@@ -126,6 +127,7 @@ def test_post_2006_price_changes_leave_training_fits_and_limits_unchanged(runs):
     a, b = runs["a1"][1], runs["b"][1]
     assert a["data"]["train_mean"] == b["data"]["train_mean"]
     assert a["fit"] == b["fit"] and a["limits"] == b["limits"]          # bit-identical, incl. RF fingerprint and h*
+    assert a["diagnostics"] == b["diagnostics"]                          # and every calibration diagnostic
     assert a["monitor_csv_sha256"] != b["monitor_csv_sha256"]          # only monitoring changed
 
 
@@ -141,17 +143,171 @@ def test_calibration_validation_and_rf_streams_are_distinct_and_reproducible():
     assert len({tuple(v) for v in draws.values()}) == 3
 
 
-def test_fourth_moment_gate_stops_before_limits_and_monitoring(tmp_path, monkeypatch):
-    bad = sim.Garch(0.02, 0.10, 0.895, 5.0)                          # stationary (0.995), m4 > 1: fails the strict check
-    assert not sim.constraint_violations(bad, need_m4=False) and sim.constraint_violations(bad)
-    monkeypatch.setattr(fc, "fit_garch", lambda r: (bad, {"convergence_flag": 0, "persistence": 0.995}))
+def _stopped(tmp_path, monkeypatch, cfg, gp):
+    monkeypatch.setattr(fc, "fit_garch_vt", lambda r, s2: (gp, {"estimator": "variance_targeted", "convergence_flag": 0}))
+    monkeypatch.setattr(fc, "fit_garch", lambda r: (gp, {"convergence_flag": 0}))
     monkeypatch.setattr(app, "limits", lambda *a: pytest.fail("limits must not be calibrated"))
+    monkeypatch.setattr(app, "monitor_series", lambda *a: pytest.fail("monitoring returns must not be used"))
+    spy.write_snapshot(synth_frame(), tmp_path / "data" / "raw", {"source": "synthetic"})
+    assert run.run_spy(cfg, tmp_path / "out", tmp_path) == 3
+    assert not (tmp_path / "out" / "frozen.json").exists() and not (tmp_path / "out" / "monitor.csv").exists()
+    return json.loads((tmp_path / "out" / "results.json").read_text())
+
+
+def test_strict_mode_still_stops_at_fourth_moment_gate(tmp_path, monkeypatch):
+    bad = sim.Garch(0.02, 0.10, 0.895, 5.0)                          # stationary (0.995), m4 > 1
+    assert not sim.constraint_violations(bad, need_m4=False) and sim.constraint_violations(bad)
+    res = _stopped(tmp_path, monkeypatch, {**SMALL, "finite_variance_simulation": False}, bad)
+    assert res["status"] == "stopped_at_fourth_moment_gate" and res["fit"]["strict_simulator_check"]["violations"]
+
+
+@pytest.mark.parametrize("gp, stop", [(sim.Garch(0.02, 0.10, 0.92, 5.0), "a"),     # alpha + beta = 1.02
+                                      (sim.Garch(1e-5, 0.02, 0.9799, 6.0), "b")])  # 0.9999^200 > 1e-3
+def test_finite_variance_mode_stops_on_admissibility_and_burn_in(tmp_path, monkeypatch, gp, stop):
+    res = _stopped(tmp_path, monkeypatch, SMALL, gp)
+    assert res["status"] == f"stopped_at_diagnostic_{stop}"
+    failed = [c["id"] for c in res["diagnostics"]["checks"] if not c["passed"]]
+    assert failed[0] == stop                                       # all pre-limit checks recorded; first failure stops
+
+
+def test_numerical_failure_stops_before_monitoring(tmp_path, monkeypatch):
+    def boom(*a):
+        raise FloatingPointError("finite-variance simulation produced non-finite or non-positive values")
+    monkeypatch.setattr(app, "limits", boom)
     monkeypatch.setattr(app, "monitor_series", lambda *a: pytest.fail("monitoring returns must not be used"))
     spy.write_snapshot(synth_frame(), tmp_path / "data" / "raw", {"source": "synthetic"})
     assert run.run_spy(SMALL, tmp_path / "out", tmp_path) == 3
     res = json.loads((tmp_path / "out" / "results.json").read_text())
-    assert res["status"] == "stopped_at_fourth_moment_gate" and res["fit"]["strict_simulator_check"]["violations"]
-    assert not (tmp_path / "out" / "frozen.json").exists() and not (tmp_path / "out" / "monitor.csv").exists()
+    assert res["status"] == "stopped_at_diagnostic_c" and not (tmp_path / "out" / "frozen.json").exists()
+
+
+def test_strict_simulator_output_is_bit_identical_to_committed_code():
+    """Reference hash computed from src/sim.py at commit 7e2eaa1 (before the opt-in existed)."""
+    import hashlib
+    r, h = sim.simulate(sim.Garch(0.02, 0.07, 0.91, 6.0), 3, 200, np.random.default_rng(20261028), 100)
+    assert hashlib.sha256(r.tobytes() + h.tobytes()).hexdigest() == \
+        "465f466d860f75a28ed3644b23ec15a22a342b6266aa639b244761fafc5e9839"
+    r2, h2 = sim.simulate(sim.Garch(0.02, 0.07, 0.91, 6.0), 3, 200, np.random.default_rng(20261028), 100, need_m4=False)
+    assert np.array_equal(r, r2) and np.array_equal(h, h2)        # the opt-in changes only the admissibility check
+
+
+def test_finite_variance_option_accepts_infinite_fourth_moment_and_rejects_invalid_models():
+    b = sim.Garch(0.00513, 0.0593, 0.9363, 7.63)                 # model B (rounded): finite variance, m4 > 1
+    assert not sim.moments(b)["finite_fourth_moment"]
+    with pytest.raises(ValueError, match="m4"):
+        sim.simulate(b, 2, 50, np.random.default_rng(0))           # strict default refuses it
+    r, h = sim.simulate(b, 2, 500, np.random.default_rng(0), 2000, need_m4=False)
+    assert np.isfinite(r).all() and (h > 0).all()
+    for bad in (sim.Garch(0.02, 0.10, 0.90, 6.0), sim.Garch(0.02, 0.05, 0.90, 2.0), sim.Garch(0.0, 0.05, 0.90, 6.0),
+                sim.Garch(0.02, -0.01, 0.90, 6.0), sim.Garch(0.02, 0.05, -0.1, 6.0)):
+        for need in (True, False):
+            with pytest.raises(ValueError):
+                sim.simulate(bad, 1, 10, np.random.default_rng(0), need_m4=need)
+
+
+def test_finite_variance_option_refuses_non_finite_simulations():
+    with np.errstate(over="ignore", invalid="ignore"):
+        with pytest.raises(FloatingPointError):
+            sim.simulate(sim.Garch(1e306, 0.30, 0.65, 2.5), 50, 400, np.random.default_rng(1), 10, need_m4=False)
+
+
+def test_standardized_t_innovations_have_unit_variance():
+    nu = 7.63
+    e = sim.std_t(np.random.default_rng(3), nu, 2_000_000)
+    assert np.array_equal(e, np.random.default_rng(3).standard_t(nu, 2_000_000) * np.sqrt((nu - 2) / nu))
+    assert e.var() == pytest.approx(1.0, rel=0.01) and sim.Garch(0.1, 0.05, 0.9, nu).kappa == pytest.approx(
+        3 * (nu - 2) / (nu - 4))
+
+
+def test_calibration_and_validation_draw_from_their_own_streams(monkeypatch):
+    tr, _, _ = app.returns(synth_frame()["Close"], SMALL)
+    g = app.streams(SMALL)
+    f = app.fit(tr, SMALL, 3)
+    seen, real = [], sim.simulate
+    monkeypatch.setattr(sim, "simulate", lambda p, n, m, rng, burn, need_m4: seen.append(rng) or real(p, n, m, rng, burn,
+                                                                                                    need_m4=need_m4))
+    app.limits(f, SMALL, g)
+    assert seen == [g["cal"], g["val"]] and seen[0] is not seen[1]
+
+
+def test_restricted_run_length_convention():
+    z = np.array([[0.1, 0.2, 2.0, 0.1, 0.1], [0.1, 0.1, 0.1, 0.1, 0.1], [0.1, 0.1, 0.1, 0.1, 2.0]])
+    t, cens = chart.first_alarm(z, 1.0)
+    assert t.tolist() == [3, 5, 5] and cens.tolist() == [False, True, False]   # censored path counts t_max = 5
+    h, arl = chart.calibrate(np.random.default_rng(0).gamma(2.0, 0.5, (300, 400)).cumsum(axis=1) / np.arange(1, 401), 50)
+    assert arl >= 50
+
+
+def _diag_inputs(**over):
+    c = {"h": 2.0, "arl_cal": 500.2, "restricted_mean_check": 500.2, "censored_cal": 0.0, "overshoot_rel": 0.0004,
+         "arl_just_below_h": 499.9, "split_half_arl": [490.0, 510.0]} | over
+    v = {"ci95": [470.0, 530.0], "accept": [425.0, 575.0], "passed": True, "rel_se": 0.02}
+    return {"0.1": {"rf": c}}, {"0.1": {"rf": v}}, {"cal_max_h": 50.0, "val_max_h": 60.0, "cal_max_u": {"rf": 30.0}}
+
+
+@pytest.mark.parametrize("over, num, stop", [
+    ({"censored_cal": 0.01}, None, None),                            # at the threshold: passes (<= 0.01)
+    ({"censored_cal": 0.0100001}, None, "d"),                       # full precision: just above stops
+    ({"overshoot_rel": 0.0011, "arl_cal": 500.55, "restricted_mean_check": 500.55}, None, None),  # warning only
+    ({"arl_just_below_h": 500.0}, None, "e"),                       # h* not minimal: hard stop
+    ({"h": float("nan")}, None, "e"),                               # non-finite limit: hard stop
+    ({"h": 0.0}, None, "e"),                                        # non-positive limit: hard stop
+    ({"h": -1.0}, None, "e"),
+    ({"restricted_mean_check": 500.3}, None, "e"),                  # inconsistent restricted-mean computation
+    ({"split_half_arl": [400.0, 600.0]}, None, None),               # split-half: warning only
+    ({"split_half_arl": [425.0, 575.0]}, None, None),               # exact inclusive bounds pass
+    ({}, {"cal_max_h": float("inf")}, "c"),
+])
+def test_diagnostic_thresholds_and_actions(over, num, stop):
+    cal, val, n = _diag_inputs(**over)
+    checks, got = app.diagnose(cal, val, n | (num or {}), run.SPY)
+    assert got == stop
+    if over.get("split_half_arl") == [400.0, 600.0]:
+        assert [c["id"] for c in checks if not c["passed"]] == ["f"] and checks[-1]["action"] == "warn"
+    if over.get("split_half_arl") == [425.0, 575.0]:
+        assert all(c["passed"] for c in checks)
+
+
+def test_overshoot_is_a_recorded_warning_with_exact_values():
+    cal, val, n = _diag_inputs(overshoot_rel=0.0016, arl_cal=500.8, restricted_mean_check=500.8)
+    checks, stop = app.diagnose(cal, val, n, run.SPY)
+    assert stop is None and run.SPY["diagnostics"]["overshoot_action"] == "warn"
+    o = next(c for c in checks if c["id"] == "e_overshoot")
+    assert not o["passed"] and o["action"] == "warn" and o["threshold"] == "<= 0.001"
+    assert o["value"] == {"overshoot_rel": 0.0016, "achieved_restricted_arl": 500.8, "target_deviation": 500.8 - 500}
+    assert next(c for c in checks if c["id"] == "e")["passed"]          # the hard part of e still passes
+
+
+def test_bisection_failure_is_a_hard_stop(tmp_path, monkeypatch):
+    monkeypatch.setattr(chart, "calibrate", lambda z, t: (_ for _ in ()).throw(ValueError("no bracket")))
+    monkeypatch.setattr(app, "monitor_series", lambda *a: pytest.fail("monitoring returns must not be used"))
+    spy.write_snapshot(synth_frame(), tmp_path / "data" / "raw", {"source": "synthetic"})
+    assert run.run_spy(SMALL, tmp_path / "out", tmp_path) == 3
+    res = json.loads((tmp_path / "out" / "results.json").read_text())
+    assert res["status"] == "stopped_at_diagnostic_e" and "no bracket" in res["diagnostics"]["checks"][-1]["value"]
+    assert not (tmp_path / "out" / "frozen.json").exists()
+
+
+def test_results_preserve_overshoot_and_diagnostic_status(runs):
+    res = runs["a1"][1]
+    for lam, row in res["limits"]["calibration"].items():
+        for k, c in row.items():
+            assert c["overshoot_rel"] == c["arl_cal"] / SMALL["target_arl"] - 1
+            assert c["target_deviation"] == c["arl_cal"] - SMALL["target_arl"] and c["arl_cal"] == c["restricted_mean_check"]
+    ov = [c for c in res["diagnostics"]["checks"] if c["id"] == "e_overshoot"]
+    assert len(ov) == 6 and all(set(c["value"]) == {"overshoot_rel", "achieved_restricted_arl", "target_deviation"} for c in ov)
+    assert all(c["passed"] for c in res["diagnostics"]["checks"] if c["id"] == "e")       # hard part holds
+    assert res["diagnostics"]["criteria"] == run.SPY["diagnostics"]
+
+
+def test_warnings_never_trigger_recalibration(tmp_path, monkeypatch):
+    calls, real = [], chart.calibrate
+    monkeypatch.setattr(chart, "calibrate", lambda z, t: calls.append(1) or real(z, t))
+    spy.write_snapshot(synth_frame(), tmp_path / "data" / "raw", {"source": "synthetic"})
+    assert run.run_spy(SMALL, tmp_path / "out", tmp_path) == 0
+    res = json.loads((tmp_path / "out" / "results.json").read_text())
+    assert res["status"] == "complete" and res["diagnostics"]["warnings"]        # toy sizes produce warnings
+    assert len(calls) == len(SMALL["lams"]) * len(app.CHARTS)                    # each limit calibrated exactly once
 
 
 def test_production_simulator_defaults_are_unchanged():
@@ -256,3 +412,103 @@ def test_spy_mode_is_guarded(tmp_path, monkeypatch):
     p = subprocess.run(["bash", str(root / "scripts" / "run_simulation.sh"), "spy"], capture_output=True, text=True,
                        timeout=60)
     assert p.returncode == 2 and "--approved" in p.stderr and set(runs_dir.iterdir()) == before
+
+
+# --- variance-targeted GARCH-t (post-stop refinement, 27 Oct 2026) ------------------------------
+
+def vt_path(p, n, seed):
+    return sim.simulate(p, 1, n, np.random.default_rng(seed), 1000)[0][0]
+
+
+def test_vt_likelihood_equals_standardized_t_density():
+    from scipy import stats
+    r = vt_path(SYNTH, 400, 3)
+    om, a, b, nu, h1 = 0.04, 0.06, 0.90, 6.5, 1.1
+    nll, h = fc.garch_t_nll(r, om, a, b, nu, h1)
+    hh, ll = h1, 0.0
+    for t, x in enumerate(r):                      # explicit loop and SciPy's t density, independent of lfilter
+        if t:
+            hh = om + a * r[t - 1] ** 2 + b * hh
+        sc = np.sqrt(hh * (nu - 2) / nu)           # unit-variance t: eta = sqrt((nu-2)/nu) T (sim.std_t)
+        ll += stats.t.logpdf(x / sc, nu) - np.log(sc)
+        assert h[t] == pytest.approx(hh, rel=1e-12)
+    assert nll == pytest.approx(-ll, rel=1e-10)
+
+
+def test_vt_identity_admissibility_and_recovery():
+    true = sim.Garch(0.02, 0.07, 0.91, 6.0)        # the production DGP
+    r = vt_path(true, 20000, 11)
+    p, info = fc.fit_garch_vt(r)
+    s2 = float(np.mean(r**2))
+    assert p.omega == pytest.approx(s2 * (1 - p.alpha - p.beta), rel=1e-14) and p.var == pytest.approx(s2, rel=1e-12)
+    assert p.alpha >= 0 and p.beta >= 0 and p.alpha + p.beta < 1 and p.nu > 2
+    assert abs(p.alpha - 0.07) < 0.02 and abs(p.beta - 0.91) < 0.03 and abs(p.nu - 6) < 1.5
+    assert info["convergence_flag"] == 0 and info["n_at_best"] >= info["n_starts"] // 2   # optima agree across starts
+    assert info["max_param_spread_at_best"] < 1e-3 and info["estimator"] == "variance_targeted"
+
+
+def raw_garch_t(p, n, seed, burn=3000):
+    """Test-only GARCH-t path without the production simulator's strict fourth-moment check."""
+    eta = sim.std_t(np.random.default_rng(seed), p.nu, burn + n)
+    r, h = np.empty(burn + n), p.var
+    for t in range(burn + n):
+        r[t] = np.sqrt(h) * eta[t]
+        h = p.omega + p.alpha * r[t] ** 2 + p.beta * h
+    return r[burn:]
+
+
+def test_vt_admissible_for_near_integrated_data_with_infinite_fourth_moment():
+    true = sim.Garch(0.002, 0.06, 0.938, 7.0)                       # persistence 0.998, m4 = 1.010
+    assert not sim.moments(true)["finite_fourth_moment"]
+    r = raw_garch_t(true, 4000, 6)
+    p, info = fc.fit_garch_vt(r)
+    assert p.alpha >= 0 and p.beta >= 0 and p.alpha + p.beta < 1 and p.nu > 2 and info["convergence_flag"] == 0
+    assert p.var == pytest.approx(np.mean(r**2), rel=1e-12)
+
+
+def test_vt_refuses_unidentified_data_explicitly():
+    """iid normal returns: alpha -> 0 leaves beta unidentified and nu -> infinity; the estimator must
+    fail loudly, never return a clipped or silently doubtful fit."""
+    with pytest.raises(RuntimeError, match="unusable"):
+        fc.fit_garch_vt(np.random.default_rng(5).normal(0, 1.2, 4000))
+
+
+def test_vt_fit_is_deterministic():
+    r = vt_path(SYNTH, 3000, 8)
+    assert fc.fit_garch_vt(r) == fc.fit_garch_vt(r)
+
+
+def test_moment_conditions_distinguish_second_and_fourth():
+    spy_like = sim.Garch(0.00457, 0.0599, 0.9377, 7.35)        # the stopped run's unrestricted SPY fit (rounded)
+    m = sim.moments(spy_like)
+    assert m["finite_variance"] and not m["finite_fourth_moment"] and not m["strict_gate"] and m["m4"] > 1
+    assert 250 < m["half_life_days"] < 330
+    d = sim.moments(sim.Garch(**run.DGP))
+    assert d["finite_variance"] and d["finite_fourth_moment"] and d["strict_gate"]
+    t = sim.moments(sim.Garch(0.02, 0.05, 0.90, 3.5))          # finite variance, kappa infinite
+    assert t["finite_variance"] and not t["finite_fourth_moment"] and t["kappa"] == np.inf
+    assert not sim.moments(sim.Garch(0.02, 0.10, 0.90, 6.0))["finite_variance"]
+
+
+def test_estimator_selected_only_by_spy_config(monkeypatch):
+    assert run.SPY["garch_estimator"] == "variance_targeted"
+    assert all("garch_estimator" not in run.CONFIGS[m] for m in ("smoke", "pilot", "production", "sensitivity_arl100",
+                                                                  "benchmark"))
+    tr, _, _ = app.returns(synth_frame()["Close"], SMALL)
+    used = []
+    monkeypatch.setattr(fc, "fit_garch_vt", lambda r, s2: used.append("vt") or (SYNTH, {"estimator": "variance_targeted"}))
+    monkeypatch.setattr(fc, "fit_garch", lambda r: used.append("mle") or (SYNTH, {}))
+    monkeypatch.setattr(fc, "fit_rf", lambda *a, **k: pytest.skip("estimator choice checked before the forest"))
+    cfg = {k: v for k, v in SMALL.items() if k != "garch_estimator"}
+    with pytest.raises(pytest.skip.Exception):
+        app.fit(tr, cfg, 1)                                     # default: unrestricted ML
+    with pytest.raises(pytest.skip.Exception):
+        app.fit(tr, SMALL, 1)                                   # SPY config: variance-targeted
+    assert used == ["mle", "vt"]
+
+
+def test_spy_pipeline_uses_targeted_fit_trained_on_pre_2007_only(runs):
+    a, b = runs["a1"][1], runs["b"][1]
+    g = a["fit"]["garch"]
+    assert g["estimator"] == "variance_targeted" and g["unconditional_var"] == pytest.approx(a["fit"]["s2"], rel=1e-12)
+    assert a["fit"] == b["fit"]                                  # post-2006 changes leave the targeted fit unchanged

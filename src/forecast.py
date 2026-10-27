@@ -8,6 +8,9 @@ from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 from arch import arch_model
+from scipy.optimize import minimize
+from scipy.signal import lfilter
+from scipy.special import expit, gammaln, logit
 from sklearn.ensemble import RandomForestRegressor
 
 from .sim import Garch, constraint_violations
@@ -45,6 +48,63 @@ def fit_garch(r):
     v = constraint_violations(p, need_m4=False)
     if v or info["convergence_flag"] != 0:
         raise RuntimeError(f"GARCH fit unusable: violations={v}, info={info}")
+    return p, info
+
+
+def garch_t_nll(r, omega, alpha, beta, nu, h1):
+    """Negative log-likelihood of the zero-mean GARCH(1,1) with standardized Student-t
+    innovations of eqs. 2-4 (unit variance, as in sim.std_t), with h_1 = h1 and
+    h_t = omega + alpha r_{t-1}^2 + beta h_{t-1}. Returns (nll, h)."""
+    r2 = np.asarray(r, dtype=float) ** 2
+    h = np.empty_like(r2)
+    h[0] = h1
+    h[1:] = lfilter([1.0], [1.0, -beta], omega + alpha * r2[:-1], zi=[beta * h1])[0]
+    c = gammaln((nu + 1) / 2) - gammaln(nu / 2) - 0.5 * np.log(np.pi * (nu - 2))
+    return -float(np.sum(c - 0.5 * np.log(h) - (nu + 1) / 2 * np.log1p(r2 / (h * (nu - 2))))), h
+
+
+VT_STARTS = [(pers, share, nu) for pers in (0.90, 0.97, 0.995) for share in (0.05, 0.12) for nu in (5.0, 10.0)]
+
+
+def fit_garch_vt(r, s2=None):
+    """Variance-targeted GARCH(1,1)-t (post-stop refinement for the SPY application,
+    methodology §11): omega = s2 (1 - alpha - beta), with s2 = mean r^2 of the demeaned
+    training returns, so the unconditional variance equals s2. alpha, beta and nu are
+    estimated by maximum likelihood with h_1 = s2. `arch` cannot tie omega to (alpha, beta),
+    hence this small likelihood (garch_t_nll). Parameterization: persistence = expit(x0),
+    alpha = persistence * expit(x1), beta = persistence - alpha, nu = 2 + exp(x2), so
+    alpha, beta >= 0, alpha + beta < 1 and nu > 2 hold by construction; nothing is clipped
+    and no fourth-moment bound is imposed. BFGS from the fixed starts VT_STARTS; the best
+    optimum is kept and the agreement of the others recorded."""
+    r = np.asarray(r, dtype=float)
+    s2 = float(np.mean(r**2)) if s2 is None else float(s2)
+
+    def unpack(x):
+        pers = expit(x[0])
+        a = pers * expit(x[1])
+        return a, pers - a, 2.0 + np.exp(x[2])
+
+    def nll(x):  # mean per observation, so the gradient tolerance does not scale with n
+        a, b, nu = unpack(x)
+        return garch_t_nll(r, s2 * (1 - a - b), a, b, nu, s2)[0] / len(r)
+
+    runs = [minimize(nll, [logit(p0), logit(sh), np.log(nu0 - 2)], method="BFGS", options={"gtol": 1e-6, "maxiter": 2000})
+            for p0, sh, nu0 in VT_STARTS]
+    best = min(runs, key=lambda o: o.fun)
+    a, b, nu = (float(v) for v in unpack(best.x))
+    p = Garch(s2 * (1 - a - b), a, b, nu)
+    near = [o for o in runs if (o.fun - best.fun) * len(r) < 1e-4]
+    info = {"estimator": "variance_targeted", "s2_target": s2, "loglik": -float(best.fun) * len(r),
+            "convergence_flag": 0 if best.success else 1, "message": str(best.message), "nit": int(best.nit),
+            "grad_norm": float(np.linalg.norm(best.jac)), "n_starts": len(runs),
+            "n_converged": int(sum(o.success for o in runs)), "n_at_best": len(near),
+            "max_param_spread_at_best": float(np.max(np.ptp([unpack(o.x) for o in near], axis=0))),
+            "objective_range_converged": float(np.ptp([o.fun for o in runs if o.success]) * len(r))
+            if any(o.success for o in runs) else None,
+            "persistence": a + b, "m4": float(p.m4), "near_boundary": bool(a + b >= 0.995 or a < 1e-4)}
+    v = constraint_violations(p, need_m4=False)
+    if v or not best.success:
+        raise RuntimeError(f"variance-targeted GARCH fit unusable: violations={v}, info={info}")
     return p, info
 
 
