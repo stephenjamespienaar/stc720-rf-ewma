@@ -1,0 +1,743 @@
+{
+ "verdict": "PASS",
+ "label": "supplementary, post hoc (decided 27 Oct 2026 after the primary production results were seen); not a pre-registered adjustment",
+ "inferential_target": "the mean paired contrast across independently generated and fitted monitoring systems under the specified simulation design (GARCH(1,1)-t DGP, ARL0 = 500, lambda = 0.1, H = 500, survivors E_a \u2229 E_b); not consistent superiority in every fitted system, nor superiority in real markets",
+ "family": [
+  "1.5/0.1/rf - garch/dH",
+  "2.0/0.1/rf - garch/dH",
+  "3.0/0.1/rf - garch/dH",
+  "1.5/0.1/rf - garch/x_20",
+  "2.0/0.1/rf - garch/x_20",
+  "3.0/0.1/rf - garch/x_20",
+  "1.5/0.1/rf - conventional/dH",
+  "2.0/0.1/rf - conventional/dH",
+  "3.0/0.1/rf - conventional/dH",
+  "1.5/0.1/rf - conventional/x_20",
+  "2.0/0.1/rf - conventional/x_20",
+  "3.0/0.1/rf - conventional/x_20"
+ ],
+ "alpha": 0.05,
+ "test": "two-sided one-sample t, df 19",
+ "adjustment": "Holm step-down (valid under arbitrary dependence)",
+ "robustness": "exact two-sided sign test, Holm-adjusted; tests the balance of positive and negative replicate effects, a different null from the mean-zero t-test",
+ "n_reject_t": 6,
+ "n_reject_sign": 6,
+ "rows": [
+  {
+   "contrast": "1.5/0.1/rf - garch/dH",
+   "mean": -6.05312145763863,
+   "sd_between": 9.446149729237408,
+   "se": 2.1122232920216075,
+   "t": -2.8657583128179556,
+   "df": 19,
+   "p": 0.009894886866629189,
+   "ci95": [
+    -10.47405561612136,
+    -1.6321872991559
+   ],
+   "n_pos": 6,
+   "n_neg": 14,
+   "sign_p": 0.11531829833984375,
+   "paired_n_range": [
+    1734,
+    1793
+   ],
+   "in_family": true,
+   "holm_rank": 8,
+   "p_holm": 0.053269536812497534,
+   "reject_fwer_0.05": false,
+   "sign_p_holm": 0.5765914916992188,
+   "sign_reject_fwer_0.05": false
+  },
+  {
+   "contrast": "2.0/0.1/rf - garch/dH",
+   "mean": -9.942855101225271,
+   "sd_between": 15.253421522886907,
+   "se": 3.4107687414633485,
+   "t": -2.9151361041732224,
+   "df": 19,
+   "p": 0.008878256135416256,
+   "ci95": [
+    -17.081676121132013,
+    -2.8040340813185294
+   ],
+   "n_pos": 5,
+   "n_neg": 15,
+   "sign_p": 0.04138946533203125,
+   "paired_n_range": [
+    1734,
+    1793
+   ],
+   "in_family": true,
+   "holm_rank": 7,
+   "p_holm": 0.053269536812497534,
+   "reject_fwer_0.05": false,
+   "sign_p_holm": 0.2483367919921875,
+   "sign_reject_fwer_0.05": false
+  },
+  {
+   "contrast": "3.0/0.1/rf - garch/dH",
+   "mean": -13.13323870116037,
+   "sd_between": 20.815218922149356,
+   "se": 4.654424447646586,
+   "t": -2.8216676087203267,
+   "df": 19,
+   "p": 0.010896487108313415,
+   "ci95": [
+    -22.875061029510782,
+    -3.3914163728099584
+   ],
+   "n_pos": 6,
+   "n_neg": 14,
+   "sign_p": 0.11531829833984375,
+   "paired_n_range": [
+    1734,
+    1793
+   ],
+   "in_family": true,
+   "holm_rank": 9,
+   "p_holm": 0.053269536812497534,
+   "reject_fwer_0.05": false,
+   "sign_p_holm": 0.5765914916992188,
+   "sign_reject_fwer_0.05": false
+  },
+  {
+   "contrast": "1.5/0.1/rf - garch/x_20",
+   "mean": 0.0008873821070793991,
+   "sd_between": 0.006334757344979799,
+   "se": 0.0014164948044340915,
+   "t": 0.62646336880418,
+   "df": 19,
+   "p": 0.5384656947341081,
+   "ci95": [
+    -0.0020773755915455476,
+    0.0038521398057043458
+   ],
+   "n_pos": 10,
+   "n_neg": 10,
+   "sign_p": 1.0,
+   "paired_n_range": [
+    1734,
+    1793
+   ],
+   "in_family": true,
+   "holm_rank": 11,
+   "p_holm": 1.0,
+   "reject_fwer_0.05": false,
+   "sign_p_holm": 1.0,
+   "sign_reject_fwer_0.05": false
+  },
+  {
+   "contrast": "2.0/0.1/rf - garch/x_20",
+   "mean": 0.0013223240231508497,
+   "sd_between": 0.008616544873677556,
+   "se": 0.0019267180068720353,
+   "t": 0.6863090594651161,
+   "df": 19,
+   "p": 0.5008086166916189,
+   "ci95": [
+    -0.002710343111293953,
+    0.005354991157595653
+   ],
+   "n_pos": 12,
+   "n_neg": 8,
+   "sign_p": 0.5034446716308594,
+   "paired_n_range": [
+    1734,
+    1793
+   ],
+   "in_family": true,
+   "holm_rank": 10,
+   "p_holm": 1.0,
+   "reject_fwer_0.05": false,
+   "sign_p_holm": 1.0,
+   "sign_reject_fwer_0.05": false
+  },
+  {
+   "contrast": "3.0/0.1/rf - garch/x_20",
+   "mean": -0.000542828615298985,
+   "sd_between": 0.018536415297299443,
+   "se": 0.004144868466392853,
+   "t": -0.13096401482949627,
+   "df": 19,
+   "p": 0.897180525027807,
+   "ci95": [
+    -0.009218138017817703,
+    0.008132480787219731
+   ],
+   "n_pos": 13,
+   "n_neg": 7,
+   "sign_p": 0.26317596435546875,
+   "paired_n_range": [
+    1734,
+    1793
+   ],
+   "in_family": true,
+   "holm_rank": 12,
+   "p_holm": 1.0,
+   "reject_fwer_0.05": false,
+   "sign_p_holm": 0.7895278930664062,
+   "sign_reject_fwer_0.05": false
+  },
+  {
+   "contrast": "1.5/0.1/rf - conventional/dH",
+   "mean": 37.53825400899761,
+   "sd_between": 9.778866472464852,
+   "se": 2.1866210175324983,
+   "t": 17.16724284090062,
+   "df": 19,
+   "p": 5.013926981347021e-13,
+   "ci95": [
+    32.96160362142732,
+    42.1149043965679
+   ],
+   "n_pos": 20,
+   "n_neg": 0,
+   "sign_p": 1.9073486328125e-06,
+   "paired_n_range": [
+    1645,
+    1717
+   ],
+   "in_family": true,
+   "holm_rank": 1,
+   "p_holm": 6.016712377616424e-12,
+   "reject_fwer_0.05": true,
+   "sign_p_holm": 2.288818359375e-05,
+   "sign_reject_fwer_0.05": true
+  },
+  {
+   "contrast": "2.0/0.1/rf - conventional/dH",
+   "mean": 60.402156465448115,
+   "sd_between": 15.898594236695017,
+   "se": 3.5550337459936436,
+   "t": 16.990600028345305,
+   "df": 19,
+   "p": 6.033240829310627e-13,
+   "ci95": [
+    52.96138532085014,
+    67.84292761004609
+   ],
+   "n_pos": 20,
+   "n_neg": 0,
+   "sign_p": 1.9073486328125e-06,
+   "paired_n_range": [
+    1645,
+    1717
+   ],
+   "in_family": true,
+   "holm_rank": 2,
+   "p_holm": 6.636564912241689e-12,
+   "reject_fwer_0.05": true,
+   "sign_p_holm": 2.288818359375e-05,
+   "sign_reject_fwer_0.05": true
+  },
+  {
+   "contrast": "3.0/0.1/rf - conventional/dH",
+   "mean": 63.628658291159034,
+   "sd_between": 22.69879906997536,
+   "se": 5.075605772807391,
+   "t": 12.536170289672656,
+   "df": 19,
+   "p": 1.2339845243780886e-10,
+   "ci95": [
+    53.00529331797949,
+    74.25202326433858
+   ],
+   "n_pos": 20,
+   "n_neg": 0,
+   "sign_p": 1.9073486328125e-06,
+   "paired_n_range": [
+    1645,
+    1717
+   ],
+   "in_family": true,
+   "holm_rank": 5,
+   "p_holm": 9.871876195024708e-10,
+   "reject_fwer_0.05": true,
+   "sign_p_holm": 2.288818359375e-05,
+   "sign_reject_fwer_0.05": true
+  },
+  {
+   "contrast": "1.5/0.1/rf - conventional/x_20",
+   "mean": -0.008087818020811214,
+   "sd_between": 0.006213016201232379,
+   "se": 0.001389272657126311,
+   "t": -5.821620384828375,
+   "df": 19,
+   "p": 1.3138464435510195e-05,
+   "ci95": [
+    -0.01099559911030833,
+    -0.005180036931314098
+   ],
+   "n_pos": 1,
+   "n_neg": 18,
+   "sign_p": 7.62939453125e-05,
+   "paired_n_range": [
+    1645,
+    1717
+   ],
+   "in_family": true,
+   "holm_rank": 6,
+   "p_holm": 9.196925104857136e-05,
+   "reject_fwer_0.05": true,
+   "sign_p_holm": 0.0005340576171875,
+   "sign_reject_fwer_0.05": true
+  },
+  {
+   "contrast": "2.0/0.1/rf - conventional/x_20",
+   "mean": -0.025132668401639146,
+   "sd_between": 0.008365623744076841,
+   "se": 0.001870610336594212,
+   "t": -13.435544490467086,
+   "df": 19,
+   "p": 3.757033509068428e-11,
+   "ci95": [
+    -0.029047900832555654,
+    -0.021217435970722637
+   ],
+   "n_pos": 0,
+   "n_neg": 20,
+   "sign_p": 1.9073486328125e-06,
+   "paired_n_range": [
+    1645,
+    1717
+   ],
+   "in_family": true,
+   "holm_rank": 4,
+   "p_holm": 3.381330158161585e-10,
+   "reject_fwer_0.05": true,
+   "sign_p_holm": 2.288818359375e-05,
+   "sign_reject_fwer_0.05": true
+  },
+  {
+   "contrast": "3.0/0.1/rf - conventional/x_20",
+   "mean": -0.06083528650347595,
+   "sd_between": 0.018102882686650335,
+   "se": 0.004047927627605417,
+   "t": -15.02874855978182,
+   "df": 19,
+   "p": 5.3217016721152666e-12,
+   "ci95": [
+    -0.06930769639855805,
+    -0.05236287660839385
+   ],
+   "n_pos": 0,
+   "n_neg": 20,
+   "sign_p": 1.9073486328125e-06,
+   "paired_n_range": [
+    1645,
+    1717
+   ],
+   "in_family": true,
+   "holm_rank": 3,
+   "p_holm": 5.321701672115267e-11,
+   "reject_fwer_0.05": true,
+   "sign_p_holm": 2.288818359375e-05,
+   "sign_reject_fwer_0.05": true
+  },
+  {
+   "contrast": "1.0/0.1/rf - garch/dH",
+   "mean": 0.2735781644535002,
+   "sd_between": 3.238929236735121,
+   "se": 0.7242465947651239,
+   "t": 0.3777417338665192,
+   "df": 19,
+   "p": 0.7098092489056779,
+   "ci95": [
+    -1.2422873797132108,
+    1.7894437086202113
+   ],
+   "n_pos": 9,
+   "n_neg": 11,
+   "sign_p": 0.8238029479980469,
+   "paired_n_range": [
+    1734,
+    1793
+   ],
+   "in_family": false
+  },
+  {
+   "contrast": "1.0/0.1/rf - conventional/dH",
+   "mean": -3.8005103105519202,
+   "sd_between": 5.835638487754892,
+   "se": 1.3048884350734011,
+   "t": -2.9125174293832545,
+   "df": 19,
+   "p": 0.008929546754739984,
+   "ci95": [
+    -6.531673193479763,
+    -1.069347427624077
+   ],
+   "n_pos": 5,
+   "n_neg": 15,
+   "sign_p": 0.04138946533203125,
+   "paired_n_range": [
+    1645,
+    1717
+   ],
+   "in_family": false
+  }
+ ],
+ "checks": [
+  {
+   "check": "results.json SHA-256 equals the frozen, audited file",
+   "ok": true
+  },
+  {
+   "check": "P1 verdict PASS",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - garch/dH: R = 20 finite replicate values",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - garch/dH: stored mean and CI equal the P1-audited values exactly",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - garch/dH: t and p equal scipy.stats.ttest_1samp",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - garch/dH: recomputed mean, s_b and t_19 CI equal the stored values (1e-10)",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - garch/dH: CI-test duality (0 outside the 95% CI iff p < 0.05)",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - garch/dH: sign counts and exact sign p equal the stored values",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - garch/dH: R = 20 finite replicate values",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - garch/dH: stored mean and CI equal the P1-audited values exactly",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - garch/dH: t and p equal scipy.stats.ttest_1samp",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - garch/dH: recomputed mean, s_b and t_19 CI equal the stored values (1e-10)",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - garch/dH: CI-test duality (0 outside the 95% CI iff p < 0.05)",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - garch/dH: sign counts and exact sign p equal the stored values",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - garch/dH: R = 20 finite replicate values",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - garch/dH: stored mean and CI equal the P1-audited values exactly",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - garch/dH: t and p equal scipy.stats.ttest_1samp",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - garch/dH: recomputed mean, s_b and t_19 CI equal the stored values (1e-10)",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - garch/dH: CI-test duality (0 outside the 95% CI iff p < 0.05)",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - garch/dH: sign counts and exact sign p equal the stored values",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - garch/x_20: R = 20 finite replicate values",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - garch/x_20: stored mean and CI equal the P1-audited values exactly",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - garch/x_20: t and p equal scipy.stats.ttest_1samp",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - garch/x_20: recomputed mean, s_b and t_19 CI equal the stored values (1e-10)",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - garch/x_20: CI-test duality (0 outside the 95% CI iff p < 0.05)",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - garch/x_20: sign counts and exact sign p equal the stored values",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - garch/x_20: R = 20 finite replicate values",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - garch/x_20: stored mean and CI equal the P1-audited values exactly",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - garch/x_20: t and p equal scipy.stats.ttest_1samp",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - garch/x_20: recomputed mean, s_b and t_19 CI equal the stored values (1e-10)",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - garch/x_20: CI-test duality (0 outside the 95% CI iff p < 0.05)",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - garch/x_20: sign counts and exact sign p equal the stored values",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - garch/x_20: R = 20 finite replicate values",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - garch/x_20: stored mean and CI equal the P1-audited values exactly",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - garch/x_20: t and p equal scipy.stats.ttest_1samp",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - garch/x_20: recomputed mean, s_b and t_19 CI equal the stored values (1e-10)",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - garch/x_20: CI-test duality (0 outside the 95% CI iff p < 0.05)",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - garch/x_20: sign counts and exact sign p equal the stored values",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - conventional/dH: R = 20 finite replicate values",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - conventional/dH: stored mean and CI equal the P1-audited values exactly",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - conventional/dH: t and p equal scipy.stats.ttest_1samp",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - conventional/dH: recomputed mean, s_b and t_19 CI equal the stored values (1e-10)",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - conventional/dH: CI-test duality (0 outside the 95% CI iff p < 0.05)",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - conventional/dH: sign counts and exact sign p equal the stored values",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - conventional/dH: R = 20 finite replicate values",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - conventional/dH: stored mean and CI equal the P1-audited values exactly",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - conventional/dH: t and p equal scipy.stats.ttest_1samp",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - conventional/dH: recomputed mean, s_b and t_19 CI equal the stored values (1e-10)",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - conventional/dH: CI-test duality (0 outside the 95% CI iff p < 0.05)",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - conventional/dH: sign counts and exact sign p equal the stored values",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - conventional/dH: R = 20 finite replicate values",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - conventional/dH: stored mean and CI equal the P1-audited values exactly",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - conventional/dH: t and p equal scipy.stats.ttest_1samp",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - conventional/dH: recomputed mean, s_b and t_19 CI equal the stored values (1e-10)",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - conventional/dH: CI-test duality (0 outside the 95% CI iff p < 0.05)",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - conventional/dH: sign counts and exact sign p equal the stored values",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - conventional/x_20: R = 20 finite replicate values",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - conventional/x_20: stored mean and CI equal the P1-audited values exactly",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - conventional/x_20: t and p equal scipy.stats.ttest_1samp",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - conventional/x_20: recomputed mean, s_b and t_19 CI equal the stored values (1e-10)",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - conventional/x_20: CI-test duality (0 outside the 95% CI iff p < 0.05)",
+   "ok": true
+  },
+  {
+   "check": "1.5/0.1/rf - conventional/x_20: sign counts and exact sign p equal the stored values",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - conventional/x_20: R = 20 finite replicate values",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - conventional/x_20: stored mean and CI equal the P1-audited values exactly",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - conventional/x_20: t and p equal scipy.stats.ttest_1samp",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - conventional/x_20: recomputed mean, s_b and t_19 CI equal the stored values (1e-10)",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - conventional/x_20: CI-test duality (0 outside the 95% CI iff p < 0.05)",
+   "ok": true
+  },
+  {
+   "check": "2.0/0.1/rf - conventional/x_20: sign counts and exact sign p equal the stored values",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - conventional/x_20: R = 20 finite replicate values",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - conventional/x_20: stored mean and CI equal the P1-audited values exactly",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - conventional/x_20: t and p equal scipy.stats.ttest_1samp",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - conventional/x_20: recomputed mean, s_b and t_19 CI equal the stored values (1e-10)",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - conventional/x_20: CI-test duality (0 outside the 95% CI iff p < 0.05)",
+   "ok": true
+  },
+  {
+   "check": "3.0/0.1/rf - conventional/x_20: sign counts and exact sign p equal the stored values",
+   "ok": true
+  },
+  {
+   "check": "1.0/0.1/rf - garch/dH: R = 20 finite replicate values",
+   "ok": true
+  },
+  {
+   "check": "1.0/0.1/rf - garch/dH: stored mean and CI equal the P1-audited values exactly",
+   "ok": true
+  },
+  {
+   "check": "1.0/0.1/rf - garch/dH: t and p equal scipy.stats.ttest_1samp",
+   "ok": true
+  },
+  {
+   "check": "1.0/0.1/rf - garch/dH: recomputed mean, s_b and t_19 CI equal the stored values (1e-10)",
+   "ok": true
+  },
+  {
+   "check": "1.0/0.1/rf - garch/dH: CI-test duality (0 outside the 95% CI iff p < 0.05)",
+   "ok": true
+  },
+  {
+   "check": "1.0/0.1/rf - garch/dH: sign counts and exact sign p equal the stored values",
+   "ok": true
+  },
+  {
+   "check": "1.0/0.1/rf - conventional/dH: R = 20 finite replicate values",
+   "ok": true
+  },
+  {
+   "check": "1.0/0.1/rf - conventional/dH: stored mean and CI equal the P1-audited values exactly",
+   "ok": true
+  },
+  {
+   "check": "1.0/0.1/rf - conventional/dH: t and p equal scipy.stats.ttest_1samp",
+   "ok": true
+  },
+  {
+   "check": "1.0/0.1/rf - conventional/dH: recomputed mean, s_b and t_19 CI equal the stored values (1e-10)",
+   "ok": true
+  },
+  {
+   "check": "1.0/0.1/rf - conventional/dH: CI-test duality (0 outside the 95% CI iff p < 0.05)",
+   "ok": true
+  },
+  {
+   "check": "1.0/0.1/rf - conventional/dH: sign counts and exact sign p equal the stored values",
+   "ok": true
+  },
+  {
+   "check": "Holm (t) equals statsmodels multipletests(method='holm') to 1e-12",
+   "ok": true
+  },
+  {
+   "check": "Holm (sign) equals statsmodels to 1e-12",
+   "ok": true
+  },
+  {
+   "check": "adjusted p >= raw p, and nondecreasing in Holm rank",
+   "ok": true
+  },
+  {
+   "check": "no project module imported",
+   "ok": true
+  }
+ ]
+}

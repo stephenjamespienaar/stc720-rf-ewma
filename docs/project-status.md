@@ -2,9 +2,12 @@
 
 *Authoritative progress record for the STC 720 project. It is read at the start of every session through the `stc720-project` skill ([`.claude/skills/stc720-project/SKILL.md`](../.claude/skills/stc720-project/SKILL.md)) and `CLAUDE.md` §19.*
 
-## FIRST FULL PRODUCTION COMPLETE — INDEPENDENT AUDIT P1 PASSED (27 OCT 2026); P2–P5 OPEN
+## FIRST FULL PRODUCTION COMPLETE — P1 AUDIT PASSED; P2 SUPPLEMENTARY HOLM ANALYSIS DONE (27 OCT 2026); P3–P6 OPEN, NOT YET AUTHORIZED
 
-*Last updated: **2026-10-27** (P1 independent audit and documentation synchronization; HEAD `fb73ecd`, verified with `git rev-parse HEAD`; uncommitted).*
+*Last updated: **2026-10-27** (P2, on HEAD `53552a9`, verified with `git rev-parse HEAD`; P2 files uncommitted).*
+- *P2 supplementary post hoc Holm analysis: PASS (27 Oct 2026; `docs/p2_multiplicity_report.md`). Holm (FWER 0.05, two-sided t₁₉, family of 12) rejects 6/12: all six RF − conventional contrasts. No RF − GARCH contrast is rejected; RF − GARCH RMD₅₀₀ has Holm p = 0.0533 at each δ (unadjusted p 0.009–0.011). The unadjusted primary estimates and CIs are unchanged. Next open task: **P3**, not yet authorized for execution; it begins only on the user's instruction.*
+
+*Earlier the same day: P1 independent audit and documentation synchronization (HEAD `fb73ecd`; since committed by the user as `53552a9`).*
 - *P1 PASSED: the 12 primary contrasts and their 4 δ = 1 baselines were recomputed from `paths.npz` without project estimators. 1,768/1,768 primary comparisons were bit-identical, 518/518 integrity and design checks passed, and the frozen artifacts are unchanged. Only the downstream calculations from the stored alarm times were verified, not the upstream simulation. Report: [`docs/p1_audit_report.md`](p1_audit_report.md). Next open task: **P2** (not started). P3–P6 are open and not yet authorized for execution.*
 
 *Previous update: **2026-10-14**, end of the development session (post-production documentation synchronization, on HEAD `3529ddd`; since committed by the user as `fb73ecd`).*
@@ -32,6 +35,27 @@
 - *read-only `git status` / `git diff --check`*
 
 ## Verified checkpoint
+
+**P2 supplementary post hoc multiplicity analysis: DONE (27 Oct 2026).** The user approved the plan with refinements:
+- the inferential target is the mean paired contrast over independently generated and fitted systems under this design
+- the sign test tests a different null (balance of signs) from the t test
+- p-values keep full precision in machine-readable outputs, and decisions use unrounded values
+- the family, test, Holm and α = 0.05 are fixed
+- the analysis is labelled supplementary and post hoc, and the unadjusted results are kept
+- the docs are synchronized
+
+Record:
+- **Code:** `scripts/p2_holm.py` (new; stdlib + NumPy + SciPy; `statsmodels` as a cross-check only; `python -I`; no `run`/`src` import).
+- **Outputs:** `results/derived/p2_holm/` (`holm_summary.json` at full precision, `holm_table.md`, `p2_log.txt`, `p2_provenance.txt`).
+- **Report:** `docs/p2_multiplicity_report.md`. Methodology v1.5 adds a §7.4 note.
+- **Results:**
+  - Holm rejects 6/12, all RF − conventional; the sign-test Holm check also rejects 6/12, the same contrasts.
+  - RF − GARCH RMD₅₀₀: unadjusted p 0.0099 / 0.0089 / 0.0109; Holm p 0.05327 for all three δ (borderline, not rejected).
+  - RF − GARCH X(20): Holm p = 1.
+- **Checks:**
+  - 90/90 passed: input hash, P1 match, `ttest_1samp`, stored CI and s_b, CI–test duality, sign p, Holm against `statsmodels`, monotonicity, no project imports.
+  - Hand-computed self-test, and 4 mutations each caught.
+  - Production 17/17 hashes unchanged; `pytest -q` 80 passed.
 
 **P1 independent production-results audit: PASSED (27 Oct 2026).** The user approved the plan with refinements: audit all four δ = 1 baselines; take the X(20) SE from the complete matched per-path contrast; add a self-test with different survivor populations; no project-estimator imports; outputs outside the frozen run; no automatic staging.
 - **Code:** `scripts/audit_p1.py` (new; stdlib + NumPy + `scipy.stats`; run with `python -I`; asserts no `run`/`src` import).
@@ -139,7 +163,7 @@
 | Pilot-report errata (A1–A8) | **All applied.** A2, A6–A8 on 14 Oct (session 2); **A1, A3, A4, A5 on 14 Oct (session 3)**, no rerun: A1 adds the 2 diagnostic rows; A3 labels M = 1 "by construction"; A4 states that M has no SE in the pilot; A5 adds X̂(k) point estimates derived exactly from stored P(D ≤ k) (SEs unavailable) | `docs/phase1_pilot_report.md` §6, §7, §8, §14 |
 | SPY application | Not started; no data downloaded | `data/raw/` holds only `.gitkeep` |
 
-**Git (read-only, verified 27 Oct 2026):** HEAD `fb73ecd0d34d91d9c0fd69c05ee86d7445fcd950` on `main` ("docs: record first full production run and post-production checkpoint", user commit; parent `3529ddd`, the production source). The P1 audit files and the 27 Oct documentation updates are uncommitted. *Recorded 14 Oct 2026:*
+**Git (read-only, verified 27 Oct 2026, P2):** HEAD `53552a9c96173998091e798ef6922fded4b6b686` on `main` ("audit: independently verify production primary contrasts", user commit; it commits P1 and the doc sync). The P2 files are uncommitted. *Earlier, P1:* HEAD `fb73ecd0d34d91d9c0fd69c05ee86d7445fcd950` on `main` ("docs: record first full production run and post-production checkpoint", user commit; parent `3529ddd`, the production source). *Recorded 14 Oct 2026:*
 - Branch `main`. **Phase 1 baseline commit:** `f77297b9a257bbe8ca80c858f6119219471925b8`, made by the user (author Stephen Pienaar; no trailers). Its parent is `2a06da8`.
 - HEAD `3529ddd` ("feat: finalize production design (R=20, IC validation, provenance)", user commit; parent `9b286e1`, Phase 2). The production run used this commit. Post-production documentation edits (`CLAUDE.md`, this file, the skill) are **uncommitted** until the user commits. Untracked `.serena/` is development-tool state.
 - `results/runs/` is git-ignored, so the pilot artifacts exist only locally. **Keep `pilot_20261013T075339_142070` safe.** Neither the Phase 1 committed source (slope normalisation) nor the current Phase 2 source (also new schemas, aggregation, paired intervals and reporting) reproduces its `results.json` bit-for-bit (see "Code ↔ canonical hash"). The original artifacts are the record.
@@ -215,15 +239,15 @@ None of these needs new simulation. Do them in priority order.
 | ID | Status | Task |
 |---|---|---|
 | **P1** | **DONE — PASSED (27 Oct 2026)**; `docs/p1_audit_report.md`, `scripts/audit_p1.py`, `results/derived/p1_audit/` | **Independent production-results audit.** Recompute all 12 primary contrasts from `paths.npz` with an independent calculation that does **not** import `run`, `src.chart` or `src.aggregate` (plain NumPy/SciPy). Verify: matched survivor sets E_a ∩ E_b (T ≥ τ for both charts; T = 550 is censored, T = 549 a detection with D = H); restricted delays D_H = min(T − τ + 1, H); X(20) against the δ = 1 counterfactual; within-replicate normal paired SEs; the across-replicate t intervals (df 19); all 20 replicates represented; agreement with `results.json`. Report discrepancies; never edit the frozen run |
-| **P2** | **OPEN — next task (not started; awaits the user's instruction)** | **Multiplicity-aware interpretation.** Holm adjustment over the 12 primary contrasts, using replicate-level inference (one-sample t-tests of the 20 replicate contrasts, df 19). Keep the unadjusted estimates and CIs. Label it **post hoc and supplementary**: methodology §7.4 pre-registered no adjustment, and this was decided after the results were seen. No confirmatory overstatement |
-| **P3** | OPEN — **not yet authorized for execution** | **Repair `fig_replicates.png`** (issue 17). The jitter `0.03·(r − (R−1)/2)` clips replicates 0 and 19 at δ = 1 and 3 when R = 20. Make it work for any R (needs a `src/report.py` change and a regression test). Regenerate **from the frozen `results.json` only** into a separate derived-output directory. Never overwrite the production artifacts; never rerun the simulation |
+| **P2** | **DONE (27 Oct 2026)**: Holm rejects 6/12 (all RF − conventional); RF − GARCH RMD Holm p = 0.0533; `docs/p2_multiplicity_report.md` | **Multiplicity-aware interpretation.** Holm adjustment over the 12 primary contrasts, using replicate-level inference (one-sample t-tests of the 20 replicate contrasts, df 19). Keep the unadjusted estimates and CIs. Label it **post hoc and supplementary**: methodology §7.4 pre-registered no adjustment, and this was decided after the results were seen. No confirmatory overstatement |
+| **P3** | **OPEN — next task; not yet authorized for execution** | **Repair `fig_replicates.png`** (issue 17). The jitter `0.03·(r − (R−1)/2)` clips replicates 0 and 19 at δ = 1 and 3 when R = 20. Make it work for any R (needs a `src/report.py` change and a regression test). Regenerate **from the frozen `results.json` only** into a separate derived-output directory. Never overwrite the production artifacts; never rerun the simulation |
 | **P4** | OPEN — **not yet authorized for execution** | **Descriptive heterogeneity investigation** (post hoc, descriptive). Why RF − GARCH contrasts vary across fitted systems (s_b 9.4–20.8 days): relate the per-replicate selected RF settings, forecast diagnostics (QLIKE, slope, corr, gap closure), masking M and paired delays, from `results.json`. **Never tune RF hyperparameters on production outcomes** |
 | **P5** | OPEN — **not yet authorized for execution** | **Run-length distribution comparison.** Compare validation RL quantiles (q10/q50/q90), P(T ≤ 250) and P(T < τ) across schemes, and explain why equal mean ARL₀ need not imply identical RL distributions (e.g. dependence in u; conventional ACF₁ 0.13). Use stored data only: per-replicate validation summaries, and δ = 1 no-change alarm days in `paths.npz` (truncated at day 549). Per-path validation run lengths are **not stored**; report that limitation, and do not invent or re-simulate |
 | **P6** | OPEN — **not authorized** | Later experiments: the ARL₀ = 100 sensitivity run and the SPY application (with SPY preparation items S1–S3, issue 5). Neither starts in a future session without the user's explicit authorization |
 
 ## Next recommended task
 
-*(27 Oct 2026: P1 passed.)* **P2 (Holm, post hoc and supplementary)**, when the user instructs. P3–P6 are open and not yet authorized for execution. Earlier: **P1 (independent production-results audit)**, then P2–P5 in order, with no new simulation. Production reruns, the ARL₀ = 100 sensitivity, further benchmarks and SPY are **not authorized**. The earlier task notes below are kept for history.
+*(27 Oct 2026: P1 passed; P2 done.)* **P3 (figure repair from the frozen results)**, only when the user authorizes it. *(Earlier: P2, Holm, post hoc and supplementary, when the user instructs.)* P3–P6 are open and not yet authorized for execution. Earlier: **P1 (independent production-results audit)**, then P2–P5 in order, with no new simulation. Production reruns, the ARL₀ = 100 sensitivity, further benchmarks and SPY are **not authorized**. The earlier task notes below are kept for history.
 
 **Scientific results audit of `production_20261014T060921_145897`** (user review), then the user's decision on the figure defect (issue 17) and on the ARL₀ = 100 sensitivity run (not authorized). Earlier text:
 
@@ -259,3 +283,4 @@ None of these needs new simulation. Do them in priority order.
 | 2026-10-14 | **End-of-session synchronization** (documentation only): production milestone and findings recorded; open tasks P1–P6; `CLAUDE.md` §18–19, skill and references updated; new `references/production-results.md` | `CLAUDE.md`, `docs/project-status.md`, `.claude/skills/stc720-project/SKILL.md`, `references/{production-results (new), scientific-design, production-plan, reproducibility}.md`; production `44410144…` re-verified, 424 run files unchanged | not run (no code change) | P1–P6 OPEN | P1 independent audit | Sensitivity, further production or benchmark, SPY **not** authorized |
 | 2026-10-27 | **P1 independent audit PASSED** (user-approved plan + 5 refinements): 12 primary contrasts + 4 δ = 1 baselines recomputed from `paths.npz` without project estimators; 1,768/1,768 EXACT; 518/518 checks; secondary sweep 0 mismatches (29 FP ≤ 3.6e-15) | `scripts/audit_p1.py` (new), `results/derived/p1_audit/` (new), `docs/p1_audit_report.md` (new), this file, `production-results.md`; production `44410144…` unchanged (17/17 hashes) | **80 passed**; audit self-test + 4 mutations caught | P2–P6 | P2 Holm (post hoc) | Sensitivity, further production or benchmark, SPY **not** authorized |
 | 2026-10-27 | **Documentation synchronization** (documentation only): `CLAUDE.md` §18–19 (HEAD `fb73ecd`, P1 PASS and its limitation, P2 next, P3–P6 not yet authorized), this file, `production-results.md`, `SKILL.md` | `CLAUDE.md`, `docs/project-status.md`, `.claude/skills/stc720-project/{SKILL.md, references/production-results.md}`; production 17/17 hashes unchanged | not run (no code change) | P2–P6 | P2 Holm (post hoc), on the user's instruction | P3–P6 not yet authorized for execution; sensitivity, production, benchmark, SPY **not** authorized |
+| 2026-10-27 | **P2 supplementary post hoc Holm analysis DONE** (user-approved plan + 6 refinements): two-sided t₁₉ tests over 20 replicate estimates; Holm FWER 0.05 over the 12 primary contrasts; sign-test Holm as a robustness check (different null). 6/12 rejected (all RF − conventional); RF − GARCH RMD Holm p 0.0533 (not rejected) | `scripts/p2_holm.py` (new), `results/derived/p2_holm/` (new), `docs/p2_multiplicity_report.md` (new), `docs/methodology.md` v1.5 (§7.4 note), this file, `CLAUDE.md` §18–19, `SKILL.md`, `production-results.md`; production 17/17 hashes unchanged | **80 passed**; P2 checks 90/90; self-test + 4 mutations caught | P3–P6 | P3 figure repair, on the user's authorization | P3–P6 not yet authorized; sensitivity, production, benchmark, SPY **not** authorized |

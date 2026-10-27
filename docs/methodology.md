@@ -1,6 +1,6 @@
 # Methodology — RF–EWMA Monitoring of Financial Volatility
 
-*Version 1.4, 14 Oct 2026 (v1.0: 13 Oct 2026; v1.1 revises §7 paired-comparison populations and the §9 slope interpretation after an independent audit; v1.2 adds the Phase 2 production estimators — eqs. 23–28, alarm-day coding, X(k), conditional quantiles, masking SE, replicate aggregation, pre-registered primary endpoints, production and sensitivity configurations, §10.1–10.3; v1.3 applies the Phase 2 audit: eq. 28 relabelled as residual between-system variance σ̂²_sys (arithmetic unchanged), matched sensitivity design, reconstruction scope of `paths.npz`, primary-endpoint scope, smoke versus validation; v1.4 records the post-benchmark amendments made before production — R = 20 training replicates and the equivalence-style in-control validation rule, eq. 29, with the production failure-handling policy). Equation numbers are stable references for code, tests and the report; v1.2 appends equations and renumbers none.*
+*Version 1.5, 27 Oct 2026 (v1.5 adds the supplementary post hoc Holm analysis note in §7.4; v1.0: 13 Oct 2026; v1.1 revises §7 paired-comparison populations and the §9 slope interpretation after an independent audit; v1.2 adds the Phase 2 production estimators — eqs. 23–28, alarm-day coding, X(k), conditional quantiles, masking SE, replicate aggregation, pre-registered primary endpoints, production and sensitivity configurations, §10.1–10.3; v1.3 applies the Phase 2 audit: eq. 28 relabelled as residual between-system variance σ̂²_sys (arithmetic unchanged), matched sensitivity design, reconstruction scope of `paths.npz`, primary-endpoint scope, smoke versus validation; v1.4 records the post-benchmark amendments made before production — R = 20 training replicates and the equivalence-style in-control validation rule, eq. 29, with the production failure-handling policy). Equation numbers are stable references for code, tests and the report; v1.2 appends equations and renumbers none.*
 
 **Labels used throughout:**
 - **[E]** established method, with source
@@ -210,6 +210,13 @@ The **12 primary contrasts** are (23) at λ = 0.1 for
 - δ ∈ {1.5, 2, 3}, each shown with its δ = 1 counterpart,
 
 each aggregated over training replicates as in §10.2. Only these paired $\mathrm{RMD}_{500}$ and $X(20)$ contrasts are primary. Everything else is secondary or descriptive: λ = 0.2, GARCH − conventional, $X(5)$ and $X(60)$ (including their paired contrasts), quantiles, occupancy, masking, per-chart levels including per-chart $X(20)$, and **every result of the ARL₀ = 100 sensitivity run**. No multiplicity adjustment is applied; the article must say so.
+
+**Supplementary post hoc multiplicity analysis (v1.5, 27 Oct 2026).** This was decided **after** the production results were seen, so it is **not** pre-registered, and the primary analysis above is unchanged. The analysis:
+- applies two-sided one-sample t₁₉ tests of H₀: θ = 0 to the 20 equal-weight replicate estimates of each of the 12 primary contrasts, in the framework of eq. 27
+- adjusts them with Holm's step-down procedure at family-wise α = 0.05 over exactly these 12 contrasts
+- adds a descriptive robustness check: exact sign tests, Holm-adjusted. These test the balance of replicate signs, which is a different null from the mean-zero t test
+
+The δ = 1 baselines are outside the family. The inferential target is the mean paired contrast over independently generated and fitted systems under this design. Results: [`p2_multiplicity_report.md`](p2_multiplicity_report.md).
 
 ## 8. Adaptation masking (pre-registered analysis)
 
