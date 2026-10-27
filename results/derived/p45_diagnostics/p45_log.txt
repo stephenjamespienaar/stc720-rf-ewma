@@ -1,0 +1,63 @@
+selftest: all hand-computed checks passed
+## Table P4a. RF − GARCH paired RMD₅₀₀ (days), λ = 0.1: between-system heterogeneity (descriptive)
+| δ | Mean | s_b | RMS MC SE | s_b / MC SE | σ̂_sys (stored) | Cochran Q (descr.) | I² (descr.) | Signs +/− |
+|---|---|---|---|---|---|---|---|---|
+| 1 | +0.27 | 3.24 | 2.61 | 1.24 | 1.92 | 27.1 | 0.30 | 9/11 |
+| 1.5 | -6.05 | 9.45 | 2.79 | 3.39 | 9.03 | 212.0 | 0.91 | 6/14 |
+| 2 | -9.94 | 15.25 | 2.76 | 5.53 | 15.00 | 550.3 | 0.97 | 5/15 |
+| 3 | -13.13 | 20.82 | 2.55 | 8.17 | 20.66 | 1163.6 | 0.98 | 6/14 |
+
+## Table P4b. Stability of system effects (Spearman ρ across the same 20 systems; descriptive)
+| Comparison | ρ |
+|---|---|
+| delta 1.5 vs 2 | +0.86 |
+| delta 2 vs 3 | +0.95 |
+| delta 1.5 vs 3 | +0.85 |
+| lambda 0.1 vs 0.2 at delta 1.5 | +0.89 |
+| lambda 0.1 vs 0.2 at delta 2 | +0.94 |
+| lambda 0.1 vs 0.2 at delta 3 | +0.97 |
+
+## Table P4c. Exploratory associations with y_r(δ) (Spearman ρ; descriptive, no p-values)
+| Predictor (fixed in advance) | Range over systems | δ = 1.5 | δ = 2 | δ = 3 |
+|---|---|---|---|---|
+| QLIKE_true(RF) − QLIKE_true(GARCH) | 0.015 to 0.0473 | -0.58 | -0.55 | -0.61 |
+| RF responsiveness slope_h | 0.168 to 0.69 | +0.59 | +0.66 | +0.70 |
+| Validated ARL₀ rel. deviation, RF − GARCH | -0.057 to 0.0299 | +0.42 | +0.22 | +0.15 |
+| Validation P(T < τ), RF − GARCH | -0.0015 to 0.023 | -0.72 | -0.64 | -0.68 |
+| GARCH persistence α̂ + β̂ | 0.96 to 0.992 | -0.12 | -0.18 | -0.20 |
+| Masking gap M_RF − M_GARCH (same δ) | -0.0282 to 0.325 | -0.80 | -0.89 | -0.89 |
+
+## Table P4d. Selected RF cell (categorical): group size and mean y_r(δ) (days)
+| Selected cell | n | δ = 1.5 | δ = 2 | δ = 3 |
+|---|---|---|---|---|
+| leaf 200, max_features 3 | 8 | -4.1 | -9.4 | -13.7 |
+| leaf 50, max_features 1 | 6 | -6.0 | -10.9 | -12.4 |
+| leaf 50, max_features 3 | 4 | -8.4 | -8.6 | -14.3 |
+| leaf 200, max_features 1 | 2 | -9.4 | -11.7 | -10.5 |
+
+## Table P5a. Independent IC validation (N = 2,000 paths, horizon 5,000; stored summaries), λ = 0.1: replicate mean [95% t₁₉ CI]
+| Chart | Validated ARL₀ | CV of run length | q10/A | q50/A | q90/A | P(T ≤ 250) | P(T < τ) |
+|---|---|---|---|---|---|---|---|
+| conventional | 499.6 [491.6, 507.6] | 1.041 [1.031, 1.052] | 0.072 [0.070, 0.075] | 0.675 [0.668, 0.682] | 2.350 [2.329, 2.371] | 0.408 [0.404, 0.412] | 0.125 [0.123, 0.128] |
+| garch | 501.3 [494.8, 507.7] | 1.005 [0.995, 1.014] | 0.104 [0.101, 0.106] | 0.687 [0.678, 0.696] | 2.326 [2.305, 2.346] | 0.396 [0.392, 0.399] | 0.096 [0.094, 0.099] |
+| rf | 496.5 [487.9, 505.2] | 1.017 [1.010, 1.024] | 0.095 [0.093, 0.098] | 0.684 [0.677, 0.691] | 2.329 [2.307, 2.352] | 0.402 [0.397, 0.407] | 0.104 [0.101, 0.108] |
+| oracle | 502.2 [497.2, 507.3] | 1.003 [0.996, 1.010] | 0.105 [0.102, 0.108] | 0.687 [0.679, 0.695] | 2.325 [2.303, 2.347] | 0.395 [0.392, 0.398] | 0.095 [0.092, 0.097] |
+| geometric (A = 500) | 500.0 | 0.999 | 0.106 | 0.694 | 2.302 | 0.394 | 0.093 |
+
+## Table P5b. δ = 1 paths of the separate out-of-control stream (2,000 per system, truncated at day 549), λ = 0.1
+| Chart | P(T < τ) [CI] | Geometric P(T < τ) | RMD₅₀₀ given T ≥ τ [CI] | Geometric, given T ≥ τ | P(no alarm by 549 ∣ T ≥ τ) [CI] | Geometric, given T ≥ τ | Mean ∣E_k∣ |
+|---|---|---|---|---|---|---|---|
+| conventional | 0.1250 [0.1212, 0.1288] | 0.0936 | 319.9 [317.0, 322.9] | 316.0 | 0.380 [0.373, 0.388] | 0.367 | 1750 |
+| garch | 0.0936 [0.0893, 0.0980] | 0.0933 | 316.0 [314.5, 317.6] | 316.5 | 0.371 [0.366, 0.376] | 0.368 | 1813 |
+| rf | 0.1015 [0.0973, 0.1058] | 0.0942 | 316.6 [315.0, 318.3] | 315.2 | 0.374 [0.368, 0.381] | 0.365 | 1797 |
+| oracle | 0.0926 [0.0890, 0.0963] | 0.0931 | 316.3 [314.7, 317.8] | 316.8 | 0.372 [0.367, 0.376] | 0.369 | 1815 |
+
+## Table P5c. Paired pre-change false-alarm differences and survivor overlap (δ = 1 OOC-stream paths, λ = 0.1)
+| Pair a − b | P(T_a < τ) − P(T_b < τ) [CI] | Mean ∣E_a ∩ E_b∣ | Fraction excluded by exactly one chart |
+|---|---|---|---|
+| rf − garch | 0.0079 [0.0047, 0.0110] | 1770 | 0.035 |
+| rf − conventional | -0.0235 [-0.0278, -0.0192] | 1682 | 0.091 |
+| garch − conventional | -0.0314 [-0.0350, -0.0277] | 1684 | 0.097 |
+
+checks: 25 run, 0 failed
+VERDICT: PASS

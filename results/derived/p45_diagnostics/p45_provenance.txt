@@ -1,0 +1,7 @@
+run_at: 2026-10-27T02:10:02.543315+00:00
+git_head: 8ef46aa58557dc52d9f9efb5cb6cfd63293eb2df
+python: 3.14.4  numpy: 2.5.4  scipy: 1.18.1  matplotlib: 3.11.2
+script_sha256: f9808c11aef130d38f7195d10cc21ce24721b2555c1314e578aafbb031a245ff
+input_sha256 results.json: 716862ab41d08c581d2bd65c63979c046a9d9cb5930c111381b3eeb6506b708b
+input_sha256 paths.npz: 0055f1e115e6cd676d88dcc0875dfee19c44018afc8154658b40be9a2ab8cdf3
+input_sha256 audit_summary.json: a52d7c3476d91aab27a48e6a774358e5726f0839f8592df73bf42ab4ca4d4f75

@@ -9,16 +9,16 @@ description: Resume and continue the STC 720 (University of Pretoria) Random For
 **Due:** Thu **5 Nov 2026, 23:59 SAST**, via ClickUP. Internal target is to submit on 4 Nov. Turnitin similarity must be ≤ 20%, and a generative-AI declaration goes below the keywords.
 **Repository:** `/home/stephen/projects/stc720-rf-ewma` (Python 3.14.4, `.venv/`, WSL2).
 
-## Current stage (27 Oct 2026): FIRST FULL PRODUCTION COMPLETE — P1 AUDIT PASSED; P2 HOLM DONE; P3 FIGURE REPAIR DONE; P4–P6 NOT YET AUTHORIZED
+## Current stage (27 Oct 2026): FIRST FULL PRODUCTION COMPLETE — P1–P5 DONE; NEXT: SPY APPLICATION (NOT YET AUTHORIZED) AND FINAL PAPER
 
-- The scientific architecture and configuration are **frozen**. Phase 1 (pilot) and Phase 2 (production preparation, audits, final R = 20 design) are complete and committed (production source `3529ddd`). The post-production docs are committed as `fb73ecd`, P1 as `53552a9`, and P2 as `9e9c30a`, the current HEAD (verified 27 Oct 2026).
+- The scientific architecture and configuration are **frozen**. Phase 1 (pilot) and Phase 2 (production preparation, audits, final R = 20 design) are complete and committed (production source `3529ddd`). The post-production docs are committed as `fb73ecd`, P1 as `53552a9`, P2 as `9e9c30a`, and P3 as `8ef46aa`, the current HEAD (verified 27 Oct 2026).
 - The R = 20, ARL₀ = 500 production run is complete and **frozen**: `results/runs/production_20261014T060921_145897/`, results hash `44410144…`. Its numbers, hashes and caveats are in [references/production-results.md](references/production-results.md). **P1 independent audit: PASS (27 Oct 2026; `docs/p1_audit_report.md`).**
   - 1,768/1,768 primary comparisons were bit-identical, 518/518 integrity and design checks passed, and the frozen artifacts are unchanged.
   - P1 verified the downstream calculations from the stored alarm times, **not** the upstream simulation.
 - **P2 supplementary post hoc Holm analysis: PASS (27 Oct 2026; `docs/p2_multiplicity_report.md`). Holm (FWER 0.05, two-sided t₁₉, family of 12) rejects 6/12: all six RF − conventional contrasts. No RF − GARCH contrast is rejected; RF − GARCH RMD₅₀₀ has Holm p = 0.0533 at each δ (unadjusted p 0.009–0.011). The unadjusted primary estimates and CIs are unchanged.**
 - **P3 figure repair: PASS (27 Oct 2026; `docs/p3_figure_report.md`). The fixed 0.03 jitter hid 4 replicate points per RMD panel and 2 per X(20) panel outside the axes at R = 20, and mixed the δ = 1.5 and δ = 2 clouds. Plotting-only fix `report.jitter`. The repaired figure is `results/derived/p3_figures/fig_replicates.png` (`6e4fbcde…`); the original `1af6a110…` is untouched. 41/41 checks: all 280 plotted replicate values equal the stored values, and the means and CIs equal the stored values.**
-- **Next open task: P4, the descriptive heterogeneity investigation.** It is not yet authorized and begins only on the user's instruction.
-- **P4–P6 are OPEN and not yet authorized for execution:** P4 heterogeneity (descriptive), P5 run-length distributions, P6 sensitivity and SPY.
+- **P4/P5 exploratory diagnostics: DONE (27 Oct 2026; `docs/p45_diagnostics_report.md`; descriptive, post hoc). P4: RF − GARCH between-system spread is 3.4–8.2× the MC SE under a change (1.2× at δ = 1) and stable within systems (ρ 0.85–0.97); the strongest association is with the masking gap (ρ −0.80 to −0.89); no pattern by RF cell. P5: equal ARL₀, different shapes: the conventional chart is over-dispersed (CV 1.04) with P(T < τ) 0.125, against a geometric 0.093; GARCH and the oracle are near-geometric; survivor conditioning is non-neutral, which is consistent with the −3.8-day RF − conventional δ = 1 baseline.**
+- **Priorities now: (1) the SPY application** (rubric §5, Illustrative example, within the 35-mark results block). It needs the user's explicit authorization and preparation items S1–S3. **(2) The final research paper.** **The ARL₀ = 100 sensitivity is DEFERRED** (user, 27 Oct 2026): not authorized, and not permanently dropped.
 - The task list is in `docs/project-status.md`.
 - **No further simulation is authorized**: no production rerun, sensitivity, benchmark or SPY.
 
@@ -66,10 +66,10 @@ description: Resume and continue the STC 720 (University of Pretoria) Random For
 | Preparing production corrections C1–C7 | **Done, verified and committed** by the user (`9b286e1`, 14 Oct 2026) |
 | Final production design (R = 20, amended IC validation rule eq. 29, failure policy, provenance classification) | **Done, verified and committed** by the user (`3529ddd`, 14 Oct 2026; 80 tests) |
 | Full production simulation (R = 20, ARL₀ = 500) | **Complete and frozen** (run once, authorized 14 Oct 2026; `production_20261014T060921_145897`, hash `44410144…`). **No rerun authorized** |
-| Post-production analysis P1–P5 (independent audit, Holm, figure repair, heterogeneity, run-length comparison; no new simulation) | **P1 DONE (PASS), P2 DONE and P3 DONE (27 Oct 2026).** P4 is next; P4–P5 are not yet authorized for execution. Code changes (e.g. P3 in `src/report.py`) follow the normal test-and-verify rules |
-| ARL₀ = 100 sensitivity run (R = 20, matched) | **Not authorized** (design recorded; P6) |
+| Post-production analysis P1–P5 (independent audit, Holm, figure repair, heterogeneity, run-length comparison; no new simulation) | **P1–P5 DONE (27 Oct 2026).** Code changes (e.g. P3 in `src/report.py`) follow the normal test-and-verify rules |
+| ARL₀ = 100 sensitivity run (R = 20, matched) | **Deferred** (user, 27 Oct 2026); not authorized, not permanently dropped (design recorded; P6) |
 | Production-scale benchmark (`benchmark` mode, R = 1) | **Run once** (authorized, 14 Oct 2026; `benchmark_20261014T041247_106190`); performance evidence only; **do not repeat** |
-| SPY download and application | **Not authorized** (later, separate phase; preparation items S1–S3 open; P6) |
+| SPY download and application | **Next priority, not yet authorized** (preparation items S1–S3 open; P6) |
 | Git writes | **Never** (user only) |
 
 ## Reference files
@@ -97,4 +97,4 @@ Only record what you verified this session. If an approval or decision came from
 
 ## Restart instruction for the user
 
-> Use the stc720-project skill, inspect the current repository state and resume from the last verified checkpoint (highest-priority OPEN task; currently P4, the descriptive heterogeneity investigation, which needs my authorization). Do not rerun production or start the sensitivity, benchmark or SPY work without my explicit authorization.
+> Use the stc720-project skill, inspect the current repository state and resume from the last verified checkpoint (highest-priority OPEN task; currently the SPY application, which needs my explicit authorization, then the final paper). Do not rerun production or start the sensitivity, benchmark or SPY work without my explicit authorization.
