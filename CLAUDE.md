@@ -566,9 +566,9 @@ Avoid unnecessary approval requests for routine, already-authorized coding, docu
 
 ## 18. Current Project Status
 
-**FIRST FULL PRODUCTION COMPLETE — SCIENTIFIC RESULTS AUDIT PENDING**
+**FIRST FULL PRODUCTION COMPLETE — INDEPENDENT AUDIT P1 PASSED; P2 NEXT**
 
-*Updated 14 October 2026, at the end of the development session. The detailed, authoritative progress record and task list is `docs/project-status.md`. The frozen production numbers, hashes and caveats are in `.claude/skills/stc720-project/references/production-results.md`.*
+*Updated 27 October 2026, after the P1 independent audit. The detailed, authoritative progress record and task list is `docs/project-status.md`. The frozen production numbers, hashes and caveats are in `.claude/skills/stc720-project/references/production-results.md`.*
 
 Completed and verified:
 
@@ -576,7 +576,7 @@ Completed and verified:
 - **Phase 1 (pilot):** implementation, wrapper, smoke and verify runs, and the reduced pilot. The canonical pilot is `results/runs/pilot_20261013T075339_142070` (`f92f0715…`), summarised in `docs/phase1_pilot_report.md`. It was independently audited and remediated, and the baseline was committed as `f77297b`.
 - **Phase 2 (production preparation C1–C7):** two independent Codex audits, both remediated. Committed by the user as `9b286e1`.
 - **Performance benchmark:** run once (R = 1, seed 20261013): `results/runs/benchmark_20261014T041247_106190` (`77e20ffa…`). It is performance evidence only, excluded from inference. Under the original validation rule its outcome was 2 of 6 primary configurations passed, recorded unchanged.
-- **Final production design:** committed by the user as `3529ddd` (current HEAD).
+- **Final production design:** committed by the user as `3529ddd` (the production source). The post-production documentation was then committed by the user as `fb73ecd`.
   - R = 20, with the ARL₀ = 100 sensitivity matched by inheritance.
   - Amended IC validation (`docs/methodology.md` §6, eq. 29): a configuration passes iff its whole independent-validation 95% CI lies in [A₀(1−0.15), A₀(1+0.15)] = [425, 575], with exact inclusive bounds. It is a post-pilot, post-benchmark amendment, conditional on h*, and not a complete equivalence test.
   - Failure policy: run all replicates; never drop, replace or recalibrate.
@@ -587,13 +587,20 @@ Completed and verified:
   - **Configuration:** mode `production`; target ARL₀ = 500; R = 20 independent training/calibration replicates; master seed 20261014; 500 RF trees; per replicate 2,000 calibration paths, 2,000 IC-validation paths and 2,000 OOC paths per shift scenario; IC horizon 5,000; OOC horizon H = 500; τ = 50; δ ∈ {1.5, 2, 3}; λ ∈ {0.1, 0.2}. The 12 primary contrasts are unchanged.
   - **Execution:** run from clean committed `3529ddd`. 20/20 replicates, exit status 0, wall about 16 min 27 s, peak RAM about 1.74 GiB.
   - **Validation:** **160/160** IC configurations passed eq. 29. No replicate was discarded, replaced, selectively rerun or recalibrated.
-  - **Checks:** all of the run session's internal reproducibility and verification checks passed. **No independent numerical audit has been done yet.**
+  - **Checks:** all of the run session's internal reproducibility and verification checks passed.
 - **Observed findings** (λ = 0.1; simulation only; not causal):
   - Conventional EWMA detected the evaluated persistent increases fastest. Mean restricted delays for conventional / RF / GARCH were 205 / 243 / 249 days at δ = 1.5, 132 / 192 / 202 at δ = 2 and 63 / 126 / 140 at δ = 3.
   - RF–EWMA had shorter restricted delays than GARCH–EWMA, heterogeneous across fitted systems. It showed no distinguishable advantage on X(20).
   - Conventional EWMA forecasts worst but detects best.
   - Adaptation-masking results are **consistent with** the detection ranking. They are not proven to be its cause.
   - Caveats (state them with any result): unadjusted 95% CIs; equal ARL₀ ≠ equal pre-change false-alarm probability; censoring at H = 500; GARCH-generated DGP; IC-validation CIs conditional on h*.
+- **P1 independent production-results audit: PASS (27 October 2026).**
+  - **What was recomputed:** the 12 primary contrasts and their 4 δ = 1 baselines, from `paths.npz`, by `scripts/audit_p1.py`. The script uses only the stdlib, NumPy and SciPy, runs under `python -I`, and imports no `run` or `src` module.
+  - **Comparisons:** **1,768/1,768 primary comparisons bit-identical** to `results.json`. The secondary sweep over all stored paired contrasts found 0 mismatches; its 29 floating-point differences are ≤ 3.6 × 10⁻¹⁵.
+  - **Checks:** **518/518 integrity and design checks passed**: file hashes, results and per-path hashes, config, CRN survivor invariance, pairing counts and replicate order.
+  - **Artifacts:** the frozen production artifacts are unchanged (17/17 hashes).
+  - **Outputs:** `results/derived/p1_audit/`. Report: `docs/p1_audit_report.md`.
+  - **Limitation:** P1 verified the **downstream calculations from the stored alarm times**. It did **not** verify the upstream simulation (DGP, forecasters, EWMA, calibration) that produced them. It also did not reproduce `boot_ci95`, and masking, occupancy and IC quantities were outside its scope.
 - **Binding design decisions (user, 14 October 2026):**
   - production seed **20261014**, shared by the matched ARL₀ = 100 sensitivity (not an independent experiment)
   - 12 pre-registered primary contrasts: paired RMD₅₀₀ and X(20), RF − GARCH and RF − conventional, λ = 0.1, δ ∈ {1.5, 2, 3}, each with its δ = 1 counterpart; everything else is secondary
@@ -602,12 +609,13 @@ Completed and verified:
 
 Current Git state:
 
-- HEAD `3529ddd` on `main`. The post-production documentation updates are uncommitted until the user commits. `.serena/` is untracked development-tool state. The user performs all Git staging, commits and pushes.
+- HEAD `fb73ecd` on `main` (verified 27 October 2026). The P1 audit files and these documentation updates are uncommitted until the user commits. `.serena/` is untracked development-tool state. The user performs all Git staging, commits and pushes.
 
-Outstanding (all **OPEN**, no new simulation needed; details in `docs/project-status.md`):
+Outstanding (details in `docs/project-status.md`):
 
-- **P1, the next task:** an independent production-results audit. Recompute the 12 primary contrasts from `paths.npz` without importing project estimators.
-- **P2:** Holm adjustment over the 12 primary contrasts (post hoc, supplementary), keeping the unadjusted results.
+- **P1: DONE (PASS, 27 October 2026).**
+- **P2, the next open task:** not started; it starts only on the user's instruction. A Holm adjustment over the 12 primary contrasts (post hoc, supplementary), keeping the unadjusted results.
+- **P3–P6 remain OPEN and are not yet authorized for execution.**
 - **P3:** repair `fig_replicates.png` (jitter clips at R = 20). Regenerate it from the frozen results into a separate directory.
 - **P4:** descriptive, post hoc investigation of RF − GARCH heterogeneity across fitted systems. Never tune RF on production outcomes.
 - **P5:** run-length distribution comparison from stored data. Per-path validation run lengths are not stored.
@@ -634,10 +642,10 @@ At the start of every session:
 3. Read `docs/project-status.md`, the authoritative checkpoint and open-task list.
 4. Read the frozen production results reference, `.claude/skills/stc720-project/references/production-results.md`.
 5. Verify the actual state with read-only commands: `git branch --show-current`, `git rev-parse HEAD`, `git status --short`. Check the production artifacts, e.g. that `sha256sum results/runs/production_20261014T060921_145897/*` matches the recorded hashes and that the recomputed results hash is `44410144…`. Treat anything unverified as incomplete.
-6. Summarise the verified state, then resume from the **highest-priority OPEN task** (currently P1, the independent audit), within its authorized scope.
+6. Summarise the verified state, then resume from the **highest-priority OPEN task** (currently P2, the post hoc Holm adjustment), within its authorized scope.
 7. **Never rerun production and never start the sensitivity, a benchmark or SPY work without the user's explicit authorization in the current session.** Git writes stay reserved to the user (§13).
 8. After each meaningful milestone, update `docs/project-status.md` (verified checkpoint and update log). Do not mark work complete until it is tested and verified.
 
 Restart instruction:
 
-> Use the stc720-project skill, inspect the current repository state and resume from the last verified checkpoint (highest-priority OPEN task; currently P1, the independent production-results audit). Do not rerun production or start the sensitivity, benchmark or SPY work without my explicit authorization.
+> Use the stc720-project skill, inspect the current repository state and resume from the last verified checkpoint (highest-priority OPEN task; currently P2, the post hoc Holm adjustment). Do not rerun production or start the sensitivity, benchmark or SPY work without my explicit authorization.

@@ -9,11 +9,15 @@ description: Resume and continue the STC 720 (University of Pretoria) Random For
 **Due:** Thu **5 Nov 2026, 23:59 SAST**, via ClickUP. Internal target is to submit on 4 Nov. Turnitin similarity must be ≤ 20%, and a generative-AI declaration goes below the keywords.
 **Repository:** `/home/stephen/projects/stc720-rf-ewma` (Python 3.14.4, `.venv/`, WSL2).
 
-## Current stage (14 Oct 2026): FIRST FULL PRODUCTION COMPLETE — SCIENTIFIC RESULTS AUDIT PENDING
+## Current stage (27 Oct 2026): FIRST FULL PRODUCTION COMPLETE — INDEPENDENT AUDIT P1 PASSED; P2 NEXT
 
-- The scientific architecture and configuration are **frozen**. Phase 1 (pilot) and Phase 2 (production preparation, audits, final R = 20 design) are complete and committed (HEAD `3529ddd`).
-- The R = 20, ARL₀ = 500 production run is complete and **frozen**: `results/runs/production_20261014T060921_145897/`, results hash `44410144…`. Its numbers, hashes and caveats are in [references/production-results.md](references/production-results.md). It has **not** yet had an independent numerical audit.
-- **Next task: P1, the independent production-results audit.** After it: P2 Holm (post hoc), P3 figure repair from the frozen results, P4 heterogeneity (descriptive), P5 run-length distributions. All are OPEN; the task list is in `docs/project-status.md`.
+- The scientific architecture and configuration are **frozen**. Phase 1 (pilot) and Phase 2 (production preparation, audits, final R = 20 design) are complete and committed (production source `3529ddd`). The post-production docs are committed as `fb73ecd`, the current HEAD (verified 27 Oct 2026).
+- The R = 20, ARL₀ = 500 production run is complete and **frozen**: `results/runs/production_20261014T060921_145897/`, results hash `44410144…`. Its numbers, hashes and caveats are in [references/production-results.md](references/production-results.md). **P1 independent audit: PASS (27 Oct 2026; `docs/p1_audit_report.md`).**
+  - 1,768/1,768 primary comparisons were bit-identical, 518/518 integrity and design checks passed, and the frozen artifacts are unchanged.
+  - P1 verified the downstream calculations from the stored alarm times, **not** the upstream simulation.
+- **Next open task: P2, the Holm adjustment** (post hoc, supplementary). It is not started and begins only on the user's instruction.
+- **P3–P6 are OPEN and not yet authorized for execution:** P3 figure repair from the frozen results, P4 heterogeneity (descriptive), P5 run-length distributions, P6 sensitivity and SPY.
+- The task list is in `docs/project-status.md`.
 - **No further simulation is authorized**: no production rerun, sensitivity, benchmark or SPY.
 
 ## Authority order
@@ -60,7 +64,7 @@ description: Resume and continue the STC 720 (University of Pretoria) Random For
 | Preparing production corrections C1–C7 | **Done, verified and committed** by the user (`9b286e1`, 14 Oct 2026) |
 | Final production design (R = 20, amended IC validation rule eq. 29, failure policy, provenance classification) | **Done, verified and committed** by the user (`3529ddd`, 14 Oct 2026; 80 tests) |
 | Full production simulation (R = 20, ARL₀ = 500) | **Complete and frozen** (run once, authorized 14 Oct 2026; `production_20261014T060921_145897`, hash `44410144…`). **No rerun authorized** |
-| Post-production analysis P1–P5 (independent audit, Holm, figure repair, heterogeneity, run-length comparison; no new simulation) | **OPEN.** P1 is next. Code changes (e.g. P3 in `src/report.py`) follow the normal test-and-verify rules |
+| Post-production analysis P1–P5 (independent audit, Holm, figure repair, heterogeneity, run-length comparison; no new simulation) | **P1 DONE (PASS, 27 Oct 2026).** P2 is next; P3–P5 are not yet authorized for execution. Code changes (e.g. P3 in `src/report.py`) follow the normal test-and-verify rules |
 | ARL₀ = 100 sensitivity run (R = 20, matched) | **Not authorized** (design recorded; P6) |
 | Production-scale benchmark (`benchmark` mode, R = 1) | **Run once** (authorized, 14 Oct 2026; `benchmark_20261014T041247_106190`); performance evidence only; **do not repeat** |
 | SPY download and application | **Not authorized** (later, separate phase; preparation items S1–S3 open; P6) |
@@ -91,4 +95,4 @@ Only record what you verified this session. If an approval or decision came from
 
 ## Restart instruction for the user
 
-> Use the stc720-project skill, inspect the current repository state and resume from the last verified checkpoint (highest-priority OPEN task; currently P1, the independent production-results audit). Do not rerun production or start the sensitivity, benchmark or SPY work without my explicit authorization.
+> Use the stc720-project skill, inspect the current repository state and resume from the last verified checkpoint (highest-priority OPEN task; currently P2, the post hoc Holm adjustment). Do not rerun production or start the sensitivity, benchmark or SPY work without my explicit authorization.

@@ -1,0 +1,21 @@
+selftest: all hand-computed checks passed
+checks: 518 run, 0 failed
+comparisons primary: {'EXACT': 1768, 'FP': 0, 'MISMATCH': 0}  max |diff| 0
+comparisons all:     {'EXACT': 10507, 'FP': 29, 'MISMATCH': 0}  max |diff| 3.55e-15
+  1.0/0.1/rf - garch/dH                    +0.27358 [-1.24229, +1.78944]  +9/-11  n 1734-1793  EXACT
+  1.0/0.1/rf - garch/x_20                  +0.00000 [+0.00000, +0.00000]  +0/-0  n 1734-1793  EXACT
+  1.0/0.1/rf - conventional/dH             -3.80051 [-6.53167, -1.06935]  +5/-15  n 1645-1717  EXACT
+  1.0/0.1/rf - conventional/x_20           +0.00000 [+0.00000, +0.00000]  +0/-0  n 1645-1717  EXACT
+  1.5/0.1/rf - garch/dH                    -6.05312 [-10.47406, -1.63219]  +6/-14  n 1734-1793  EXACT
+  1.5/0.1/rf - garch/x_20                  +0.00089 [-0.00208, +0.00385]  +10/-10  n 1734-1793  EXACT
+  1.5/0.1/rf - conventional/dH            +37.53825 [+32.96160, +42.11490]  +20/-0  n 1645-1717  EXACT
+  1.5/0.1/rf - conventional/x_20           -0.00809 [-0.01100, -0.00518]  +1/-18  n 1645-1717  EXACT
+  2.0/0.1/rf - garch/dH                    -9.94286 [-17.08168, -2.80403]  +5/-15  n 1734-1793  EXACT
+  2.0/0.1/rf - garch/x_20                  +0.00132 [-0.00271, +0.00535]  +12/-8  n 1734-1793  EXACT
+  2.0/0.1/rf - conventional/dH            +60.40216 [+52.96139, +67.84293]  +20/-0  n 1645-1717  EXACT
+  2.0/0.1/rf - conventional/x_20           -0.02513 [-0.02905, -0.02122]  +0/-20  n 1645-1717  EXACT
+  3.0/0.1/rf - garch/dH                   -13.13324 [-22.87506, -3.39142]  +6/-14  n 1734-1793  EXACT
+  3.0/0.1/rf - garch/x_20                  -0.00054 [-0.00922, +0.00813]  +13/-7  n 1734-1793  EXACT
+  3.0/0.1/rf - conventional/dH            +63.62866 [+53.00529, +74.25202]  +20/-0  n 1645-1717  EXACT
+  3.0/0.1/rf - conventional/x_20           -0.06084 [-0.06931, -0.05236]  +0/-20  n 1645-1717  EXACT
+VERDICT: PASS

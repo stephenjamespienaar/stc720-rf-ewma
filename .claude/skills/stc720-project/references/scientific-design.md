@@ -135,7 +135,7 @@ Full tables are in `results/runs/pilot_20261013T075339_142070/tables.md` (git-ig
 5. The RF chart's detection advantage over GARCH is **not explained by better forecasting**, since its QLIKE is worse. It **coincides with** reduced forecast responsiveness (slope 0.345) and a higher retained shift (M ≈ 0.34–0.38). The cause is **not isolated**: even the exact E[h|x] has slope var(E[h|x])/var(h) < 1, so limited predictor information, estimation, regularization or saturation could each contribute (methodology §9).
 6. The reversal of Schipper & Schmid's (2001) ranking may reflect the higher ARL₀ (sustained signal versus transient signal). This is **untested**; the ARL₀ = 100 sensitivity run addresses it, and no causal claim should be made.
 
-## Production evidence (R = 20, 14 Oct 2026; frozen; independent audit pending)
+## Production evidence (R = 20, 14 Oct 2026; frozen; independent audit P1 passed 27 Oct 2026)
 
 The full numbers, hashes and caveats are in [production-results.md](production-results.md). In outline, all observational:
 - **IC validation:** 160/160 passed eq. 29.
