@@ -41,3 +41,11 @@ results/runs/
 *.synctex.gz
 *.fdb_latexmk
 *.fls
+
+# Local development tools
+.serena/
+
+# Regenerable derived output files
+results/derived/p1_audit/audit_rows.json
+results/derived/p3_figures/fig_delay.png
+results/derived/p3_figures/fig_profile.png
