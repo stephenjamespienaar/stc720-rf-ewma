@@ -458,15 +458,15 @@ def figures(df, res, cfg, out):
                 ax.annotate(str(i + 1), (t, 1.0), xycoords=("data", "axes fraction"), ha="center", va="bottom", fontsize=7)
         ax.set_yscale("log")
         _plain_log(ax)
-        ax.set_ylabel("Z_t / h*")
-        ax.text(0.005, 0.96, f"{LABEL[k]} (λ = {lam}, h* = {h:.3f})", transform=ax.transAxes, fontsize=8,
-                va="top", bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.85, "pad": 1.5})
+        # chart name and h* in the axis label, not inside the axes, so no label hides data
+        ax.set_ylabel(f"{LABEL[k]}\nZ_t / h*  (h* = {h:.3f})", fontsize=9)
         ax.grid(alpha=0.3)
-    axes[0].legend(fontsize=7, loc="upper right", framealpha=0.9)
+    # legend in a strip below the axes so it never hides a peak
+    fig.legend(*axes[0].get_legend_handles_labels(), loc="lower center", ncol=2, fontsize=8, frameon=False)
     axes[-1].set_xlabel("Trading date")
-    fig.suptitle("SPY daily returns, continuous one-sided EWMA monitoring 2007–2026 (no resets; dotted lines: "
-                 "pre-registered reference dates 1–" f"{len(refs)})", fontsize=9)
-    fig.tight_layout(rect=(0, 0, 1, 0.97))
+    fig.suptitle("SPY daily returns, continuous one-sided EWMA monitoring 2007–2026 (λ = " f"{lam}; no resets; dotted lines: "
+                 "pre-specified reference dates 1–" f"{len(refs)})", fontsize=9)
+    fig.tight_layout(rect=(0, 0.04, 1, 0.97))
     fig.savefig(out / "fig_spy_charts.png", dpi=150)
     plt.close(fig)
 
@@ -480,13 +480,13 @@ def figures(df, res, cfg, out):
     _plain_log(a2)
     a2.set_ylabel("Variance (%², log scale)")
     a2.set_xlabel("Trading date")
-    a2.legend(fontsize=7, loc="upper left")
+    fig.legend(*a2.get_legend_handles_labels(), loc="lower center", ncol=4, fontsize=8, frameon=False)
     for ax in (a1, a2):
         ax.grid(alpha=0.3)
         for t in refs:
             ax.axvline(t, color="grey", ls=":", lw=0.8)
     fig.suptitle("SPY 2007–2026: returns and the frozen forecasters' variance denominators "
                  "(one-step-ahead, past returns only)", fontsize=9)
-    fig.tight_layout(rect=(0, 0, 1, 0.97))
+    fig.tight_layout(rect=(0, 0.05, 1, 0.97))
     fig.savefig(out / "fig_spy_variance.png", dpi=150)
     plt.close(fig)

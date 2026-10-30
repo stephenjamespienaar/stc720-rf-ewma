@@ -898,8 +898,12 @@ def test_git_provenance_classifies_untracked_files():
         "git_untracked_unclassified"]
     assert f"data/processed/{tag}.py" in line["git_ignored_python"].split()
     assert ".serena" not in line["git_untracked_unclassified"]
-    if any((root / ".serena").rglob("*")):
+    untracked_serena = subprocess.run(["git", "ls-files", "--others", "--exclude-standard", ".serena"], cwd=root,
+                                      capture_output=True, text=True).stdout.strip()
+    if untracked_serena:  # .serena/ is git-ignored since 5fcdf6b; then it is not reported as untracked
         assert line["git_untracked_tool_state"].startswith(".serena/ (")
+    else:
+        assert line["git_untracked_tool_state"] == "none"
 
 
 def test_report_lists_validation_failures_without_dropping_them(tiny2):

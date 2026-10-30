@@ -1,0 +1,346 @@
+{
+ "inputs_sha256": {
+  "results/runs/production_20261014T060921_145897/results.json": "716862ab41d08c581d2bd65c63979c046a9d9cb5930c111381b3eeb6506b708b",
+  "results/derived/p2_holm/holm_summary.json": "d38db5a14b1fe96a28c74d1b33a05b41133f1802b5ea6e70c5154b52915dd09a",
+  "results/runs/spy_20261027T061202_150671/results.json": "877b5f09696a71b3cf431bbed4d88b72a1e7e449d29a309d17e3db0b5ff7749d"
+ },
+ "values": {
+  "prod:validation/0.1/conventional/arl_restricted": 499.62354999999997,
+  "prod:validation/0.1/garch/arl_restricted": 501.26965,
+  "prod:validation/0.1/rf/arl_restricted": 496.52172500000006,
+  "prod:validation/0.1/oracle/arl_restricted": 502.230425,
+  "prod:validation/0.1/conventional/p_lt_tau": 0.12547499999999998,
+  "prod:validation/0.1/garch/p_lt_tau": 0.09615,
+  "prod:validation/0.1/rf/p_lt_tau": 0.104325,
+  "prod:validation/0.1/oracle/p_lt_tau": 0.09492500000000001,
+  "prod:forecast_diag/conventional/qlike_true": 1.0189397705399894,
+  "prod:forecast_diag/garch/qlike_true": 0.8124389471765984,
+  "prod:forecast_diag/rf/qlike_true": 0.8408460753893282,
+  "prod:forecast_diag/oracle/qlike_true": 0.8100386155685471,
+  "prod:forecast_diag/conventional/acf_u/lag1": 0.13167125271684316,
+  "prod:forecast_diag/garch/acf_u/lag1": -0.0019756897408001193,
+  "prod:forecast_diag/rf/acf_u/lag1": 0.011066443360439448,
+  "prod:forecast_diag/oracle/acf_u/lag1": -0.0001924899798070159,
+  "prod:ooc/1.0/0.1/conventional/rmd:ci95": [
+   317.00484505611416,
+   322.87957355642936
+  ],
+  "prod:ooc/1.0/0.1/conventional/rmd": 319.94220930627176,
+  "prod:ooc/1.0/0.1/garch/rmd:ci95": [
+   314.46931829424847,
+   317.59552021784117
+  ],
+  "prod:ooc/1.0/0.1/garch/rmd": 316.0324192560448,
+  "prod:ooc/1.0/0.1/rf/rmd:ci95": [
+   314.96152396875766,
+   318.273885934904
+  ],
+  "prod:ooc/1.0/0.1/rf/rmd": 316.61770495183083,
+  "prod:ooc/1.0/0.1/oracle/rmd:ci95": [
+   314.71775382689043,
+   317.8079365150494
+  ],
+  "prod:ooc/1.0/0.1/oracle/rmd": 316.2628451709699,
+  "prod:ooc/1.5/0.1/conventional/rmd:ci95": [
+   202.93574824668116,
+   207.58734546042058
+  ],
+  "prod:ooc/1.5/0.1/conventional/rmd": 205.26154685355087,
+  "prod:ooc/1.5/0.1/garch/rmd:ci95": [
+   245.61366150840314,
+   252.66998776349948
+  ],
+  "prod:ooc/1.5/0.1/garch/rmd": 249.1418246359513,
+  "prod:ooc/1.5/0.1/rf/rmd:ci95": [
+   237.90669336867293,
+   248.61489047812321
+  ],
+  "prod:ooc/1.5/0.1/rf/rmd": 243.26079192339807,
+  "prod:ooc/1.5/0.1/oracle/rmd:ci95": [
+   249.11351221648843,
+   253.537065277401
+  ],
+  "prod:ooc/1.5/0.1/oracle/rmd": 251.32528874694472,
+  "prod:ooc/2.0/0.1/conventional/rmd:ci95": [
+   129.85848402393333,
+   133.4399323216303
+  ],
+  "prod:ooc/2.0/0.1/conventional/rmd": 131.6492081727818,
+  "prod:ooc/2.0/0.1/garch/rmd:ci95": [
+   196.18136176676703,
+   207.1370250640836
+  ],
+  "prod:ooc/2.0/0.1/garch/rmd": 201.6591934154253,
+  "prod:ooc/2.0/0.1/rf/rmd:ci95": [
+   183.53131412712074,
+   199.9721435672897
+  ],
+  "prod:ooc/2.0/0.1/rf/rmd": 191.75172884720521,
+  "prod:ooc/2.0/0.1/oracle/rmd:ci95": [
+   202.44849935089985,
+   206.93004749047282
+  ],
+  "prod:ooc/2.0/0.1/oracle/rmd": 204.68927342068633,
+  "prod:ooc/3.0/0.1/conventional/rmd:ci95": [
+   62.07393409991197,
+   64.00058835724761
+  ],
+  "prod:ooc/3.0/0.1/conventional/rmd": 63.037261228579794,
+  "prod:ooc/3.0/0.1/garch/rmd:ci95": [
+   132.8481095250403,
+   146.42150335628764
+  ],
+  "prod:ooc/3.0/0.1/garch/rmd": 139.63480644066397,
+  "prod:ooc/3.0/0.1/rf/rmd:ci95": [
+   115.33417090773911,
+   137.4449701495626
+  ],
+  "prod:ooc/3.0/0.1/rf/rmd": 126.38957052865085,
+  "prod:ooc/3.0/0.1/oracle/rmd:ci95": [
+   140.33207121286782,
+   144.26152613808168
+  ],
+  "prod:ooc/3.0/0.1/oracle/rmd": 142.29679867547475,
+  "prod:ooc/1.5/0.1/conventional/x_20": 0.05429556163764042,
+  "prod:ooc/1.5/0.1/garch/x_20": 0.044003981099895985,
+  "prod:ooc/1.5/0.1/rf/x_20": 0.044955097419183916,
+  "prod:ooc/1.5/0.1/oracle/x_20": 0.04378760538912053,
+  "prod:ooc/2.0/0.1/conventional/x_20": 0.12580132679644876,
+  "prod:ooc/2.0/0.1/garch/x_20": 0.0981144995077195,
+  "prod:ooc/2.0/0.1/rf/x_20": 0.09979729791875548,
+  "prod:ooc/2.0/0.1/oracle/x_20": 0.09844719916031852,
+  "prod:ooc/3.0/0.1/conventional/x_20": 0.28195133842738673,
+  "prod:ooc/3.0/0.1/garch/x_20": 0.22028799883088573,
+  "prod:ooc/3.0/0.1/rf/x_20": 0.22007655276665541,
+  "prod:ooc/3.0/0.1/oracle/x_20": 0.22301820846306816,
+  "prod:masking/1.5/garch/M:ci95": [
+   0.22562130887036294,
+   0.2613089142789613
+  ],
+  "prod:masking/1.5/garch/M": 0.24346511157466214,
+  "prod:masking/1.5/rf/M:ci95": [
+   0.304888132696391,
+   0.37971818196655455
+  ],
+  "prod:masking/1.5/rf/M": 0.34230315733147276,
+  "prod:masking/1.5/oracle/M:ci95": [
+   0.22938848260357034,
+   0.23037116214431572
+  ],
+  "prod:masking/1.5/oracle/M": 0.22987982237394303,
+  "prod:masking/2.0/garch/M:ci95": [
+   0.18231996788605292,
+   0.21350638796970361
+  ],
+  "prod:masking/2.0/garch/M": 0.19791317792787827,
+  "prod:masking/2.0/rf/M:ci95": [
+   0.26850720517514903,
+   0.3481689319882645
+  ],
+  "prod:masking/2.0/rf/M": 0.30833806858170676,
+  "prod:masking/2.0/oracle/M:ci95": [
+   0.18530430852209887,
+   0.18613511041289396
+  ],
+  "prod:masking/2.0/oracle/M": 0.1857197094674964,
+  "prod:masking/3.0/garch/M:ci95": [
+   0.13210197143267158,
+   0.15684429360903726
+  ],
+  "prod:masking/3.0/garch/M": 0.14447313252085442,
+  "prod:masking/3.0/rf/M:ci95": [
+   0.2371785794858936,
+   0.32568126003626574
+  ],
+  "prod:masking/3.0/rf/M": 0.28142991976107967,
+  "prod:masking/3.0/oracle/M:ci95": [
+   0.13417108687891716,
+   0.1348042123855619
+  ],
+  "prod:masking/3.0/oracle/M": 0.13448764963223953,
+  "prod:paired/1.0/0.1/rf - garch/dH/mean": 0.2735781644535002,
+  "prod:paired/1.5/0.1/rf - garch/dH/mean": -6.05312145763863,
+  "prod:paired/1.5/0.1/rf - garch/dH/mean:ci95": [
+   -10.47405561612136,
+   -1.6321872991559
+  ],
+  "holm:1.5/0.1/rf - garch/dH:p": 0.009894886866629189,
+  "holm:1.5/0.1/rf - garch/dH:p_holm": 0.053269536812497534,
+  "prod:paired/2.0/0.1/rf - garch/dH/mean": -9.942855101225271,
+  "prod:paired/2.0/0.1/rf - garch/dH/mean:ci95": [
+   -17.081676121132013,
+   -2.8040340813185294
+  ],
+  "holm:2.0/0.1/rf - garch/dH:p": 0.008878256135416256,
+  "holm:2.0/0.1/rf - garch/dH:p_holm": 0.053269536812497534,
+  "prod:paired/3.0/0.1/rf - garch/dH/mean": -13.13323870116037,
+  "prod:paired/3.0/0.1/rf - garch/dH/mean:ci95": [
+   -22.875061029510782,
+   -3.3914163728099584
+  ],
+  "holm:3.0/0.1/rf - garch/dH:p": 0.010896487108313415,
+  "holm:3.0/0.1/rf - garch/dH:p_holm": 0.053269536812497534,
+  "prod:paired/1.5/0.1/rf - garch/x_20/mean": 0.0008873821070793991,
+  "prod:paired/1.5/0.1/rf - garch/x_20/mean:ci95": [
+   -0.0020773755915455476,
+   0.0038521398057043458
+  ],
+  "holm:1.5/0.1/rf - garch/x_20:p": 0.5384656947341081,
+  "holm:1.5/0.1/rf - garch/x_20:p_holm": 1.0,
+  "prod:paired/2.0/0.1/rf - garch/x_20/mean": 0.0013223240231508497,
+  "prod:paired/2.0/0.1/rf - garch/x_20/mean:ci95": [
+   -0.002710343111293953,
+   0.005354991157595653
+  ],
+  "holm:2.0/0.1/rf - garch/x_20:p": 0.5008086166916189,
+  "holm:2.0/0.1/rf - garch/x_20:p_holm": 1.0,
+  "prod:paired/3.0/0.1/rf - garch/x_20/mean": -0.000542828615298985,
+  "prod:paired/3.0/0.1/rf - garch/x_20/mean:ci95": [
+   -0.009218138017817703,
+   0.008132480787219731
+  ],
+  "holm:3.0/0.1/rf - garch/x_20:p": 0.897180525027807,
+  "holm:3.0/0.1/rf - garch/x_20:p_holm": 1.0,
+  "prod:paired/1.0/0.1/rf - conventional/dH/mean": -3.8005103105519202,
+  "prod:paired/1.5/0.1/rf - conventional/dH/mean": 37.53825400899761,
+  "prod:paired/1.5/0.1/rf - conventional/dH/mean:ci95": [
+   32.96160362142732,
+   42.1149043965679
+  ],
+  "holm:1.5/0.1/rf - conventional/dH:p": 5.013926981347021e-13,
+  "holm:1.5/0.1/rf - conventional/dH:p_holm": 6.016712377616424e-12,
+  "prod:paired/2.0/0.1/rf - conventional/dH/mean": 60.402156465448115,
+  "prod:paired/2.0/0.1/rf - conventional/dH/mean:ci95": [
+   52.96138532085014,
+   67.84292761004609
+  ],
+  "holm:2.0/0.1/rf - conventional/dH:p": 6.033240829310627e-13,
+  "holm:2.0/0.1/rf - conventional/dH:p_holm": 6.636564912241689e-12,
+  "prod:paired/3.0/0.1/rf - conventional/dH/mean": 63.628658291159034,
+  "prod:paired/3.0/0.1/rf - conventional/dH/mean:ci95": [
+   53.00529331797949,
+   74.25202326433858
+  ],
+  "holm:3.0/0.1/rf - conventional/dH:p": 1.2339845243780886e-10,
+  "holm:3.0/0.1/rf - conventional/dH:p_holm": 9.871876195024708e-10,
+  "prod:paired/1.5/0.1/rf - conventional/x_20/mean": -0.008087818020811214,
+  "prod:paired/1.5/0.1/rf - conventional/x_20/mean:ci95": [
+   -0.01099559911030833,
+   -0.005180036931314098
+  ],
+  "holm:1.5/0.1/rf - conventional/x_20:p": 1.3138464435510195e-05,
+  "holm:1.5/0.1/rf - conventional/x_20:p_holm": 9.196925104857136e-05,
+  "prod:paired/2.0/0.1/rf - conventional/x_20/mean": -0.025132668401639146,
+  "prod:paired/2.0/0.1/rf - conventional/x_20/mean:ci95": [
+   -0.029047900832555654,
+   -0.021217435970722637
+  ],
+  "holm:2.0/0.1/rf - conventional/x_20:p": 3.757033509068428e-11,
+  "holm:2.0/0.1/rf - conventional/x_20:p_holm": 3.381330158161585e-10,
+  "prod:paired/3.0/0.1/rf - conventional/x_20/mean": -0.06083528650347595,
+  "prod:paired/3.0/0.1/rf - conventional/x_20/mean:ci95": [
+   -0.06930769639855805,
+   -0.05236287660839385
+  ],
+  "holm:3.0/0.1/rf - conventional/x_20:p": 5.3217016721152666e-12,
+  "holm:3.0/0.1/rf - conventional/x_20:p_holm": 5.321701672115267e-11,
+  "spy:fit/garch/alpha+beta": 0.9955197027613598,
+  "spy:fit/garch/omega": 0.005126677586100864,
+  "spy:fit/garch/alpha": 0.05925933778942977,
+  "spy:fit/garch/beta": 0.9362603649719301,
+  "spy:fit/garch/nu": 7.631184869955294,
+  "spy:fit/s2": 1.1442717554286335,
+  "spy:fit/moments/m4": 1.0038853345748124,
+  "spy:fit/moments/half_life_days": 154.36325514866053,
+  "spy:limits/h/0.1/conventional": 1.9572122422082838,
+  "spy:cal/0.1/conventional": 500.129,
+  "spy:val/0.1/conventional": 483.505,
+  "spy:val/0.1/conventional:ci95": [
+   459.51512170919193,
+   507.49487829080806
+  ],
+  "spy:limits/h/0.1/garch": 2.597957406745324,
+  "spy:cal/0.1/garch": 500.1115,
+  "spy:val/0.1/garch": 489.203,
+  "spy:val/0.1/garch:ci95": [
+   468.59447886921157,
+   509.8115211307884
+  ],
+  "spy:limits/h/0.1/rf": 2.470461171705991,
+  "spy:cal/0.1/rf": 500.131,
+  "spy:val/0.1/rf": 477.376,
+  "spy:val/0.1/rf:ci95": [
+   456.50145244600566,
+   498.2505475539943
+  ],
+  "spy:limits/h/0.2/conventional": 2.870178558822662,
+  "spy:cal/0.2/conventional": 500.6065,
+  "spy:val/0.2/conventional": 476.3705,
+  "spy:val/0.2/conventional:ci95": [
+   452.83993529313807,
+   499.9010647068619
+  ],
+  "spy:limits/h/0.2/garch": 4.0604888244007356,
+  "spy:cal/0.2/garch": 500.7535,
+  "spy:val/0.2/garch": 506.529,
+  "spy:val/0.2/garch:ci95": [
+   485.42451388682355,
+   527.6334861131764
+  ],
+  "spy:limits/h/0.2/rf": 3.9010901310267716,
+  "spy:cal/0.2/rf": 500.1915,
+  "spy:val/0.2/rf": 487.684,
+  "spy:val/0.2/rf:ci95": [
+   466.16310308777656,
+   509.2048969122235
+  ],
+  "spy:monitoring/0.1/conventional/exceedance_days": 638,
+  "spy:monitoring/0.1/conventional/exceedance_fraction": 0.12844775518421583,
+  "spy:monitoring/0.1/conventional/episodes": 44,
+  "spy:monitoring/0.1/conventional/longest_episode_days": 183,
+  "spy:forecast_diag/conventional/qlike_proxy": 1.4617555142257717,
+  "spy:forecast_diag/conventional/acf1_u": 0.2727478663501898,
+  "spy:forecast_diag/conventional/max_d": 1.1442717554286335,
+  "spy:monitoring/0.1/garch/exceedance_days": 143,
+  "spy:monitoring/0.1/garch/exceedance_fraction": 0.02879001409301389,
+  "spy:monitoring/0.1/garch/episodes": 20,
+  "spy:monitoring/0.1/garch/longest_episode_days": 24,
+  "spy:forecast_diag/garch/qlike_proxy": 0.915097089673741,
+  "spy:forecast_diag/garch/acf1_u": 0.055758605592979356,
+  "spy:forecast_diag/garch/max_d": 27.396637276292928,
+  "spy:monitoring/0.1/rf/exceedance_days": 216,
+  "spy:monitoring/0.1/rf/exceedance_fraction": 0.04348701429434266,
+  "spy:monitoring/0.1/rf/episodes": 27,
+  "spy:monitoring/0.1/rf/longest_episode_days": 61,
+  "spy:forecast_diag/rf/qlike_proxy": 0.9855176739090777,
+  "spy:forecast_diag/rf/acf1_u": 0.11486731965907479,
+  "spy:forecast_diag/rf/max_d": 3.366703524308682,
+  "spy:ref/2007-08-09/conventional/z_over_h": 1.1715854660202647,
+  "spy:ref/2007-08-09/garch/z_over_h": 0.8720936945674508,
+  "spy:ref/2007-08-09/rf/z_over_h": 0.7047557326807186,
+  "spy:ref/2008-09-15/conventional/z_over_h": 1.9729927225389998,
+  "spy:ref/2008-09-15/garch/z_over_h": 0.9432931425118819,
+  "spy:ref/2008-09-15/rf/z_over_h": 0.7917910544349772,
+  "spy:ref/2010-05-06/conventional/z_over_h": 1.1427780662605473,
+  "spy:ref/2010-05-06/garch/z_over_h": 1.139975879364593,
+  "spy:ref/2010-05-06/rf/z_over_h": 0.935527937091175,
+  "spy:ref/2011-08-08/conventional/z_over_h": 3.3434305221539375,
+  "spy:ref/2011-08-08/garch/z_over_h": 1.795854786277527,
+  "spy:ref/2011-08-08/rf/z_over_h": 1.6861050523500734,
+  "spy:ref/2015-08-24/conventional/z_over_h": 1.5208562073823277,
+  "spy:ref/2015-08-24/garch/z_over_h": 1.572844355749473,
+  "spy:ref/2015-08-24/rf/z_over_h": 1.526773527545844,
+  "spy:ref/2018-02-05/conventional/z_over_h": 1.1512531946199271,
+  "spy:ref/2018-02-05/garch/z_over_h": 1.995779056307787,
+  "spy:ref/2018-02-05/rf/z_over_h": 2.0326627103163886,
+  "spy:ref/2020-02-24/conventional/z_over_h": 0.7215354671314487,
+  "spy:ref/2020-02-24/garch/z_over_h": 1.1814611973350178,
+  "spy:ref/2020-02-24/rf/z_over_h": 0.8640103270281347,
+  "spy:ref/2024-08-05/conventional/z_over_h": 0.937638337000076,
+  "spy:ref/2024-08-05/garch/z_over_h": 1.0859473418066532,
+  "spy:ref/2024-08-05/rf/z_over_h": 1.0080701709554192,
+  "spy:ref/2025-04-03/conventional/z_over_h": 1.6433614797216332,
+  "spy:ref/2025-04-03/garch/z_over_h": 1.173861766319791,
+  "spy:ref/2025-04-03/rf/z_over_h": 0.9318076441678564
+ }
+}

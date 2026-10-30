@@ -1,0 +1,159 @@
+{
+  "run": "results/runs/spy_20261027T061202_150671",
+  "inputs_sha256": {
+    "results.json": "877b5f09696a71b3cf431bbed4d88b72a1e7e449d29a309d17e3db0b5ff7749d",
+    "monitor.csv": "3ba200940c1853863139445f23fb929ac4f0ebfb6d65fedc5d8352d3b16c90c1",
+    "frozen.json": "5a979745a0e50c1b877f7e14592a1e211713a05538294b9cd29e1765ab4d0c4b",
+    "fig_spy_charts.png": "1ff776b95946972f2dc851c380fd971a65899457d777b5a13a973e4c0c1ab3be",
+    "fig_spy_variance.png": "ac83e6369c52e2dbd16b0b04d2d6331e38530916fba9438b8c8b6c9a5397db0b"
+  },
+  "outputs_sha256": {
+    "fig_spy_charts.png": "0f87a8010116bb8aa86a8ef81035a98201587ecc007064469fc94358bd3e3dd3",
+    "fig_spy_variance.png": "7b3b2359b716a7b1f8e65d293d3e3851e48d8be715c0724df977ff5a24c3b1e7"
+  },
+  "checks": [
+    {
+      "check": "frozen results.json, monitor.csv, frozen.json and both original PNGs have their recorded SHA-256",
+      "ok": true
+    },
+    {
+      "check": "charts/conventional: plotted series equals monitor.csv z_conventional_0.1 / stored h* exactly",
+      "ok": true
+    },
+    {
+      "check": "charts/conventional: x equals the monitoring dates",
+      "ok": true
+    },
+    {
+      "check": "charts/conventional: y label names the chart and the stored h* (1.957)",
+      "ok": true
+    },
+    {
+      "check": "charts/conventional: 9 reference lines at the frozen dates",
+      "ok": true
+    },
+    {
+      "check": "charts/conventional: horizontal control limit at 1",
+      "ok": true
+    },
+    {
+      "check": "charts/garch: plotted series equals monitor.csv z_garch_0.1 / stored h* exactly",
+      "ok": true
+    },
+    {
+      "check": "charts/garch: x equals the monitoring dates",
+      "ok": true
+    },
+    {
+      "check": "charts/garch: y label names the chart and the stored h* (2.598)",
+      "ok": true
+    },
+    {
+      "check": "charts/garch: 9 reference lines at the frozen dates",
+      "ok": true
+    },
+    {
+      "check": "charts/garch: horizontal control limit at 1",
+      "ok": true
+    },
+    {
+      "check": "charts/rf: plotted series equals monitor.csv z_rf_0.1 / stored h* exactly",
+      "ok": true
+    },
+    {
+      "check": "charts/rf: x equals the monitoring dates",
+      "ok": true
+    },
+    {
+      "check": "charts/rf: y label names the chart and the stored h* (2.470)",
+      "ok": true
+    },
+    {
+      "check": "charts/rf: 9 reference lines at the frozen dates",
+      "ok": true
+    },
+    {
+      "check": "charts/rf: horizontal control limit at 1",
+      "ok": true
+    },
+    {
+      "check": "variance/returns: plotted series equals monitor.csv r exactly",
+      "ok": true
+    },
+    {
+      "check": "variance/conventional: denominator equals monitor.csv d_conventional exactly",
+      "ok": true
+    },
+    {
+      "check": "variance/garch: denominator equals monitor.csv d_garch exactly",
+      "ok": true
+    },
+    {
+      "check": "variance/rf: denominator equals monitor.csv d_rf exactly",
+      "ok": true
+    },
+    {
+      "check": "charts: no axes-level legend",
+      "ok": true
+    },
+    {
+      "check": "charts: one figure legend",
+      "ok": true
+    },
+    {
+      "check": "charts: legend overlaps no axes",
+      "ok": true
+    },
+    {
+      "check": "charts: no text inside any plotting area (only above the top axis edge)",
+      "ok": true
+    },
+    {
+      "check": "charts: legend inside the figure",
+      "ok": true
+    },
+    {
+      "check": "charts: x label inside the figure, above the legend",
+      "ok": true
+    },
+    {
+      "check": "variance: no axes-level legend",
+      "ok": true
+    },
+    {
+      "check": "variance: one figure legend",
+      "ok": true
+    },
+    {
+      "check": "variance: legend overlaps no axes",
+      "ok": true
+    },
+    {
+      "check": "variance: no text inside any plotting area (only above the top axis edge)",
+      "ok": true
+    },
+    {
+      "check": "variance: legend inside the figure",
+      "ok": true
+    },
+    {
+      "check": "variance: x label inside the figure, above the legend",
+      "ok": true
+    },
+    {
+      "check": "original fig_spy_charts.png unchanged",
+      "ok": true
+    },
+    {
+      "check": "original fig_spy_variance.png unchanged",
+      "ok": true
+    },
+    {
+      "check": "every frozen run file unchanged",
+      "ok": true
+    }
+  ],
+  "n_checks": 35,
+  "n_passed": 35,
+  "all_passed": true
+}

@@ -2,6 +2,8 @@
 
 *Version 1.0, 13 Oct 2026. Zotero collection: `STC-720-lib` (key K7HN6JFW), 10 items, no duplicates (checked 13 Oct 2026). DOIs and bibliographic fields were checked against Crossref.*
 
+*Version 1.1, 30 Oct 2026: the collection was re-checked through the Zotero MCP before the report bibliography was built. [11] was upgraded to FT-pre, and [13]–[16] were added (see "Report references added 30 Oct 2026"). The report's `report/refs.bib` contains only entries listed here.*
+
 ## Evidence-status codes
 
 | Code | Meaning | What may be claimed |
@@ -123,18 +125,64 @@
 
 ## Variance-targeting references (SPY post-stop refinement, 27 Oct 2026)
 
-These are **not in the Zotero library**, and their full texts **have not been reviewed**. The bibliographic details below were verified independently by the student on 27 Oct 2026 and located by web search (IDEAS/RePEc; MPRA). Status: **bibliographic only** (weaker than MD: no abstract was read through Zotero).
+*Original note (27 Oct 2026, superseded for [11]):* these were not in the Zotero library, and their full texts had not been reviewed. The bibliographic details were verified independently by the student on 27 Oct 2026 and located by web search (IDEAS/RePEc; MPRA); status: bibliographic only.
 
-**[11] Francq, C., Horváth, L., & Zakoïan, J.-M. (2011).** Merits and drawbacks of variance targeting in GARCH models. *Journal of Financial Econometrics*, 9(4), 619–656. https://doi.org/10.1093/jjfinec/nbr004
+*Update (30 Oct 2026):* [11] is now in the collection and its preprint full text has been read (status FT-pre, below). [12] remains bibliographic only.
 
-- **Role.** The main theoretical reference for variance targeting in the SPY application.
-- **May be claimed.** Variance targeting reparameterizes the GARCH model so that the unconditional variance is set equal to a first-step sample estimate, with the remaining parameters estimated in a second step. The paper studies the method's statistical properties (title and bibliographic level; consistent with the publisher's and RePEc abstracts as seen in search results).
-- **Must not be claimed.** Any specific theorem, asymptotic condition (such as moment requirements), numerical result or recommendation, until the full text has been read.
+**[11] Francq, C., Horváth, L., & Zakoïan, J.-M. (2011).** Merits and drawbacks of variance targeting in GARCH models. *Journal of Financial Econometrics*, 9(4), 619–656. https://doi.org/10.1093/jjfinec/nbr004 — Zotero `CSYSIDTC` (in the collection since 27 Oct 2026)
+
+- **Status:** FT-pre (upgraded 30 Oct 2026). The attachment is the MPRA preprint (No. 15143, dated 3 May 2009); the published version was not inspected, so quote no page numbers.
+- **Verified content:**
+  - **Definition.** VTE reparameterizes the model and estimates the unconditional variance in a first step by the sample variance; the remaining parameters are estimated by QML in a second step (abstract, §2).
+  - **Attribution.** "Engle and Mezrich (1996) proposed a two-step estimation method, the so-called variance targeting estimation" (§1).
+  - **Consistency.** Strong consistency under A1–A2 (Thm 2.1; Thm 3.1 for GARCH(p,q)), without a fourth-moment condition.
+  - **Asymptotic normality** additionally requires A3, i.e. E ε⁴ < ∞: "the asymptotic normality of the VTE requires the existence of E(ε⁴), whereas the strict stationarity is sufficient for the asymptotic normality of the QMLE" (after Cor. 2.1).
+  - **Efficiency.** The VTE cannot be asymptotically more efficient than the QMLE (Prop. 3.1).
+  - **Index returns.** In their application, the moment assumption is "questionable" for daily index returns: the plug-in ρ₄ is often close to or above 1, and the VTE and QMLE estimates are very close (§5, Table 4).
+- **Scope caveat.** Their second step is Gaussian QML. The SPY fit uses a Student-t likelihood with variance targeting, so the theory is context, not a result proven for this estimator. The SPY fit's fourth-moment coefficient (1.0039 ≥ 1) means their condition for asymptotic normality is not met; no standard errors of the SPY GARCH parameters are used.
 
 **[12] Engle, R. F., & Mezrich, J. (1996).** GARCH for groups. *Risk*, 9(8), 36–40.
 
 - **Role.** The conventional attribution of variance targeting, cited only as the origin of the term and method.
 - **Must not be claimed.** Any content of the article; it has not been seen.
+
+## Report references added 30 Oct 2026 (added to Zotero by the student; verified through the Zotero MCP)
+
+**[13] Holm, S. (1979).** A simple sequentially rejective multiple test procedure. *Scandinavian Journal of Statistics*, 6(2), 65–70. https://www.jstor.org/stable/4615733 — Zotero `C4HQY975`
+
+- **Status:** FT (JSTOR PDF).
+- **Zotero metadata error.** The item's Date field reads "2026"; the PDF shows 1979. `refs.bib` uses 1979. The student may correct the Zotero record.
+- **Used for:**
+  - the sequentially rejective Bonferroni (Holm) procedure (Scheme 1);
+  - Thm 1: the procedure has multiple level of significance α "for free combinations";
+  - it is based only on the Boole inequality, so it needs no independence assumption.
+
+**[14] Brook, D., & Evans, D. A. (1972).** An approach to the probability distribution of cusum run length. *Biometrika*, 59(3), 539–549. https://doi.org/10.1093/biomet/59.3.539 — Zotero `ADFDWYXE`
+
+- **Status:** FT (JSTOR PDF).
+- **Used for:**
+  - the Markov-chain representation of a control scheme, with ARL = first element of (I − R)⁻¹1 (eq. 3.2);
+  - the geometric-type tail of the run-length distribution for large r (eqs. 3.8–3.10);
+  - the discretization of a continuous state space (§4).
+- **Scope.** The paper treats CUSUM schemes. Its application to EWMA is from [15].
+
+**[15] Lucas, J. M., & Saccucci, M. S. (1990).** Exponentially weighted moving average control schemes: properties and enhancements. *Technometrics*, 32(1), 1–12. https://doi.org/10.1080/00401706.1990.10484583 — Zotero `39EH4MU6`
+
+- **Status:** FT.
+- **Used for:**
+  - the EWMA statistic Z_i = λY_i + (1 − λ)Z_{i−1}, 0 < λ ≤ 1 (eq. 1.1);
+  - the continuous-state Markov-chain evaluation of EWMA run lengths "following a procedure similar to that of Brook and Evans (1972)", with ARL = pᵀ(I − R)⁻¹1 (App. A, eq. A.2);
+  - the in-control EWMA run-length distribution is "nearly geometric" except for small run lengths (Fig. 2; iid normal observations);
+  - small λ is useful for small shifts (Table 4, §4).
+- **Scope.** Their results are for iid normal observations monitoring a mean. One-sided EWMA schemes are referred to Robinson & Ho (1978), which is not in the library.
+
+**[16] Lee, I., Park, S. H., & Baek, J.-G. (2020).** Random-forest-based real-time contrasts control chart using adaptive breakpoints with symbolic aggregate approximation. *Expert Systems with Applications*, 158, 113407. https://doi.org/10.1016/j.eswa.2020.113407 — Zotero `EK5T7WB3`
+
+- **Status:** MD with abstract (a PDF is attached; the full text was not reviewed).
+- **May be claimed** (abstract level): random-forest classifiers have been used inside control charts, here a real-time-contrasts (RTC) chart whose monitoring statistics come from RF classification, improved with an adaptive-breakpoint SAX representation.
+- **Scope.** This is a materially different formulation (a classifier-based RTC chart for process data). It does not validate RF–EWMA variance monitoring.
+
+**Still metadata only:** [7] MacGregor & Harris (1993), with no attachment in Zotero (re-checked 30 Oct 2026), and [10] Lu & Reynolds (1999). **[12] Engle & Mezrich (1996)** is still not in Zotero; it may be cited only as the origin of the term, as attributed by [11].
 
 ## Library items not cited (for reference)
 

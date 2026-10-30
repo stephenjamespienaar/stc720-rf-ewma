@@ -25,7 +25,10 @@
 ## Commands
 
 ```bash
-.venv/bin/python -m pytest -q                 # 101 passed (27 Oct 2026: 85 + 16 SPY synthetic tests in tests/test_spy.py)
+.venv/bin/python -m pytest -q                 # 134 passed (30 Oct 2026)
+.venv/bin/python scripts/spy_figures.py       # derived SPY figures from the frozen SPY run (refuses to overwrite results/derived/spy_figures/)
+.venv/bin/python scripts/paper_assets.py      # report tables, figure copies and values.json from frozen results (hash-checked)
+(cd report && latexmk -pdf main.tex)          # build the report
 scripts/run_simulation.sh smoke               # tiny end-to-end run (~2 s); checks execution, not ARL0 validation
 scripts/run_simulation.sh verify              # smoke twice; compares results hashes
 scripts/run_simulation.sh pilot               # reduced pilot (~4 s); canonical hash f92f0715… came from the PRE-remediation source (see below)
@@ -33,7 +36,7 @@ scripts/run_simulation.sh pilot               # reduced pilot (~4 s); canonical 
 #   scripts/run_simulation.sh benchmark --approved      (already run once, 14 Oct 2026; do not repeat)
 #   scripts/run_simulation.sh production --approved     (run once, 14 Oct 2026; frozen; no rerun authorized)
 #   scripts/run_simulation.sh sensitivity_arl100 --approved
-# NOT YET AUTHORIZED: scripts/run_simulation.sh spy --approved   (downloads the SPY snapshot once, fits, calibrates, monitors; needs START SPY APPLICATION)
+# EXECUTED 27 Oct 2026 (spy_20261027T061202_150671); NO FURTHER SPY RUN AUTHORIZED: scripts/run_simulation.sh spy --approved
 # Without --approved the wrapper exits 2 before creating a directory; run.py exits before writing anything.
 ```
 

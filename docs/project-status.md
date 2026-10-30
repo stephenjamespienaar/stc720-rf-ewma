@@ -2,9 +2,13 @@
 
 *Authoritative progress record for the STC 720 project. It is read at the start of every session through the `stc720-project` skill ([`.claude/skills/stc720-project/SKILL.md`](../.claude/skills/stc720-project/SKILL.md)) and `CLAUDE.md` §19.*
 
-## P1–P5 DONE; SPY APPLICATION EXECUTED AND VERIFIED (27 OCT 2026); NEXT: FINAL PAPER
+## FINAL PAPER STAGE 1 DONE (30 OCT 2026): SPY FIGURES CORRECTED, REPORT SCAFFOLD AND VERIFIED TABLES; AWAITING THE USER'S REVIEW BEFORE PROSE DRAFTING
 
-*Last updated: **2026-10-27** (P4/P5, on HEAD `8ef46aa`, verified with `git rev-parse HEAD`; P4/P5 files uncommitted).*
+**Next session: start with [`next-session-handover.md`](next-session-handover.md) (authoritative handover, 30 Oct 2026).** First task: the publication-size figure readability correction, approved by the user on 30 Oct 2026 and **not yet done**. Then Stage 2 drafting.
+
+*Last updated: **2026-10-30** (final-paper Stage 1, on HEAD `5fcdf6b` = `origin/main`, verified with `git rev-parse HEAD` and a read-only `git ls-remote`; Stage 1 files uncommitted).*
+
+*Previous update: **2026-10-27** (P4/P5, on HEAD `8ef46aa`).*
 - *P4/P5 exploratory diagnostics: DONE (27 Oct 2026; `docs/p45_diagnostics_report.md`; descriptive, post hoc). P4: RF − GARCH between-system spread is 3.4–8.2× the MC SE under a change (1.2× at δ = 1) and stable within systems (ρ 0.85–0.97); the strongest association is with the masking gap (ρ −0.80 to −0.89); no pattern by RF cell. P5: equal ARL₀, different shapes: the conventional chart is over-dispersed (CV 1.04) with P(T < τ) 0.125, against a geometric 0.093; GARCH and the oracle are near-geometric; survivor conditioning is non-neutral, which is consistent with the −3.8-day RF − conventional δ = 1 baseline.*
 - ***Priorities now: (1) the SPY application** (rubric §5, Illustrative example, within the 35-mark results block). It needs the user's explicit authorization and preparation items S1–S3. **(2) The final research paper.** **The ARL₀ = 100 sensitivity is DEFERRED** (user, 27 Oct 2026): not authorized, and not permanently dropped.*
 
@@ -42,6 +46,66 @@
 - *read-only `git status` / `git diff --check`*
 
 ## Verified checkpoint
+
+**FINAL PAPER STAGE 1 (30 Oct 2026; the user approved the completion plan with 10 amendments; no simulation, refit, recalibration, download or Git write).**
+
+*Git and repository*
+- HEAD `5fcdf6b` ("docs: record completed SPY application and update Git exclusions", user commit) equals `origin/main`.
+- The public repository is `https://github.com/stephenjamespienaar/stc720-rf-ewma` (remote `origin`; the user's statement, confirmed read-only with `git ls-remote`).
+
+*User decisions (30 Oct 2026)*
+- LaTeX PDF; the paper follows the rubric structure exactly.
+- No code appendix, code listings, file paths or reproduction commands in the paper; only a Code Availability statement with the URL above.
+- Mixed drafting: Claude drafts the technical sections (literature review inside §1, §2, §3, results in §4, §5); the student writes the Introduction framing, the Discussion (inside §4), the Conclusion and the Abstract.
+- Use "pre-specified", not "pre-registered".
+- Keep simulation RMD₅₀₀ distinct from the SPY target E[min(T, 5000)] = 500.
+- Figure priority is clarity: drop secondary figures before shrinking anything.
+
+*SPY figure correction (derived only)*
+- `src/application.py` `figures()`, plotting only:
+  - both legends moved to a figure strip below the axes;
+  - the in-panel chart labels moved into the y-axis labels. They had hidden 27 points of the conventional 2008 peak, the GARCH 2007-02-27 spike and 11 points of the RF October 2008 peak; the second legend also covered the 2008 GARCH-denominator peak;
+  - the figure title now says "pre-specified reference dates" and states λ.
+- Regression test `tests/test_spy.py::test_spy_figure_legends_never_cover_the_data`. It fails on the committed code (scratch copy), and a mutation that restores in-panel labels is caught.
+- `scripts/spy_figures.py` regenerates the figures from the frozen `results.json` and `monitor.csv` (hash-asserted) into `results/derived/spy_figures/`: `fig_spy_charts.png` `0f87a801…`, `fig_spy_variance.png` `7b3b2359…`.
+  - 35/35 checks: plotted series equal the stored series exactly; h* labels; 9 reference lines; legend and text outside every axes; the original PNGs `1ff776b9…` and `ac83e636…` and every frozen run file unchanged.
+  - Visually inspected.
+
+*Tests*
+- `tests/test_core.py::test_git_provenance_classifies_untracked_files` had failed after the user's `.gitignore` change in `5fcdf6b`. Cause: `.serena/` is now ignored, so it is not reported as untracked; that is correct behaviour.
+- The test now requires `.serena/ (…)` only when `.serena/` is untracked and not ignored, and `none` otherwise.
+- `.venv/bin/python -m pytest -q`: **134 passed**.
+
+*Integrity (`sha256sum -c`, after all changes)*
+- Production 17/17.
+- SPY `results.json`, `monitor.csv`, `frozen.json` and both original PNGs.
+- Snapshot `7cd6d400…`.
+
+*Zotero (MCP, 30 Oct 2026)*
+- Holm (1979), Brook & Evans (1972) and Lucas & Saccucci (1990): full text read.
+- Francq, Horváth & Zakoïan (2011): preprint full text read (FT-pre); VTE asymptotic normality requires E ε⁴ < ∞.
+- Lee, Park & Baek (2020): abstract level.
+- MacGregor & Harris (1993) is still metadata only.
+- The Holm record's Zotero date is wrong (2026; the paper is 1979).
+- Recorded in `docs/references.md` v1.1.
+
+*Report scaffold*
+- `report/main.tex`: rubric sections, page budgets, numbered core equations (1)–(3), table titles above and figure captions below, a draft AI declaration, the Code Availability statement.
+- `report/refs.bib`: 16 verified entries.
+- `scripts/paper_assets.py`:
+  - writes 6 table files to `report/tables/` and copies the 5 figures to `report/figures/` byte-identically;
+  - `values.json` holds 208 full-precision values for tracing in-text numbers;
+  - **110/110 checks**: input hashes, Holm rows equal the frozen estimates, and every printed value equals the value recorded in the project documents;
+  - 3 mutations caught.
+- `latexmk -pdf`: exit 0, 8 pages, with no LaTeX warnings, no overfull boxes and no undefined references or citations.
+
+*Writing outlines:* `docs/paper_outlines.md` (Abstract, Introduction, Discussion, Conclusion; evidence tiers; verified numbers).
+
+*Open after Stage 1*
+1. **Figure text is too small in print.** *(Update, 30 Oct 2026 checkpoint: the correction is APPROVED by the user and NOT YET DONE; it is the next session's first task.)* The PNGs are 10–15 in wide but printed 5.4–6.3 in wide, so 10 pt text prints at 4.2–5.7 pt and 8 pt text at 3.4–4.6 pt. A plotting-only, paper-size regeneration from the frozen results is needed (production figures in `src/report.py`; SPY figures). It needs the user's approval.
+2. Remove `\nocite{*}` once the text cites its sources.
+3. Student number; final AI declaration.
+4. Stage 2 drafting after the user's review.
 
 **SPY APPLICATION EXECUTED (relaunch authorized 27 Oct 2026, "START SPY RELAUNCH"): run `results/runs/spy_20261027T061202_150671`, results hash `5725d5e3…` (`results.json` file `877b5f09…`, `monitor.csv` `3ba20094…`, `frozen.json` `5a979745…`), from clean committed `5fd5653`. Exit 0, wall 43 s, 1.34 GiB peak. Every hard-stop diagnostic passed (a, b, c, d, e); 6/6 eq. 29 validations passed; 2 recorded `e_overshoot` warnings at λ = 0.2 (conventional 0.121%, GARCH 0.151%). Frozen checks true. Independent post-run verification passed: hashes, chronology, GARCH denominators re-filtered from r_{t−1} (6.7e-16), EWMA recursion, exceedances, episodes, reference states.**
 - **λ = 0.1 monitoring, 2007–2026:**
@@ -237,9 +301,9 @@ Record:
 | Corrections C1–C7 | **Done and verified (14 Oct, session 3; uncommitted).** C1 guarded configs + `--approved` (run.py and wrapper); C2 per-path `paths.npz`; C3 estimators (eqs. 23–26); C4 `src/aggregate.py` (eqs. 27–28, explicit schema); C5 report rewrite; C6 24 new tests; C7 docs | `run.py`, `src/chart.py`, `src/aggregate.py` (new), `src/report.py`, `scripts/run_simulation.sh`, `tests/test_core.py`, `docs/methodology.md` v1.2, skill references; detail in production-plan.md "Implementation status" |
 | Smoke + verify (Phase 2 code) | **After the audit remediation:** passed; hash `afef9c4e056797a8…` (R = 2) = verify run_a = run_b. Execution and reproducibility only: at smoke size, ARL₀ validation passed in **3 of 6** primary (and 0 of 2 diagnostic) chart × λ × replicate configurations, as expected for 60 paths; this is not production validation | `results/runs/smoke_20261014T025108_77623`, `results/runs/verify_20261014T025110_77720`. Pre-remediation pairs (hash `357f5c86…`): `smoke_20261014T014934_53384` / `verify_20261014T014936_53502` and `smoke_20261014T014802_51651` / `verify_20261014T014804_51730` |
 | Pilot-report errata (A1–A8) | **All applied.** A2, A6–A8 on 14 Oct (session 2); **A1, A3, A4, A5 on 14 Oct (session 3)**, no rerun: A1 adds the 2 diagnostic rows; A3 labels M = 1 "by construction"; A4 states that M has no SE in the pilot; A5 adds X̂(k) point estimates derived exactly from stored P(D ≤ k) (SEs unavailable) | `docs/phase1_pilot_report.md` §6, §7, §8, §14 |
-| SPY application | Not started; no data downloaded | `data/raw/` holds only `.gitkeep` |
+| SPY application | **Executed and verified** (27 Oct 2026); figures corrected as derived copies (30 Oct 2026) | `results/runs/spy_20261027T061202_150671` (`5725d5e3…`); `results/derived/spy_figures/` |
 
-**Git (read-only, verified 27 Oct 2026, P4/P5):** HEAD `8ef46aa58557dc52d9f9efb5cb6cfd63293eb2df` on `main` ("fix: repair production replicate figure jitter (P3)", user commit). The P4/P5 files are uncommitted. *Earlier, P3:* HEAD `9e9c30ad31df0763af0c19742d3477c757b08e28` ("analysis: supplementary Holm adjustment of primary contrasts (P2)", user commit). *Earlier, P2:* HEAD `53552a9c96173998091e798ef6922fded4b6b686` ("audit: independently verify production primary contrasts", user commit; it commits P1 and the doc sync). *Earlier, P1:* HEAD `fb73ecd0d34d91d9c0fd69c05ee86d7445fcd950` on `main` ("docs: record first full production run and post-production checkpoint", user commit; parent `3529ddd`, the production source). *Recorded 14 Oct 2026:*
+**Git (read-only, verified 30 Oct 2026, final-paper Stage 1):** HEAD `5fcdf6bbd92d6d84e2326d85853315436553bcdb` on `main` = `origin/main` (public: `https://github.com/stephenjamespienaar/stc720-rf-ewma`); worktree clean at the session start. *Earlier, 27 Oct 2026, P4/P5:* HEAD `8ef46aa58557dc52d9f9efb5cb6cfd63293eb2df` on `main` ("fix: repair production replicate figure jitter (P3)", user commit). The P4/P5 files are uncommitted. *Earlier, P3:* HEAD `9e9c30ad31df0763af0c19742d3477c757b08e28` ("analysis: supplementary Holm adjustment of primary contrasts (P2)", user commit). *Earlier, P2:* HEAD `53552a9c96173998091e798ef6922fded4b6b686` ("audit: independently verify production primary contrasts", user commit; it commits P1 and the doc sync). *Earlier, P1:* HEAD `fb73ecd0d34d91d9c0fd69c05ee86d7445fcd950` on `main` ("docs: record first full production run and post-production checkpoint", user commit; parent `3529ddd`, the production source). *Recorded 14 Oct 2026:*
 - Branch `main`. **Phase 1 baseline commit:** `f77297b9a257bbe8ca80c858f6119219471925b8`, made by the user (author Stephen Pienaar; no trailers). Its parent is `2a06da8`.
 - HEAD `3529ddd` ("feat: finalize production design (R=20, IC validation, provenance)", user commit; parent `9b286e1`, Phase 2). The production run used this commit. Post-production documentation edits (`CLAUDE.md`, this file, the skill) are **uncommitted** until the user commits. Untracked `.serena/` is development-tool state.
 - `results/runs/` is git-ignored, so the pilot artifacts exist only locally. **Keep `pilot_20261013T075339_142070` safe.** Neither the Phase 1 committed source (slope normalisation) nor the current Phase 2 source (also new schemas, aggregation, paired intervals and reporting) reproduces its `results.json` bit-for-bit (see "Code ↔ canonical hash"). The original artifacts are the record.
@@ -323,6 +387,8 @@ None of these needs new simulation. Do them in priority order.
 
 ## Next recommended task
 
+*(30 Oct 2026.)* **The user's review of Stage 1** (the SPY figures, the scaffold PDF, the tables, the outlines and the references). Then: (a) the decision on the paper-size figure regeneration (open item 1 in the checkpoint); (b) Stage 2, Claude's technical drafting (§1 literature review, §2, §3, §4 results, §5) while the student writes the Abstract, Introduction, Discussion and Conclusion; (c) the number-tracing pass, the page-budget pass and the final AI declaration; (d) submission on 4 Nov. Earlier notes follow.
+
 *(27 Oct 2026: P1–P5 done.)* **The SPY application** (P6; only after the user's explicit authorization and S1–S3), **then the final research paper**. The ARL₀ = 100 sensitivity is deferred. *(Earlier: P4, descriptive heterogeneity investigation.)* *(Earlier: P3, figure repair from the frozen results.)* *(Earlier: P2, Holm, post hoc and supplementary, when the user instructs.)* P3–P6 are open and not yet authorized for execution. Earlier: **P1 (independent production-results audit)**, then P2–P5 in order, with no new simulation. Production reruns, the ARL₀ = 100 sensitivity, further benchmarks and SPY are **not authorized**. The earlier task notes below are kept for history.
 
 **Scientific results audit of `production_20261014T060921_145897`** (user review), then the user's decision on the figure defect (issue 17) and on the ARL₀ = 100 sensitivity run (not authorized). Earlier text:
@@ -368,3 +434,5 @@ None of these needs new simulation. Do them in priority order.
 | 2026-10-27 | **SPY finite-variance calibration implemented** (model B approved by the user; code and synthetic tests only): `sim.simulate(need_m4=False)` opt-in; diagnostics a–i in `application.limits`/`diagnose`/`run`; restricted-ARL labelling; exact split-half bounds; references [11]–[12] bibliographic only | `src/sim.py`, `src/application.py`, `run.py`, `tests/test_spy.py` (+17), methodology v1.8, `references.md`, `spy_vt_remediation.md`, this file, `CLAUDE.md`, `SKILL.md`, `research-literature.md`; production 17/17, snapshot and stopped run unchanged | **126 passed**; 4 new mutations caught | criterion e likely to stop spuriously (24/160 production calibrations exceed 10⁻³) | user: decide on e, then authorize one relaunch | calibration and relaunch NOT authorized |
 | 2026-10-27 | **Criterion e refined** (user, before any SPY calibration): overshoot becomes a recorded warning (`e_overshoot`); a non-finite, non-positive or non-minimal h*, an inconsistent restricted mean, and bracketing or bisection failure stay hard stops; justified by 24/160 production overshoots | `src/application.py` (`CalibrationError`, `diagnose`), `run.py` (`overshoot_action`), `tests/test_spy.py` (+8), methodology v1.8, `spy_vt_remediation.md`, this file, `CLAUDE.md`, `SKILL.md`; production 17/17, snapshot and stopped run unchanged | **133 passed** | none new | one SPY relaunch on the user's explicit authorization | calibration and relaunch NOT authorized |
 | 2026-10-27 | **SPY application executed** (relaunch authorized; model B, finite-variance calibration): every hard stop passed; 6/6 eq. 29; 2 overshoot warnings (λ = 0.2) | `results/runs/spy_20261027T061202_150671` (`5725d5e3…`) | 133 passed (preflight); independent post-run checks passed | Figure 1 legend overlaps the 2025 peak (cosmetic) | final paper | no further SPY runs or sensitivity authorized |
+| 2026-10-30 | **Final-paper Stage 1** (user-approved plan + 10 amendments): SPY legend and label obstruction fixed in derived copies; provenance-test assumption updated after the user's `.gitignore` change; Zotero re-check (+4 items, [11] upgraded to FT-pre); LaTeX scaffold, verified tables and figures; writing outlines | `src/application.py` (plotting only), `tests/test_spy.py` (+1), `tests/test_core.py` (provenance test), `scripts/spy_figures.py` (new), `scripts/paper_assets.py` (new), `results/derived/spy_figures/` (new), `report/main.tex`, `report/refs.bib`, `report/tables/`, `report/figures/` (new), `docs/paper_outlines.md` (new), `docs/references.md` v1.1, `.gitignore` (+`*.bbl`, `*.blg`), this file, `CLAUDE.md` §18, `SKILL.md`, `reproducibility.md`; frozen artifacts unchanged | **134 passed**; SPY figures 35/35; paper assets 110/110; 3 + 1 mutations caught; `latexmk` clean (8 pp.) | figure text too small at print size; `\nocite{*}`; student number; AI declaration | user review → Stage 2 drafting | no simulation, refit, download or Git write authorized or done |
+| 2026-10-30 | **End-of-session checkpoint** (documentation only; no tests, builds or analyses run): the user approved the plotting-only, publication-size figure readability correction (not started); handover written; stale SPY-first resume guidance in `CLAUDE.md` §19 and `SKILL.md` corrected; Git and frozen hashes re-verified read-only | `docs/next-session-handover.md` (new), this file, `CLAUDE.md`, `SKILL.md`; production 17/17, SPY outputs and snapshot unchanged | not run (no code change) | figure readability; `\nocite{*}`; student number; AI declaration; traceability and bibliography checks | figure readability correction (31 Oct), then Stage 2 | no simulation, SPY run, refit, download or Git write authorized |

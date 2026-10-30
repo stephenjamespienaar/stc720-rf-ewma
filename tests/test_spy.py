@@ -370,6 +370,25 @@ def test_reference_states_hand_example():
         app.reference_states(dates, z, 1.0, {"event_window": 3, "reference_dates": [{"date": "2020-01-04"}]})
 
 
+def test_spy_figure_legends_never_cover_the_data(runs, monkeypatch, tmp_path):
+    _, res, out = runs["a1"]
+    kept = []
+    monkeypatch.setattr(app.plt, "close", kept.append)
+    app.figures(pd.read_csv(out / "monitor.csv", parse_dates=["date"]), res, res["config"], tmp_path)
+    assert len(kept) == 2
+    for fig in kept:
+        fig.canvas.draw()
+        rend = fig.canvas.get_renderer()
+        legends = fig.legends + [ax.get_legend() for ax in fig.axes if ax.get_legend()]
+        assert legends
+        for lg in legends:
+            box = lg.get_window_extent(rend)
+            assert not any(box.overlaps(ax.get_window_extent(rend)) for ax in fig.axes)
+        for ax in fig.axes:  # text drawn inside the plotting area (e.g. panel labels) would hide data
+            top = ax.get_window_extent(rend).y1
+            assert all(t.get_window_extent(rend).y0 >= top - 1 for t in ax.texts)
+
+
 def test_reported_monitoring_counts_match_saved_series(runs):
     res, out = runs["a1"][1], runs["a1"][2]
     df = pd.read_csv(out / "monitor.csv")

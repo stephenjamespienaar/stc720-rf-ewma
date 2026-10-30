@@ -1,0 +1,446 @@
+{
+ "n_checks": 110,
+ "n_passed": 110,
+ "checks": [
+  {
+   "check": "input results/runs/production_20261014T060921_145897/results.json has its recorded SHA-256",
+   "ok": true
+  },
+  {
+   "check": "input results/derived/p2_holm/holm_summary.json has its recorded SHA-256",
+   "ok": true
+  },
+  {
+   "check": "input results/runs/spy_20261027T061202_150671/results.json has its recorded SHA-256",
+   "ok": true
+  },
+  {
+   "check": "documented value RMD 1.5 conventional: 205.3 [202.9, 207.6]",
+   "ok": true
+  },
+  {
+   "check": "documented value RMD 1.5 rf: 243.3 [237.9, 248.6]",
+   "ok": true
+  },
+  {
+   "check": "documented value RMD 1.5 garch: 249.1 [245.6, 252.7]",
+   "ok": true
+  },
+  {
+   "check": "documented value RMD 2 conventional: 131.6 [129.9, 133.4]",
+   "ok": true
+  },
+  {
+   "check": "documented value RMD 2 rf: 191.8 [183.5, 200.0]",
+   "ok": true
+  },
+  {
+   "check": "documented value RMD 2 garch: 201.7 [196.2, 207.1]",
+   "ok": true
+  },
+  {
+   "check": "documented value RMD 3 conventional: 63.0 [62.1, 64.0]",
+   "ok": true
+  },
+  {
+   "check": "documented value RMD 3 rf: 126.4 [115.3, 137.4]",
+   "ok": true
+  },
+  {
+   "check": "documented value RMD 3 garch: 139.6 [132.8, 146.4]",
+   "ok": true
+  },
+  {
+   "check": "documented value M 1.5 rf: 0.342 [0.305, 0.380]",
+   "ok": true
+  },
+  {
+   "check": "documented value M 2 garch: 0.198 [0.182, 0.214]",
+   "ok": true
+  },
+  {
+   "check": "documented value M 3 rf: 0.281 [0.237, 0.326]",
+   "ok": true
+  },
+  {
+   "check": "documented value QLIKE garch: 0.812",
+   "ok": true
+  },
+  {
+   "check": "documented value QLIKE rf: 0.841",
+   "ok": true
+  },
+  {
+   "check": "documented value QLIKE conventional: 1.019",
+   "ok": true
+  },
+  {
+   "check": "documented value X(20) 1.5 conventional: 0.054",
+   "ok": true
+  },
+  {
+   "check": "documented value X(20) 3 rf: 0.220",
+   "ok": true
+  },
+  {
+   "check": "documented value P(T<tau) conventional: 0.125",
+   "ok": true
+  },
+  {
+   "check": "documented value RMD delta=1 conventional: 319.9",
+   "ok": true
+  },
+  {
+   "check": "paired/1.5/0.1/rf - garch/dH/mean: Holm row mean and CI equal the frozen estimate",
+   "ok": true
+  },
+  {
+   "check": "paired/1.5/0.1/rf - garch/dH/mean: Holm p = 0.0533 (4 dp) as documented",
+   "ok": true
+  },
+  {
+   "check": "paired/2.0/0.1/rf - garch/dH/mean: Holm row mean and CI equal the frozen estimate",
+   "ok": true
+  },
+  {
+   "check": "paired/2.0/0.1/rf - garch/dH/mean: Holm p = 0.0533 (4 dp) as documented",
+   "ok": true
+  },
+  {
+   "check": "paired/3.0/0.1/rf - garch/dH/mean: Holm row mean and CI equal the frozen estimate",
+   "ok": true
+  },
+  {
+   "check": "paired/3.0/0.1/rf - garch/dH/mean: Holm p = 0.0533 (4 dp) as documented",
+   "ok": true
+  },
+  {
+   "check": "paired/1.5/0.1/rf - garch/x_20/mean: Holm row mean and CI equal the frozen estimate",
+   "ok": true
+  },
+  {
+   "check": "paired/1.5/0.1/rf - garch/x_20/mean: Holm p = 1 as documented",
+   "ok": true
+  },
+  {
+   "check": "paired/2.0/0.1/rf - garch/x_20/mean: Holm row mean and CI equal the frozen estimate",
+   "ok": true
+  },
+  {
+   "check": "paired/2.0/0.1/rf - garch/x_20/mean: Holm p = 1 as documented",
+   "ok": true
+  },
+  {
+   "check": "paired/3.0/0.1/rf - garch/x_20/mean: Holm row mean and CI equal the frozen estimate",
+   "ok": true
+  },
+  {
+   "check": "paired/3.0/0.1/rf - garch/x_20/mean: Holm p = 1 as documented",
+   "ok": true
+  },
+  {
+   "check": "paired/1.5/0.1/rf - conventional/dH/mean: Holm row mean and CI equal the frozen estimate",
+   "ok": true
+  },
+  {
+   "check": "paired/1.5/0.1/rf - conventional/dH/mean: Holm p <= 9.2e-5 and rejected, as documented",
+   "ok": true
+  },
+  {
+   "check": "paired/2.0/0.1/rf - conventional/dH/mean: Holm row mean and CI equal the frozen estimate",
+   "ok": true
+  },
+  {
+   "check": "paired/2.0/0.1/rf - conventional/dH/mean: Holm p <= 9.2e-5 and rejected, as documented",
+   "ok": true
+  },
+  {
+   "check": "paired/3.0/0.1/rf - conventional/dH/mean: Holm row mean and CI equal the frozen estimate",
+   "ok": true
+  },
+  {
+   "check": "paired/3.0/0.1/rf - conventional/dH/mean: Holm p <= 9.2e-5 and rejected, as documented",
+   "ok": true
+  },
+  {
+   "check": "paired/1.5/0.1/rf - conventional/x_20/mean: Holm row mean and CI equal the frozen estimate",
+   "ok": true
+  },
+  {
+   "check": "paired/1.5/0.1/rf - conventional/x_20/mean: Holm p <= 9.2e-5 and rejected, as documented",
+   "ok": true
+  },
+  {
+   "check": "paired/2.0/0.1/rf - conventional/x_20/mean: Holm row mean and CI equal the frozen estimate",
+   "ok": true
+  },
+  {
+   "check": "paired/2.0/0.1/rf - conventional/x_20/mean: Holm p <= 9.2e-5 and rejected, as documented",
+   "ok": true
+  },
+  {
+   "check": "paired/3.0/0.1/rf - conventional/x_20/mean: Holm row mean and CI equal the frozen estimate",
+   "ok": true
+  },
+  {
+   "check": "paired/3.0/0.1/rf - conventional/x_20/mean: Holm p <= 9.2e-5 and rejected, as documented",
+   "ok": true
+  },
+  {
+   "check": "documented value RF-GARCH RMD 1.5: \u22126.05 [\u221210.47, \u22121.63]",
+   "ok": true
+  },
+  {
+   "check": "documented value RF-GARCH RMD 2: \u22129.94 [\u221217.08, \u22122.80]",
+   "ok": true
+  },
+  {
+   "check": "documented value RF-GARCH RMD 3: \u221213.13 [\u221222.88, \u22123.39]",
+   "ok": true
+  },
+  {
+   "check": "documented value RF-conv RMD 1.5: 37.54 [32.96, 42.11]",
+   "ok": true
+  },
+  {
+   "check": "documented value RF-conv RMD 3: 63.63 [53.01, 74.25]",
+   "ok": true
+  },
+  {
+   "check": "documented value RF-conv X20 3: \u22120.0608 [\u22120.0693, \u22120.0524]",
+   "ok": true
+  },
+  {
+   "check": "documented value RF-GARCH X20 1.5: 0.0009 [\u22120.0021, 0.0039]",
+   "ok": true
+  },
+  {
+   "check": "documented value RF-conv RMD delta=1: \u22123.80 [\u22126.53, \u22121.07]",
+   "ok": true
+  },
+  {
+   "check": "Holm: 6 of 12 rejected",
+   "ok": true
+  },
+  {
+   "check": "exactly one RF cell selected",
+   "ok": true
+  },
+  {
+   "check": "documented value SPY s2: 1.144",
+   "ok": true
+  },
+  {
+   "check": "documented value SPY persistence: 0.9955",
+   "ok": true
+  },
+  {
+   "check": "documented value SPY m4: 1.0039",
+   "ok": true
+  },
+  {
+   "check": "documented value SPY nu: 7.63",
+   "ok": true
+  },
+  {
+   "check": "documented value SPY h conventional: 1.957",
+   "ok": true
+  },
+  {
+   "check": "documented value SPY val rf 0.1: 477.4 [456.5, 498.3]",
+   "ok": true
+  },
+  {
+   "check": "documented value SPY cal garch 0.2: 500.8",
+   "ok": true
+  },
+  {
+   "check": "SPY: 6/6 validations pass",
+   "ok": true
+  },
+  {
+   "check": "documented value SPY monitoring conventional: 638 (12.8%) 44 183",
+   "ok": true
+  },
+  {
+   "check": "documented value SPY monitoring garch: 143 (2.9%) 20 24",
+   "ok": true
+  },
+  {
+   "check": "documented value SPY monitoring rf: 216 (4.3%) 27 61",
+   "ok": true
+  },
+  {
+   "check": "documented value SPY QLIKE conventional: 1.462",
+   "ok": true
+  },
+  {
+   "check": "documented value SPY QLIKE garch: 0.915",
+   "ok": true
+  },
+  {
+   "check": "documented value SPY QLIKE rf: 0.986",
+   "ok": true
+  },
+  {
+   "check": "documented value SPY RF max d: 3.367",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2007-08-09 conventional: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2007-08-09 garch: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2007-08-09 rf: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2008-09-15 conventional: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2008-09-15 garch: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2008-09-15 rf: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2010-05-06 conventional: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2010-05-06 garch: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2010-05-06 rf: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2011-08-08 conventional: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2011-08-08 garch: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2011-08-08 rf: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2015-08-24 conventional: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2015-08-24 garch: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2015-08-24 rf: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2018-02-05 conventional: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2018-02-05 garch: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2018-02-05 rf: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2020-02-24 conventional: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2020-02-24 garch: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2020-02-24 rf: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2024-08-05 conventional: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2024-08-05 garch: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2024-08-05 rf: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2025-04-03 conventional: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2025-04-03 garch: date aligned",
+   "ok": true
+  },
+  {
+   "check": "SPY reference 2025-04-03 rf: date aligned",
+   "ok": true
+  },
+  {
+   "check": "documented value SPY ref Lehman conventional: 1.97",
+   "ok": true
+  },
+  {
+   "check": "documented value SPY ref 2020-02-24 garch: 1.18",
+   "ok": true
+  },
+  {
+   "check": "figure source results/derived/p3_figures/fig_delay.png has its verified SHA-256",
+   "ok": true
+  },
+  {
+   "check": "copy report/figures/fig_delay.png is byte-identical",
+   "ok": true
+  },
+  {
+   "check": "figure source results/derived/p3_figures/fig_profile.png has its verified SHA-256",
+   "ok": true
+  },
+  {
+   "check": "copy report/figures/fig_profile.png is byte-identical",
+   "ok": true
+  },
+  {
+   "check": "figure source results/derived/p3_figures/fig_replicates.png has its verified SHA-256",
+   "ok": true
+  },
+  {
+   "check": "copy report/figures/fig_replicates.png is byte-identical",
+   "ok": true
+  },
+  {
+   "check": "figure source results/derived/spy_figures/fig_spy_charts.png has its verified SHA-256",
+   "ok": true
+  },
+  {
+   "check": "copy report/figures/fig_spy_charts.png is byte-identical",
+   "ok": true
+  },
+  {
+   "check": "figure source results/derived/spy_figures/fig_spy_variance.png has its verified SHA-256",
+   "ok": true
+  },
+  {
+   "check": "copy report/figures/fig_spy_variance.png is byte-identical",
+   "ok": true
+  }
+ ]
+}
