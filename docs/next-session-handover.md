@@ -1,5 +1,11 @@
 # Next-session handover: START HERE (authoritative)
 
+> **Update, 2 Nov 2026 (final submission remediation): read this first.**
+> - **Done:** the remediation of the Group 10 manuscript; record and audit table in [`final-submission-remediation-20261102.md`](final-submission-remediation-20261102.md); summary at the top of [`project-status.md`](project-status.md).
+> - **Superseded:** the `run.py` note below. The working tree was clean at `7b1fb0d` and `pytest` gives 134 passed.
+> - **Open (authors only):** review of `report/main.pdf`; commit and push (the Code availability statement assumes the pushed repository); code-appendix decision with the lecturer; confirmation by all three authors of authorship and the AI declaration.
+> - **Not authorized:** any simulation, refit, recalibration, download, Git write or submission.
+
 > **Update, 2 Nov 2026: §§4–6 below are superseded.**
 > - **Done:** the figure readability correction and Stage 2 (now covering every section, under the contract `docs/prompts/STC720_FULL_MANUSCRIPT_2026-11-02.md`).
 > - **Draft:** the complete first manuscript draft is `report/main.tex` / `report/main.pdf`. It awaits the author's critical review; it is not approved and not submitted.

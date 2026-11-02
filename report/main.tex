@@ -104,7 +104,7 @@ monitoring; run length; adaptation masking.
 % tools and (ii) that all three authors accept the final sentence; it assigns no individual roles.
 \noindent\textbf{Generative AI use declaration.} Generative AI tools were used extensively in this study: Anthropic's
 Claude models, through the Claude Code command-line tool, and OpenAI's ChatGPT. They were used to discuss the research
-design; to write, test and audit the Python implementation; to check stored results independently; to review the
+design; to write, test, debug and audit the Python implementation; to check stored results independently; to review the
 sources in the study's reference library; to produce the tables and figures from stored outputs; and to draft the
 complete text of this article, including the abstract, introduction, discussion and conclusion. Every reported number
 was computed by the project code from stored simulation and data outputs and checked against them; no result was
@@ -128,9 +128,9 @@ cluster, a conditional heteroskedasticity captured by the generalised autoregres
 changes, with a run-length interpretation of false alarms and detection delay. The exponentially weighted moving
 average (EWMA) chart of \citet{roberts_1959} accumulates evidence over time and is sensitive to small, persistent shifts
 \citep{lucas_saccucci_1990}. Classical charts, however, assume independent and identically distributed observations, and
-applied directly to financial series they can signal too often: \citet{dumicic_zmuk_2015} charted the prices of a
-Croatian stock index with individuals, moving-range, EWMA and CUSUM charts and obtained many signals, which they regarded
-mostly as false alarms.
+applied directly to financial series they can signal too often: \citet{dumicic_zmuk_2015} charted the daily prices of
+the ten stocks in a Croatian stock index with individuals, moving-range, EWMA and CUSUM charts and obtained many
+signals, which they regarded mostly as false alarms.
 
 For serially dependent data, \citet{alwan_roberts_1988} proposed fitting a time-series model and charting its one-step
 prediction errors, so that the chart monitors departures from the predictable structure rather than the structure
@@ -145,7 +145,7 @@ Machine learning (ML) has entered both fields. For forecasting realised variance
 regularised regression, bagging, random forests, gradient boosting and neural networks competitive with heterogeneous
 autoregressive (HAR) benchmarks. A random forest \citep{breiman_2001} averages regression trees, so its predictions are
 averages of training targets: they are positive and cannot exceed the largest values seen in training. In SPC, random
-forests have mainly served as classifiers inside charts, as in the real-time-contrasts chart of \citet{lee_etal_2020}.
+forests have served as classifiers inside charts, as in the real-time-contrasts chart of \citet{lee_etal_2020}.
 Here the random forest is used instead as the variance forecaster that standardises the statistic of a classical EWMA
 chart.
 
@@ -237,9 +237,13 @@ observed returns are
 \begin{equation}
 r_t^{\mathrm{obs}}=\begin{cases} r_t, & t<\tau,\\ \sqrt{\delta}\,r_t, & t\ge\tau, \end{cases} \label{eq:fault}
 \end{equation}
-for a change point $\tau$ and a variance multiplier $\delta>1$. By \eqref{eq:garch}, the changed process is again
-GARCH(1,1), with $\omega$ replaced by $\delta\omega$ and unconditional variance $\delta\sigma^2$: the change raises the
-level of volatility permanently and leaves its dynamics unchanged.
+for a change point $\tau$ and a variance multiplier $\delta>1$. The conditional variance of $r_t^{\mathrm{obs}}$ is $h_t$
+before $\tau$ and $\delta h_t$ from $\tau$ on: it is multiplied by $\delta$ at once on day $\tau$, with $h_\tau$
+inherited from the pre-change regime. For $t>\tau$, \eqref{eq:garch} gives
+$\delta h_t=\delta\omega+\alpha(r_{t-1}^{\mathrm{obs}})^2+\beta\,\delta h_{t-1}$, a GARCH(1,1) recursion started from
+$\delta h_\tau$, with intercept $\delta\omega$, the same $\alpha$, $\beta$ and $\nu$, and unconditional variance
+$\delta\sigma^2$. The change thus raises the level of volatility at once and permanently and leaves its dynamics
+unchanged.
 
 \subsection{Machine learning}\label{sec:ml}
 \paragraph{Prediction target.} The denominator in \eqref{eq:score0} should be the one-step conditional variance. A
@@ -360,11 +364,14 @@ equals 1 for the conventional chart by construction and $\{R_G(\delta)-1\}/(\del
 
 \subsection{Control limits: calibration and independent validation}\label{sec:calib}
 Because the scores are serially dependent, skewed and heavy-tailed, the limits are calibrated empirically. For $N$
-simulated in-control paths, each monitored for at most $T_{\max}$ days, the restricted mean run length
+simulated in-control paths, each monitored for at most $T_{\max}$ days,
 \begin{equation}
 \hat A(h)=\frac1N\sum_{i=1}^N\min\{T_i(h),T_{\max}\} \label{eq:arlhat}
 \end{equation}
-is a lower bound for the mean run length and nondecreasing in $h$, since raising the limit can only delay the alarm on
+estimates the restricted mean run length $\E_0[\min\{T(h),T_{\max}\}]$, a lower bound for $\mathrm{ARL}_0=\E_0(T)$
+that differs from it only through paths without an alarm by day $T_{\max}$ (at most 0.05\% of the calibration and
+validation paths in the simulation study); the calibrated and validated ARL$_0$ values below are these restricted
+means. $\hat A(h)$ is nondecreasing in $h$, since raising the limit can only delay the alarm on
 every path. The calibrated limit is the smallest value that attains the target $A_0$,
 \begin{equation}
 h^*=\min\{h:\hat A(h)\ge A_0\}, \label{eq:hstar}
@@ -392,7 +399,7 @@ involves no loss of generality. Each of $R=20$ independent replicates, or monito
 \item an independent development path of 3,500 days, on which the forest is chosen from a grid of minimum leaf sizes
 $\{50,200,800\}$ and features per split $m\in\{1,3\}$, each with $B=500$ trees, by the lowest mean QLIKE against
 $r_t^2$;
-\item 2,000 calibration and 2,000 validation paths for every chart and smoothing constant;
+\item 2,000 calibration and 2,000 validation paths, shared by every chart and smoothing constant;
 \item 2,000 out-of-control paths with a change \eqref{eq:fault} on monitoring day $\tau=50$, monitored for $H=500$ days
 after the change.
 \end{enumerate}
@@ -474,14 +481,6 @@ intervals over $R=20$ systems; $\delta=1$: no change. The oracle line almost coi
 \label{fig:delay}
 \end{figure}
 
-\paragraph{Detection.} RF--EWMA detected the persistent increases more slowly than the conventional chart and slightly
-faster than GARCH--EWMA (Figure~\ref{fig:delay}). As $\delta$ rose from 1.5 to 3, $\RMD$ fell from 205.3 to 63.0 days
-for the conventional chart, from 243.3 to 126.4 for RF--EWMA and from 249.1 to 139.6 for GARCH--EWMA, with the same
-ordering at $\lambda=0.2$. Censoring affects these restricted means: at $\delta=1.5$, 21\% of the surviving GARCH paths
-and 20\% of the RF paths had no alarm within 500 days, against 12\% for the conventional chart. Early detection followed
-the same pattern: $X(20)$ was 0.054, 0.126 and 0.282 for the conventional chart and about 0.045, 0.100 and 0.220 for
-both RF and GARCH.
-
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_profile.pdf}
@@ -490,6 +489,14 @@ $R=20$ systems. Shaded: the early ($k\le19$) and sustained ($100\le k\le499$) wi
 conventional ratio equals by construction.}
 \label{fig:profile}
 \end{figure}
+
+\paragraph{Detection.} RF--EWMA detected the persistent increases more slowly than the conventional chart and slightly
+faster than GARCH--EWMA (Figure~\ref{fig:delay}). As $\delta$ rose from 1.5 to 3, $\RMD$ fell from 205.3 to 63.0 days
+for the conventional chart, from 243.3 to 126.4 for RF--EWMA and from 249.1 to 139.6 for GARCH--EWMA, with the same
+ordering at $\lambda=0.2$. Censoring affects these restricted means: at $\delta=1.5$, 21\% of the surviving GARCH paths
+and 20\% of the RF paths had no alarm within 500 days, against 12\% for the conventional chart. Early detection followed
+the same pattern: $X(20)$ was 0.054, 0.126 and 0.282 for the conventional chart and about 0.045, 0.100 and 0.220 for
+both RF and GARCH.
 
 \paragraph{Adaptation masking.} Figure~\ref{fig:profile} shows how the scores responded. On the day of the change every
 chart's mean score rose by the factor $\delta$; the conventional score stayed there, the GARCH and oracle scores fell within a
@@ -529,17 +536,17 @@ $\delta$), and only 14 or 15 of the 20 systems favoured RF. The standard deviati
 contrasts ranged from $-46.8$ to $+18.3$ days. The $X(20)$ contrasts were close to zero (Holm $p=1$). In
 exploratory analysis each system's contrast was stable across $\delta$ and $\lambda$ (rank correlations 0.85--0.97) and
 tracked its RF$-$GARCH difference in masking ratio (rank correlations $-0.80$ to $-0.89$): systems whose forest
-retained more of the shift detected it sooner.
+retained more of the shift tended to detect it sooner.
 
 \paragraph{Discussion.} By forecast accuracy the charts rank oracle $\approx$ GARCH, then RF, then conventional; by speed
 of detecting persistent increases the order is reversed. A constant denominator turns a $\delta$-fold variance increase
-into a $\delta$-fold increase in the expected score for as long as the change lasts, whereas an adaptive denominator
-raises the score only briefly and then absorbs much of the change. The better a forecaster tracks the current variance,
+into a $\delta$-fold increase in the expected score while the change lasts, whereas an adaptive denominator raises the
+score only briefly and then absorbs much of it. The better a forecaster tracks the current variance,
 the more it absorbs, so a forecast-standardised chart monitors surprises relative to recent volatility rather than its
 level; the forest's attenuated response, a weakness for forecasting, leaves more of a persistent shift visible. This
 explanation is consistent with the evidence but not proven by it, because the charts also differ in score dependence,
 run-length shape and pre-change false alarms. The GARCH-generated data also favour the GARCH forecaster, and other
-changes, such as transient shocks, may rank the charts differently. Within these limits RF--EWMA is not superior to the conventional
+changes, such as transient shocks, may rank the charts differently. Within these limits RF--EWMA is slower than the conventional
 chart for persistent increases, and its advantage over GARCH--EWMA is modest and system-dependent.
 
 \FloatBarrier
@@ -575,14 +582,17 @@ conditional on $h^*$.
 unconditional variance of 1.92 against $s^2=1.144$ and a fourth-moment coefficient \eqref{eq:m4} of 1.009; it failed the
 pre-specified finite-fourth-moment check, and the analysis stopped before any limit was calibrated or any monitoring
 return used. On training-data grounds it was then replaced by a variance-targeted GARCH(1,1)-$t$, a method attributed
-to \citet{engle_mezrich_1996}, with $\omega=s^2(1-\alpha-\beta)$ and $(\alpha,\beta,\nu)$ estimated by maximum
-likelihood, at a cost of 0.24 log-likelihood units. This model has a finite variance ($\alpha+\beta=0.9955$) but an
-infinite fourth moment (coefficient 1.0039). Variance targeting is consistent without moment conditions, but its
-asymptotic normality needs a finite fourth moment, which \citet{francq_etal_2011} find questionable for daily index
-returns, and their theory uses a Gaussian rather than a Student-$t$ likelihood; no standard errors are therefore
-reported. The model is the GARCH chart's forecaster and also the in-control law for calibration
-(Section~\ref{sec:calib}), which favours the GARCH chart. Because the fourth moment is infinite, the target was the
-restricted mean $\E[\min(T,5000)]=500$, which is neither $\E(T)$ nor the simulation's $\RMD$. All six limits passed
+to \citet{engle_mezrich_1996}, with $\omega=s^2(1-\alpha-\beta)$, which fixes the model's unconditional variance at
+$s^2$, and $(\alpha,\beta,\nu)$ estimated by maximum likelihood, at a cost of 0.24 log-likelihood units. This model has
+a finite variance ($\alpha+\beta=0.9955$) but an infinite fourth moment (coefficient 1.0039). The asymptotic theory of
+variance targeting in \citet{francq_etal_2011} is developed for a Gaussian quasi-likelihood, not the Student-$t$
+likelihood used here, and its asymptotic normality requires a finite fourth moment, which they find questionable for
+daily index returns and which fails at the fitted values. No standard errors are reported, since the reviewed theory does
+not justify them here; the estimates serve only to define the frozen forecaster and the calibration law. The model is
+the GARCH chart's forecaster and also the in-control law for calibration (Section~\ref{sec:calib}), which favours the
+GARCH chart. As in the simulation, the target was the restricted mean $\E[\min(T,5000)]=500$, which is neither $\E(T)$
+nor the simulation's $\RMD$; as a mean of bounded run lengths it is finite whatever the moments of the returns. All
+six limits passed
 \eqref{eq:val} (Table~\ref{tab:spyfit}B), although some validation intervals exclude 500 (RF at $\lambda=0.1$: 477.4
 [456.5, 498.3]) and two calibrations at $\lambda=0.2$ overshot the target by slightly more than a pre-set 0.1\% warning
 threshold; both were recorded, not adjusted.
@@ -642,8 +652,8 @@ persistence and the assumption that the fitted GARCH-$t$ model is the in-control
 This study asked whether standardising squared returns by a random-forest variance forecast gives a useful EWMA chart
 for persistent volatility increases. The RF--EWMA chart was well behaved but was not the best detector. The forest
 produced positive, stable forecasts that closed 85\% of the accuracy gap between a constant and the true in-control
-model, although they responded only weakly to the true variance, and all limits validated at the common in-control run
-length of 500 days. Yet the conventional chart with a constant denominator detected persistent increases fastest,
+model, although they responded only weakly to the true variance, and all limits passed independent validation against
+the common in-control target of 500 days. Yet the conventional chart with a constant denominator detected persistent increases fastest,
 38--64 days sooner on average than RF--EWMA and in every fitted system. RF--EWMA detected them 6--13 days sooner than
 GARCH--EWMA on average, a difference that is not robust to multiplicity adjustment and depends strongly on the fitted
 system. The forecast-accuracy ranking is the reverse of the detection ranking, and the masking ratios are consistent
@@ -652,8 +662,8 @@ the conventional chart stayed above its limit through long high-volatility perio
 charts flagged shorter episodes around sharp moves.
 
 The main lesson is that choosing the denominator chooses the monitoring target. A constant denominator monitors the level
-of volatility and suits regime shifts; a forecast denominator monitors surprises relative to recent volatility and
-largely adapts to persistent changes. More accurate forecasts are therefore not automatically better monitors. In
+of volatility, which suits persistent level shifts such as those studied here; a forecast denominator monitors
+surprises relative to recent volatility and largely adapts to persistent changes. More accurate forecasts are therefore not automatically better monitors. In
 practice the denominator should be matched to the change of interest, for instance by running a level chart and a
 residual chart side by side, and limits for financial scores should be calibrated and validated by simulation rather
 than taken from normal theory, with pre-change false-alarm rates reported alongside ARL$_0$. Future work should study
@@ -664,10 +674,12 @@ variance; and control limits that account for calibration uncertainty.
 % ---------------------------------------------------------------- Code availability
 \section*{Code availability}
 \addcontentsline{toc}{section}{Code availability}
-The Python code for the simulation, forecasting, control charts, calibration, evaluation, tables and figures, together
-with its tests and run records, is publicly available at
-\url{https://github.com/stephenjamespienaar/stc720-rf-ewma}. The analyses used Python~3.14 with NumPy, pandas, SciPy,
-scikit-learn, arch and Matplotlib.
+The Python source code for the simulation, forecasting, control charts, calibration, evaluation and SPY application, its
+unit tests, the scripts that produced the tables, figures and independent checks from the stored outputs, and summaries
+of those checks are publicly available at \url{https://github.com/stephenjamespienaar/stc720-rf-ewma}. The complete
+simulation and application run outputs, including the per-path results, and the SPY price snapshot are not included
+in the repository. The analyses used Python~3.14 with NumPy, pandas, SciPy, scikit-learn, arch and Matplotlib, and the
+prices were obtained with yfinance.
 
 % ---------------------------------------------------------------- References
 \FloatBarrier

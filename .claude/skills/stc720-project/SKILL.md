@@ -5,13 +5,15 @@ description: Resume and continue the STC 720 (University of Pretoria) Random For
 
 # STC 720 RF–EWMA — project continuation
 
-**Project:** individual STC 720 research article (University of Pretoria), *Random Forest–EWMA Monitoring of Financial Market Volatility: A Simulation Study with an S&P 500 Application*.
+**Project:** STC 720 group research article (University of Pretoria; the rubric sets groups of three), submitted as Group 10 with three named authors: *Random Forest–EWMA Monitoring of Financial Market Volatility: A Simulation Study and an Application to the SPDR S&P 500 ETF*. Records from 13 Oct 2026 describe an individual working arrangement; they are historical and do not document the other authors' contributions.
 **Due:** Thu **5 Nov 2026, 23:59 SAST**, via ClickUP. Internal target is to submit on 4 Nov. Turnitin similarity must be ≤ 20%, and a generative-AI declaration goes below the keywords.
 **Repository:** `/home/stephen/projects/stc720-rf-ewma` (Python 3.14.4, `.venv/`, WSL2).
 
 ## Current stage (2 Nov 2026): P1–P5 DONE; SPY EXECUTED AND VERIFIED; COMPLETE FIRST MANUSCRIPT DRAFT DELIVERED; NEXT: THE AUTHOR'S CRITICAL REVIEW (NOT APPROVED, NOT SUBMITTED)
 
-**Checkpoint 2 Nov 2026:** see the top section of [`docs/project-status.md`](../../../docs/project-status.md).
+**Latest checkpoint (2 Nov 2026, final submission remediation):** see [`docs/final-submission-remediation-20261102.md`](../../../docs/final-submission-remediation-20261102.md) and the top section of [`docs/project-status.md`](../../../docs/project-status.md). The manuscript is 17 pages (Group 10), checks 52/52, pytest 134 passed (`run.py` is restored; the working tree was clean at `7b1fb0d`). Open for the authors: push, the code-appendix decision, three-author confirmation of authorship and AI declaration. The bullets below are the earlier draft checkpoint.
+
+**Checkpoint 2 Nov 2026 (draft):** see the top section of [`docs/project-status.md`](../../../docs/project-status.md).
 - **Draft:** under the contract `docs/prompts/STC720_FULL_MANUSCRIPT_2026-11-02.md`, Claude drafted every section. The draft is `report/main.tex` / `report/main.pdf` (15 pages).
 - **Checks:** figures (`scripts/paper_figures.py`, 80/80); tables (`scripts/paper_assets.py`, 106/106); in-text numbers (`scripts/manuscript_checks.py`, 52/52).
 - **Open (author):** review; student number; AI declaration; subtitle; §5 length. The uncommitted `run.py` edit breaks pytest collection; only the user may restore it.

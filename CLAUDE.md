@@ -2,7 +2,7 @@
 
 ## 1. Project Identity
 
-This repository contains an individual STC 720 research assignment at the University of Pretoria, South Africa.
+This repository contains the STC 720 research assignment of Group 10 at the University of Pretoria, South Africa. The rubric sets a group assignment for three students; records from 13 Oct 2026 describe an individual working arrangement, and the final manuscript (2 Nov 2026) names the three Group 10 authors. The records do not document the other authors' contributions. Final remediation record: `docs/final-submission-remediation-20261102.md`.
 
 **Working title:**
 
@@ -566,9 +566,11 @@ Avoid unnecessary approval requests for routine, already-authorized coding, docu
 
 ## 18. Current Project Status
 
-**P1–P5 DONE; SPY EXECUTED AND VERIFIED (27 OCT 2026); COMPLETE FIRST MANUSCRIPT DRAFT DELIVERED (2 NOV 2026); NEXT: THE AUTHOR'S CRITICAL REVIEW (NOT APPROVED, NOT SUBMITTED)**
+**P1–P5 DONE; SPY EXECUTED AND VERIFIED (27 OCT 2026); GROUP 10 MANUSCRIPT REMEDIATED (2 NOV 2026); NEXT: THE AUTHORS' REVIEW (NOT APPROVED, NOT SUBMITTED)**
 
-**Checkpoint 2 Nov 2026: start with the top section of [`docs/project-status.md`](docs/project-status.md) and `report/main.pdf`.**
+**Latest checkpoint (2 Nov 2026, final submission remediation): `docs/final-submission-remediation-20261102.md`.** 17 pages, 0 LaTeX warnings, checks 52/52, pytest 134 passed, frozen files unchanged. Open for the authors: commit and push (the Code availability statement assumes the pushed repository), the code-appendix decision with the lecturer, and confirmation by all three authors of authorship and the AI declaration. The `run.py` note below is superseded (working tree clean at `7b1fb0d`).
+
+**Checkpoint 2 Nov 2026 (draft): start with the top section of [`docs/project-status.md`](docs/project-status.md) and `report/main.pdf`.**
 - **Draft:** under the contract `docs/prompts/STC720_FULL_MANUSCRIPT_2026-11-02.md`, the user authorized Claude to draft every section. The draft is `report/main.tex` / `report/main.pdf` (15 pages; clean build).
 - **Checks:** figures `scripts/paper_figures.py` (80/80); tables `scripts/paper_assets.py` (106/106); in-text numbers `scripts/manuscript_checks.py` (52/52).
 - **Open (author):** review; student number; AI declaration; subtitle; §5 length (2.38 pages). The uncommitted `run.py` edit in the working tree breaks pytest collection; only the user may restore it.
