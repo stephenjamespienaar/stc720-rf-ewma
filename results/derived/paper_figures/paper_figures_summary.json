@@ -1,0 +1,339 @@
+{
+ "verdict": "PASS",
+ "inputs_sha256": {
+  "results/runs/production_20261014T060921_145897/results.json": "716862ab41d08c581d2bd65c63979c046a9d9cb5930c111381b3eeb6506b708b",
+  "results/runs/spy_20261027T061202_150671/results.json": "877b5f09696a71b3cf431bbed4d88b72a1e7e449d29a309d17e3db0b5ff7749d",
+  "results/runs/spy_20261027T061202_150671/monitor.csv": "3ba200940c1853863139445f23fb929ac4f0ebfb6d65fedc5d8352d3b16c90c1"
+ },
+ "outputs_sha256": {
+  "fig_delay.pdf": "bd9859196fcbbdb50bf62bc2745b531018a60515f8c6f535bed1a53abb218fed",
+  "fig_profile.pdf": "9b8181c2919878100c80f334c65022e962b83408f7c153595b5f8793f154fe52",
+  "fig_spy.pdf": "78ff81db58a43f94267fd2b315b49e5227ad25b7442ace99fbf38b4283cc718c"
+ },
+ "printed_width_in": 6.3,
+ "min_font_pt": 8.0,
+ "n_checks": 80,
+ "n_passed": 80,
+ "checks": [
+  {
+   "check": "inputs: production results.json, SPY results.json and monitor.csv have their frozen SHA-256",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.1 conventional: points equal the frozen RMD means at \u03b4 = 1, 1.5, 2, 3",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.1 conventional: error bars equal the frozen 95% t intervals (1e-9)",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.1 conventional: same points as the original figure",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.1 garch: points equal the frozen RMD means at \u03b4 = 1, 1.5, 2, 3",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.1 garch: error bars equal the frozen 95% t intervals (1e-9)",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.1 garch: same points as the original figure",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.1 rf: points equal the frozen RMD means at \u03b4 = 1, 1.5, 2, 3",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.1 rf: error bars equal the frozen 95% t intervals (1e-9)",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.1 rf: same points as the original figure",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.1 oracle: points equal the frozen RMD means at \u03b4 = 1, 1.5, 2, 3",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.1 oracle: error bars equal the frozen 95% t intervals (1e-9)",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.1 oracle: same points as the original figure",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.2 conventional: points equal the frozen RMD means at \u03b4 = 1, 1.5, 2, 3",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.2 conventional: error bars equal the frozen 95% t intervals (1e-9)",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.2 conventional: same points as the original figure",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.2 garch: points equal the frozen RMD means at \u03b4 = 1, 1.5, 2, 3",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.2 garch: error bars equal the frozen 95% t intervals (1e-9)",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.2 garch: same points as the original figure",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.2 rf: points equal the frozen RMD means at \u03b4 = 1, 1.5, 2, 3",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.2 rf: error bars equal the frozen 95% t intervals (1e-9)",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.2 rf: same points as the original figure",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.2 oracle: points equal the frozen RMD means at \u03b4 = 1, 1.5, 2, 3",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.2 oracle: error bars equal the frozen 95% t intervals (1e-9)",
+   "ok": true
+  },
+  {
+   "check": "delay \u03bb=0.2 oracle: same points as the original figure",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=1.5 conventional: equals the replicate mean of \u016b_k(\u03b4)/\u016b_k(1) from the frozen profiles",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=1.5 conventional: same series as the original figure",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=1.5 garch: equals the replicate mean of \u016b_k(\u03b4)/\u016b_k(1) from the frozen profiles",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=1.5 garch: same series as the original figure",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=1.5 rf: equals the replicate mean of \u016b_k(\u03b4)/\u016b_k(1) from the frozen profiles",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=1.5 rf: same series as the original figure",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=1.5 oracle: equals the replicate mean of \u016b_k(\u03b4)/\u016b_k(1) from the frozen profiles",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=1.5 oracle: same series as the original figure",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=1.5: conventional ratio equals \u03b4 (by construction) up to the 5-decimal rounding of the stored profiles (rtol 1e-4)",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=2.0 conventional: equals the replicate mean of \u016b_k(\u03b4)/\u016b_k(1) from the frozen profiles",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=2.0 conventional: same series as the original figure",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=2.0 garch: equals the replicate mean of \u016b_k(\u03b4)/\u016b_k(1) from the frozen profiles",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=2.0 garch: same series as the original figure",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=2.0 rf: equals the replicate mean of \u016b_k(\u03b4)/\u016b_k(1) from the frozen profiles",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=2.0 rf: same series as the original figure",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=2.0 oracle: equals the replicate mean of \u016b_k(\u03b4)/\u016b_k(1) from the frozen profiles",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=2.0 oracle: same series as the original figure",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=2.0: conventional ratio equals \u03b4 (by construction) up to the 5-decimal rounding of the stored profiles (rtol 1e-4)",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=3.0 conventional: equals the replicate mean of \u016b_k(\u03b4)/\u016b_k(1) from the frozen profiles",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=3.0 conventional: same series as the original figure",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=3.0 garch: equals the replicate mean of \u016b_k(\u03b4)/\u016b_k(1) from the frozen profiles",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=3.0 garch: same series as the original figure",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=3.0 rf: equals the replicate mean of \u016b_k(\u03b4)/\u016b_k(1) from the frozen profiles",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=3.0 rf: same series as the original figure",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=3.0 oracle: equals the replicate mean of \u016b_k(\u03b4)/\u016b_k(1) from the frozen profiles",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=3.0 oracle: same series as the original figure",
+   "ok": true
+  },
+  {
+   "check": "profile \u03b4=3.0: conventional ratio equals \u03b4 (by construction) up to the 5-decimal rounding of the stored profiles (rtol 1e-4)",
+   "ok": true
+  },
+  {
+   "check": "spy conventional: Z/h* equals monitor.csv z_conventional_0.1 / stored h* = 1.957 and the original figure",
+   "ok": true
+  },
+  {
+   "check": "spy conventional: x equals the 4967 monitoring dates",
+   "ok": true
+  },
+  {
+   "check": "spy conventional: 638 days above the limit = frozen exceedance_days",
+   "ok": true
+  },
+  {
+   "check": "spy garch: Z/h* equals monitor.csv z_garch_0.1 / stored h* = 2.598 and the original figure",
+   "ok": true
+  },
+  {
+   "check": "spy garch: x equals the 4967 monitoring dates",
+   "ok": true
+  },
+  {
+   "check": "spy garch: 143 days above the limit = frozen exceedance_days",
+   "ok": true
+  },
+  {
+   "check": "spy rf: Z/h* equals monitor.csv z_rf_0.1 / stored h* = 2.470 and the original figure",
+   "ok": true
+  },
+  {
+   "check": "spy rf: x equals the 4967 monitoring dates",
+   "ok": true
+  },
+  {
+   "check": "spy rf: 216 days above the limit = frozen exceedance_days",
+   "ok": true
+  },
+  {
+   "check": "spy panel 0: reference lines at the 9 frozen dates",
+   "ok": true
+  },
+  {
+   "check": "spy panel 1: reference lines at the 9 frozen dates",
+   "ok": true
+  },
+  {
+   "check": "spy panel 2: reference lines at the 9 frozen dates",
+   "ok": true
+  },
+  {
+   "check": "fig_delay.pdf: printed width 6.3 in",
+   "ok": true
+  },
+  {
+   "check": "fig_delay.pdf: all 22 text items >= 8.0 pt at printed size",
+   "ok": true
+  },
+  {
+   "check": "fig_delay.pdf: all text inside the figure",
+   "ok": true
+  },
+  {
+   "check": "fig_delay.pdf: one figure legend, overlapping no axes",
+   "ok": true
+  },
+  {
+   "check": "fig_delay.pdf: no axes-level legend",
+   "ok": true
+  },
+  {
+   "check": "fig_profile.pdf: printed width 6.3 in",
+   "ok": true
+  },
+  {
+   "check": "fig_profile.pdf: all 33 text items >= 8.0 pt at printed size",
+   "ok": true
+  },
+  {
+   "check": "fig_profile.pdf: all text inside the figure",
+   "ok": true
+  },
+  {
+   "check": "fig_profile.pdf: one figure legend, overlapping no axes",
+   "ok": true
+  },
+  {
+   "check": "fig_profile.pdf: no axes-level legend",
+   "ok": true
+  },
+  {
+   "check": "fig_spy.pdf: printed width 6.3 in",
+   "ok": true
+  },
+  {
+   "check": "fig_spy.pdf: all 32 text items >= 8.0 pt at printed size",
+   "ok": true
+  },
+  {
+   "check": "fig_spy.pdf: all text inside the figure",
+   "ok": true
+  },
+  {
+   "check": "fig_spy.pdf: one figure legend, overlapping no axes",
+   "ok": true
+  },
+  {
+   "check": "fig_spy.pdf: no axes-level legend",
+   "ok": true
+  },
+  {
+   "check": "all 34 files of the frozen production and SPY runs unchanged",
+   "ok": true
+  }
+ ]
+}

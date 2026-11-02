@@ -1,5 +1,11 @@
 # Next-session handover: START HERE (authoritative)
 
+> **Update, 2 Nov 2026: §§4–6 below are superseded.**
+> - **Done:** the figure readability correction and Stage 2 (now covering every section, under the contract `docs/prompts/STC720_FULL_MANUSCRIPT_2026-11-02.md`).
+> - **Draft:** the complete first manuscript draft is `report/main.tex` / `report/main.pdf`. It awaits the author's critical review; it is not approved and not submitted.
+> - **Details:** the verified state, checks and open items are in the top section of [`project-status.md`](project-status.md).
+> - **Before any test run:** the uncommitted `run.py` edit in the working tree must be restored or repaired by the user.
+
 *Written 30 Oct 2026 at the end-of-session checkpoint, for the session of **31 Oct 2026**. This file is the authoritative starting point for the next session. The detailed record is in [`project-status.md`](project-status.md); the frozen numbers are in [`production-results.md`](../.claude/skills/stc720-project/references/production-results.md).*
 
 **Deadline:** Thu **5 Nov 2026, 23:59 SAST** (ClickUP). **Target submission:** Wed **4 Nov 2026**.

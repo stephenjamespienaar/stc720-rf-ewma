@@ -2,6 +2,60 @@
 
 *Authoritative progress record for the STC 720 project. It is read at the start of every session through the `stc720-project` skill ([`.claude/skills/stc720-project/SKILL.md`](../.claude/skills/stc720-project/SKILL.md)) and `CLAUDE.md` §19.*
 
+## GROUP 10 REPORT FORMATTING (2 NOV 2026): READY FOR THE AUTHORS' REVIEW; NOT APPROVED, NOT SUBMITTED
+
+*Request: reformat `report/main.tex` after the earlier UP report (`one-class-cae-svm-mewma/thesis/final_report/main.tex`, read only, not modified), with a Group 10 title page. Presentation only; no result, table body, figure or frozen output changed.*
+- **Layout:** article 10pt, A4, margins 3/2.5/2.5/2.5 cm (as the earlier report); numbered natbib citations with apalike, bold caption labels, "Figure n"/"Table n" lists (macros copied from the earlier report); line stretch 1.15 instead of double spacing, because 1.25 already put §4 at 3.06 pages. Tables use `\small` (9 pt, the same size as before).
+- **Front matter (roman i–iii):** UP title page (logo `report/figures/UPlogohighres.jpg`, byte-identical copy, SHA-256 `f610fdf7…`), Group 10 with three authors and student numbers; abstract page with keywords and AI declaration; contents, list of figures and list of tables on one page. Arabic page 1 = §1.
+- **AI declaration:** wording made group-neutral ("the study's reference library"; "design decisions were made by its human authors ... the authors are responsible for the review, revision and final approval"). Assigns no individual roles. **Must be confirmed by all three authors.**
+- **Build:** 17 PDF pages (3 front matter + 14 arabic), 0 warnings, 0 overfull/underfull boxes. Spans: §1 1.00; §2 2.74 (2.1 1.35, 2.2 1.36); §3 2.52; §4 2.97 (4.1 1.83, 4.2 1.11); §5 2.39; §6 0.51; references 1.72 (pp. 13–14).
+- **Checks:** pytest 134 passed; `scripts/manuscript_checks.py` 52/52; frozen production and SPY files, `data/raw/SPY.csv`, `report/tables/*`, `report/figures/*.pdf` and `refs.bib` hashes unchanged (47 files).
+- **Open (authors):** confirm the group submission and authorship; confirm the AI declaration on behalf of all three authors; the rubric asks for code in an appendix, which the user replaced with a Code availability statement on 30 Oct 2026 (confirm with the lecturer if needed).
+
+## COMPLETE FIRST MANUSCRIPT DRAFT (2 NOV 2026): READY FOR THE AUTHOR'S CRITICAL REVIEW; NOT APPROVED, NOT SUBMITTED
+
+*Last updated: **2026-11-02**, on HEAD `53e1631` (the user's Stage 1 commit) plus uncommitted working-tree changes. Contract: `docs/prompts/STC720_FULL_MANUSCRIPT_2026-11-02.md`. In it the user authorized Claude to draft every section; it supersedes the earlier split of drafting between Claude and the student.*
+
+**Delivered and verified this session:**
+- **Manuscript.** `report/main.tex` and `report/main.pdf` hold the complete article:
+  - abstract of 241 words, 7 keywords, and the AI declaration directly below the keywords;
+  - §1–§6, Code availability and 16 cited references; no placeholders.
+- **Build.** A clean build in a private output directory gives 15 pages, no LaTeX warnings and no overfull boxes.
+- **Section spans, measured from the PDF:**
+  - §1: 1.11 pages;
+  - §2: 2.77 (2.1: 1.41, 2.2: 1.32);
+  - §3: 2.54;
+  - §4: 2.96 (4.1: 1.82, 4.2: 1.10);
+  - §5: 2.38, above the ±2 guide;
+  - §6: 0.54.
+- **Figures** (the approved readability correction).
+  - `scripts/paper_figures.py` (new) draws the three report figures at their printed width (6.3 in), with all text at least 8 pt, from frozen results only, into `results/derived/paper_figures/`.
+  - **80/80 checks:** the plotted series equal the frozen values and the series of the original plotting code; the colours are CVD-validated Okabe–Ito.
+  - The SPY variance panel was dropped for space. The maximum denominators are given in Table 4A and the text.
+- **Tables.** `scripts/paper_assets.py` now copies the three PDF figures (106/106 checks). The table bodies and `values.json` are byte-identical to Stage 1, except the event-column width in `tab_spy_reference.tex`, a layout-only change.
+- **In-text numbers.** `scripts/manuscript_checks.py` (new) passes **52/52** in-text claims against hash-checked frozen sources. A negative test with three injected errors produced exactly three failures.
+- **Wording correction.** The RF floor was checked on 10⁷ forecasts **per system**, 2 × 10⁸ in total. Earlier records' "0 of 10⁷" refers to one replicate.
+- **Frozen evidence unchanged.**
+  - Production: 17/17 files match the P1 record (`results_sha256` `44410144…`).
+  - SPY: `results.json`, `monitor.csv`, `frozen.json`, both original PNGs and `data/raw/SPY.csv` match.
+  - No file in `results/runs/` or `data/` was written.
+
+**Tests (actual):**
+- **Working tree.** `.venv/bin/python -m pytest -q` stops with **2 collection errors; 0 tests run**.
+  - Cause: the **uncommitted edit to `run.py`** (mtime 2026-11-02 00:56, before this session). It deletes the SPY configuration and the head of `replicate()` and inserts a stray `awd ` line, giving an IndentationError at line 145.
+  - Claude did not modify `run.py`. The user can inspect it with `git diff run.py` and restore it with `git restore run.py`.
+- **HEAD export.** The same suite on a read-only `git archive HEAD` export gives **133 passed, 1 failed**.
+  - The failure is `test_git_provenance_classifies_untracked_files`, which needs a Git worktree.
+  - The `src/` and `tests/` files are identical to HEAD.
+
+**Open, for the author:**
+- critical review of the whole text;
+- confirm the student number `u22594583` (from the author's earlier report and UP e-mail);
+- confirm the AI declaration, including ChatGPT's actual role, and update its tense after review;
+- decide on the subtitle ("…an Application to the SPDR S&P 500 ETF") and on the §5 length;
+- restore `run.py`;
+- Turnitin; commit; submission.
+
 ## FINAL PAPER STAGE 1 DONE (30 OCT 2026): SPY FIGURES CORRECTED, REPORT SCAFFOLD AND VERIFIED TABLES; AWAITING THE USER'S REVIEW BEFORE PROSE DRAFTING
 
 **Next session: start with [`next-session-handover.md`](next-session-handover.md) (authoritative handover, 30 Oct 2026).** First task: the publication-size figure readability correction, approved by the user on 30 Oct 2026 and **not yet done**. Then Stage 2 drafting.
@@ -387,6 +441,8 @@ None of these needs new simulation. Do them in priority order.
 
 ## Next recommended task
 
+*(2 Nov 2026.)* **The author's critical review of the complete draft** (`report/main.pdf`), then revisions, Turnitin and submission by the user. Before any test run, restore or repair the uncommitted `run.py` edit (user only). After any edit of the text, re-run `scripts/manuscript_checks.py` and rebuild.
+
 *(30 Oct 2026.)* **The user's review of Stage 1** (the SPY figures, the scaffold PDF, the tables, the outlines and the references). Then: (a) the decision on the paper-size figure regeneration (open item 1 in the checkpoint); (b) Stage 2, Claude's technical drafting (§1 literature review, §2, §3, §4 results, §5) while the student writes the Abstract, Introduction, Discussion and Conclusion; (c) the number-tracing pass, the page-budget pass and the final AI declaration; (d) submission on 4 Nov. Earlier notes follow.
 
 *(27 Oct 2026: P1–P5 done.)* **The SPY application** (P6; only after the user's explicit authorization and S1–S3), **then the final research paper**. The ARL₀ = 100 sensitivity is deferred. *(Earlier: P4, descriptive heterogeneity investigation.)* *(Earlier: P3, figure repair from the frozen results.)* *(Earlier: P2, Holm, post hoc and supplementary, when the user instructs.)* P3–P6 are open and not yet authorized for execution. Earlier: **P1 (independent production-results audit)**, then P2–P5 in order, with no new simulation. Production reruns, the ARL₀ = 100 sensitivity, further benchmarks and SPY are **not authorized**. The earlier task notes below are kept for history.
@@ -436,3 +492,5 @@ None of these needs new simulation. Do them in priority order.
 | 2026-10-27 | **SPY application executed** (relaunch authorized; model B, finite-variance calibration): every hard stop passed; 6/6 eq. 29; 2 overshoot warnings (λ = 0.2) | `results/runs/spy_20261027T061202_150671` (`5725d5e3…`) | 133 passed (preflight); independent post-run checks passed | Figure 1 legend overlaps the 2025 peak (cosmetic) | final paper | no further SPY runs or sensitivity authorized |
 | 2026-10-30 | **Final-paper Stage 1** (user-approved plan + 10 amendments): SPY legend and label obstruction fixed in derived copies; provenance-test assumption updated after the user's `.gitignore` change; Zotero re-check (+4 items, [11] upgraded to FT-pre); LaTeX scaffold, verified tables and figures; writing outlines | `src/application.py` (plotting only), `tests/test_spy.py` (+1), `tests/test_core.py` (provenance test), `scripts/spy_figures.py` (new), `scripts/paper_assets.py` (new), `results/derived/spy_figures/` (new), `report/main.tex`, `report/refs.bib`, `report/tables/`, `report/figures/` (new), `docs/paper_outlines.md` (new), `docs/references.md` v1.1, `.gitignore` (+`*.bbl`, `*.blg`), this file, `CLAUDE.md` §18, `SKILL.md`, `reproducibility.md`; frozen artifacts unchanged | **134 passed**; SPY figures 35/35; paper assets 110/110; 3 + 1 mutations caught; `latexmk` clean (8 pp.) | figure text too small at print size; `\nocite{*}`; student number; AI declaration | user review → Stage 2 drafting | no simulation, refit, download or Git write authorized or done |
 | 2026-10-30 | **End-of-session checkpoint** (documentation only; no tests, builds or analyses run): the user approved the plotting-only, publication-size figure readability correction (not started); handover written; stale SPY-first resume guidance in `CLAUDE.md` §19 and `SKILL.md` corrected; Git and frozen hashes re-verified read-only | `docs/next-session-handover.md` (new), this file, `CLAUDE.md`, `SKILL.md`; production 17/17, SPY outputs and snapshot unchanged | not run (no code change) | figure readability; `\nocite{*}`; student number; AI declaration; traceability and bibliography checks | figure readability correction (31 Oct), then Stage 2 | no simulation, SPY run, refit, download or Git write authorized |
+| 2026-11-02 | **Complete first manuscript draft** (contract `docs/prompts/STC720_FULL_MANUSCRIPT_2026-11-02.md`): approved publication-size figures (plotting only, 80/80); full LaTeX article; in-text claims checker (52/52) | `report/main.tex`, `report/main.pdf` (15 pp.), `report/figures/*.pdf` (old PNG copies removed), `report/tables/{tab_spy_reference.tex, assets_checks.json}`, `scripts/paper_figures.py` (new), `scripts/manuscript_checks.py` (new), `scripts/paper_assets.py`, `results/derived/paper_figures/` (new); production 17/17 and SPY hashes unchanged | working tree: 2 collection errors from the uncommitted `run.py` edit (not Claude's); HEAD export: 133 passed, 1 failed (needs a Git worktree) | author review; `run.py`; student number; AI declaration; §5 2.38 pp. | author review, then Turnitin and submission (user) | drafting authorized; no simulation, refit, download, Git write or submission |
+| 2026-11-02 | **Group 10 report formatting** (presentation only): UP title page, roman front matter, earlier-report layout, group-neutral AI declaration | `report/main.tex`, `report/main.pdf` (17 pp.), `report/figures/UPlogohighres.jpg` | pytest 134 passed; manuscript checks 52/52; 0 LaTeX warnings; frozen hashes unchanged | authorship/group confirmation; AI declaration sign-off; code-appendix rubric item | Authors' review | No Git write, no submission |

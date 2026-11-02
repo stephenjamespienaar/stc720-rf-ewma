@@ -9,7 +9,15 @@ description: Resume and continue the STC 720 (University of Pretoria) Random For
 **Due:** Thu **5 Nov 2026, 23:59 SAST**, via ClickUP. Internal target is to submit on 4 Nov. Turnitin similarity must be ≤ 20%, and a generative-AI declaration goes below the keywords.
 **Repository:** `/home/stephen/projects/stc720-rf-ewma` (Python 3.14.4, `.venv/`, WSL2).
 
-## Current stage (30 Oct 2026): P1–P5 DONE; SPY EXECUTED AND VERIFIED; FINAL PAPER STAGE 1 DONE; NEXT: USER REVIEW, THEN STAGE 2 DRAFTING
+## Current stage (2 Nov 2026): P1–P5 DONE; SPY EXECUTED AND VERIFIED; COMPLETE FIRST MANUSCRIPT DRAFT DELIVERED; NEXT: THE AUTHOR'S CRITICAL REVIEW (NOT APPROVED, NOT SUBMITTED)
+
+**Checkpoint 2 Nov 2026:** see the top section of [`docs/project-status.md`](../../../docs/project-status.md).
+- **Draft:** under the contract `docs/prompts/STC720_FULL_MANUSCRIPT_2026-11-02.md`, Claude drafted every section. The draft is `report/main.tex` / `report/main.pdf` (15 pages).
+- **Checks:** figures (`scripts/paper_figures.py`, 80/80); tables (`scripts/paper_assets.py`, 106/106); in-text numbers (`scripts/manuscript_checks.py`, 52/52).
+- **Open (author):** review; student number; AI declaration; subtitle; §5 length. The uncommitted `run.py` edit breaks pytest collection; only the user may restore it.
+- **Not authorized:** no simulation, SPY run, refit, download, Git write or submission.
+
+*Earlier stage (30 Oct 2026): final paper Stage 1 done; next was user review, then Stage 2 drafting.*
 
 **Checkpoint 30 Oct 2026 (end of session): START THE NEXT SESSION WITH [`docs/next-session-handover.md`](../../../docs/next-session-handover.md).**
 - **First task (31 Oct 2026; approved, not started):** publication-size figure readability correction (plotting only, derived outputs, text 8–10 pt).
@@ -118,4 +126,4 @@ Only record what you verified this session. If an approval or decision came from
 
 ## Restart instruction for the user
 
-> Use the stc720-project skill and read `docs/next-session-handover.md` first. Inspect the current repository state read-only and resume from the last verified checkpoint (currently the approved publication-size figure readability correction, then Stage 2 of the final paper). Do not rerun production or start the sensitivity, benchmark or SPY work without my explicit authorization.
+> Use the stc720-project skill and read `docs/next-session-handover.md` first. Inspect the current repository state read-only and resume from the last verified checkpoint (currently the author's review of the complete manuscript draft of 2 Nov 2026). Do not rerun production or start the sensitivity, benchmark or SPY work without my explicit authorization.

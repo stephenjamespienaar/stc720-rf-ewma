@@ -22,11 +22,10 @@ SPY = ROOT / "results/runs/spy_20261027T061202_150671/results.json"
 INPUTS = {PROD: "716862ab41d08c581d2bd65c63979c046a9d9cb5930c111381b3eeb6506b708b",
           HOLM: "d38db5a14b1fe96a28c74d1b33a05b41133f1802b5ea6e70c5154b52915dd09a",
           SPY: "877b5f09696a71b3cf431bbed4d88b72a1e7e449d29a309d17e3db0b5ff7749d"}
-FIGS = {"fig_delay.png": ("results/derived/p3_figures/fig_delay.png", "e3ff5f011f9d7a215407740b1eaa8b18d5797f6dd9f24eeeaa886a519bbe6533"),
-        "fig_profile.png": ("results/derived/p3_figures/fig_profile.png", "a409411c285eab910ff5f126cef3c9e95ab51047ba23ea436adca9f7226a3f4c"),
-        "fig_replicates.png": ("results/derived/p3_figures/fig_replicates.png", "6e4fbcde288886ebc271bdf4bc54ee8284618e0bc6d24cb91c86bb5a16893e30"),
-        "fig_spy_charts.png": ("results/derived/spy_figures/fig_spy_charts.png", "0f87a8010116bb8aa86a8ef81035a98201587ecc007064469fc94358bd3e3dd3"),
-        "fig_spy_variance.png": ("results/derived/spy_figures/fig_spy_variance.png", "7b3b2359b716a7b1f8e65d293d3e3851e48d8be715c0724df977ff5a24c3b1e7")}
+# Publication-size figures drawn by scripts/paper_figures.py (80/80 checks; plotting only).
+FIGS = {"fig_delay.pdf": ("results/derived/paper_figures/fig_delay.pdf", "bd9859196fcbbdb50bf62bc2745b531018a60515f8c6f535bed1a53abb218fed"),
+        "fig_profile.pdf": ("results/derived/paper_figures/fig_profile.pdf", "9b8181c2919878100c80f334c65022e962b83408f7c153595b5f8793f154fe52"),
+        "fig_spy.pdf": ("results/derived/paper_figures/fig_spy.pdf", "78ff81db58a43f94267fd2b315b49e5227ad25b7442ace99fbf38b4283cc718c")}
 TAB, FIG = ROOT / "report/tables", ROOT / "report/figures"
 CH = ("conventional", "garch", "rf", "oracle")
 NAME = {"conventional": "Conventional", "garch": "GARCH", "rf": "RF", "oracle": "Oracle$^{\\dagger}$"}
@@ -76,7 +75,7 @@ def doc(label, got, expected):
 
 SPEC = {"tab_sim_charts.tex": "lcccc", "tab_contrasts.tex": "lrcccc", "tab_spy_fit.tex": "ll",
         "tab_spy_limits.tex": "cllrlc", "tab_spy_monitor.tex": "lrrrrrrr",
-        "tab_spy_reference.tex": r"rl>{\raggedright\arraybackslash}p{5.2cm}ccc"}
+        "tab_spy_reference.tex": r"rl>{\raggedright\arraybackslash}p{6.9cm}ccc"}
 
 
 def write(name, header, rows):

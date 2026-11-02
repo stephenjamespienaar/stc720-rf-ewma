@@ -1,6 +1,6 @@
 {
- "n_checks": 110,
- "n_passed": 110,
+ "n_checks": 106,
+ "n_passed": 106,
  "checks": [
   {
    "check": "input results/runs/production_20261014T060921_145897/results.json has its recorded SHA-256",
@@ -403,43 +403,27 @@
    "ok": true
   },
   {
-   "check": "figure source results/derived/p3_figures/fig_delay.png has its verified SHA-256",
+   "check": "figure source results/derived/paper_figures/fig_delay.pdf has its verified SHA-256",
    "ok": true
   },
   {
-   "check": "copy report/figures/fig_delay.png is byte-identical",
+   "check": "copy report/figures/fig_delay.pdf is byte-identical",
    "ok": true
   },
   {
-   "check": "figure source results/derived/p3_figures/fig_profile.png has its verified SHA-256",
+   "check": "figure source results/derived/paper_figures/fig_profile.pdf has its verified SHA-256",
    "ok": true
   },
   {
-   "check": "copy report/figures/fig_profile.png is byte-identical",
+   "check": "copy report/figures/fig_profile.pdf is byte-identical",
    "ok": true
   },
   {
-   "check": "figure source results/derived/p3_figures/fig_replicates.png has its verified SHA-256",
+   "check": "figure source results/derived/paper_figures/fig_spy.pdf has its verified SHA-256",
    "ok": true
   },
   {
-   "check": "copy report/figures/fig_replicates.png is byte-identical",
-   "ok": true
-  },
-  {
-   "check": "figure source results/derived/spy_figures/fig_spy_charts.png has its verified SHA-256",
-   "ok": true
-  },
-  {
-   "check": "copy report/figures/fig_spy_charts.png is byte-identical",
-   "ok": true
-  },
-  {
-   "check": "figure source results/derived/spy_figures/fig_spy_variance.png has its verified SHA-256",
-   "ok": true
-  },
-  {
-   "check": "copy report/figures/fig_spy_variance.png is byte-identical",
+   "check": "copy report/figures/fig_spy.pdf is byte-identical",
    "ok": true
   }
  ]

@@ -566,12 +566,13 @@ Avoid unnecessary approval requests for routine, already-authorized coding, docu
 
 ## 18. Current Project Status
 
-**P1–P5 DONE; SPY APPLICATION EXECUTED AND VERIFIED (27 OCT 2026); FINAL PAPER STAGE 1 DONE (30 OCT 2026); NEXT: USER REVIEW, THEN STAGE 2 DRAFTING**
+**P1–P5 DONE; SPY EXECUTED AND VERIFIED (27 OCT 2026); COMPLETE FIRST MANUSCRIPT DRAFT DELIVERED (2 NOV 2026); NEXT: THE AUTHOR'S CRITICAL REVIEW (NOT APPROVED, NOT SUBMITTED)**
 
-**Checkpoint 30 Oct 2026 (end of session): START THE NEXT SESSION WITH [`docs/next-session-handover.md`](docs/next-session-handover.md).**
-- **First task (31 Oct 2026; approved, not started):** publication-size figure readability correction (plotting only, derived outputs, text 8–10 pt).
-- **Then:** Stage 2 drafting.
-- **Not authorized:** any simulation, SPY run, refit, recalibration, download or Git write.
+**Checkpoint 2 Nov 2026: start with the top section of [`docs/project-status.md`](docs/project-status.md) and `report/main.pdf`.**
+- **Draft:** under the contract `docs/prompts/STC720_FULL_MANUSCRIPT_2026-11-02.md`, the user authorized Claude to draft every section. The draft is `report/main.tex` / `report/main.pdf` (15 pages; clean build).
+- **Checks:** figures `scripts/paper_figures.py` (80/80); tables `scripts/paper_assets.py` (106/106); in-text numbers `scripts/manuscript_checks.py` (52/52).
+- **Open (author):** review; student number; AI declaration; subtitle; §5 length (2.38 pages). The uncommitted `run.py` edit in the working tree breaks pytest collection; only the user may restore it.
+- **Not authorized:** any simulation, SPY run, refit, recalibration, download, Git write or submission.
 - **Terminology:** new academic prose says "pre-specified"; the "pre-registered" wording below is historical.
 
 **Final paper, Stage 1 DONE (30 Oct 2026).**
@@ -580,7 +581,7 @@ Avoid unnecessary approval requests for routine, already-authorized coding, docu
 - **Outlines** for the student-written sections: `docs/paper_outlines.md`.
 - **Tests:** 134 passed.
 - **Public repository:** `https://github.com/stephenjamespienaar/stc720-rf-ewma`.
-- **Open:** figure text is too small in print. The paper-size regeneration was **approved** by the user on 30 Oct 2026 and has **not been done**; it is the next task.
+- **Figure size:** the approved paper-size regeneration was done on 2 Nov 2026 (`scripts/paper_figures.py`, `results/derived/paper_figures/`).
 - Details: `docs/project-status.md`.
 
 *Updated 27 October 2026, after P4/P5. The detailed, authoritative progress record and task list is `docs/project-status.md`. The frozen production numbers, hashes and caveats are in `.claude/skills/stc720-project/references/production-results.md`.*
@@ -672,10 +673,10 @@ At the start of every session:
 3. Read `docs/project-status.md`, the authoritative checkpoint and open-task list.
 4. Read the frozen production results reference, `.claude/skills/stc720-project/references/production-results.md`.
 5. Verify the actual state with read-only commands: `git branch --show-current`, `git rev-parse HEAD`, `git status --short`. Check the production artifacts, e.g. that `sha256sum results/runs/production_20261014T060921_145897/*` matches the recorded hashes and that the recomputed results hash is `44410144…`. Treat anything unverified as incomplete.
-6. Read `docs/next-session-handover.md`. Summarise the verified state, then resume from the **highest-priority OPEN task** within its authorized scope. As of 30 Oct 2026 that is the approved figure readability correction, then Stage 2 of the final paper. The SPY application is complete; no SPY run is authorized.
+6. Read `docs/next-session-handover.md`. Summarise the verified state, then resume from the **highest-priority OPEN task** within its authorized scope. As of 2 Nov 2026 that is the author's review of the complete manuscript draft and any revisions the author requests. The SPY application is complete; no SPY run is authorized.
 7. **Never rerun production and never start the sensitivity, a benchmark or SPY work without the user's explicit authorization in the current session.** Git writes stay reserved to the user (§13).
 8. After each meaningful milestone, update `docs/project-status.md` (verified checkpoint and update log). Do not mark work complete until it is tested and verified.
 
 Restart instruction:
 
-> Use the stc720-project skill and read `docs/next-session-handover.md` first. Inspect the current repository state read-only and resume from the last verified checkpoint (currently the approved publication-size figure readability correction, then Stage 2 of the final paper). Do not rerun production or start the sensitivity, benchmark or SPY work without my explicit authorization.
+> Use the stc720-project skill and read `docs/next-session-handover.md` first. Inspect the current repository state read-only and resume from the last verified checkpoint (currently the author's review of the complete manuscript draft of 2 Nov 2026). Do not rerun production or start the sensitivity, benchmark or SPY work without my explicit authorization.
