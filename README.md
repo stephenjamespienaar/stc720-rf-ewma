@@ -177,4 +177,19 @@ This work has no DOI and is not published. Cite it as an unpublished course rese
 
 ## License
 
-This repository does not include a license file. No open-source license has been granted, so default copyright applies. Contact the authors before reusing the code or text.
+The original software in this repository is released under the [MIT License](LICENSE). The copyright notice names Stephen James Pienaar; this attribution is provisional until the Group 10 authors confirm it.
+
+The MIT License allows anyone to use, copy, modify, merge, publish, distribute, sublicense and sell copies of the covered software, including for commercial purposes, provided that the copyright notice and the license text are kept in all copies or substantial portions of it. The software is provided without warranty.
+
+**Covered:** the original source code and its documentation: `run.py`, `src/`, `scripts/`, `tests/`, and the configuration files `requirements.txt`, `requirements-lock.txt`, `pytest.ini` and `setup.sh`.
+
+**Not covered** by the MIT grant:
+
+- the research manuscript and its compiled report, with the original figures, tables and result summaries in `report/` and `results/derived/`;
+- the research records in `docs/`, including the STC 720 assignment rubric, which is course material belonging to its authors;
+- the University of Pretoria name and logo, which are not released for reuse;
+- third-party research papers and bibliographic content;
+- the SPY price data and other Yahoo Finance material, which are not included in the repository;
+- third-party software dependencies, which remain under their own licenses.
+
+If you use this software in research, please cite the report as shown under [References and citation](#references-and-citation). This is a request, not a condition of the MIT License.
