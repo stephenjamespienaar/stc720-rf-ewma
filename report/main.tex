@@ -83,8 +83,7 @@ University of Pretoria\vspace{0.5cm}\\
 
 % ---------------------------------------------------------------- Abstract (150-250 words)
 \begin{abstract}
-\noindent Because daily returns are conditionally heteroskedastic, a volatility control chart must specify the reference
-against which each return is judged. This study compares three one-sided exponentially weighted moving
+\noindent Because daily returns are conditionally heteroskedastic, a volatility control chart must specify the reference variance against which each return is judged. This study compares three one-sided exponentially weighted moving
 average (EWMA) charts that monitor the squared return divided by a variance denominator computed from past returns: a
 constant training variance (conventional chart), a frozen GARCH(1,1)-$t$ filter, and a frozen random forest (RF)
 trained on lagged squared returns (the proposed RF--EWMA chart). All limits are calibrated by simulation to a common in-control
@@ -126,7 +125,7 @@ revised and evaluated the AI-assisted work and take responsibility for the final
 % ---------------------------------------------------------------- 1 Introduction (+/- 1 page)
 \section{Introduction}\label{sec:intro}
 A persistent increase in market volatility raises the risk of every position exposed to that market. Daily returns are close to serially uncorrelated, but their squares are not: large moves
-cluster, a conditional heteroskedasticity captured by the generalised autoregressive conditional heteroskedasticity
+cluster. This conditional heteroskedasticity is captured by the generalised autoregressive conditional heteroskedasticity
 (GARCH) model of \citet{bollerslev_1986}. Statistical process control (SPC) offers sequential tools for detecting such
 changes, with a run-length interpretation of false alarms and detection delay. The exponentially weighted moving
 average (EWMA) chart of \citet{roberts_1959} accumulates evidence over time and is sensitive to small, persistent shifts
@@ -140,14 +139,14 @@ prediction errors, so that the chart monitors departures from the predictable st
 itself. Their proposal concerns the process mean, as does the later work on EWMA charts for autocorrelated processes
 \citep{lu_reynolds_1999}; the exponentially weighted moving variance of \citet{macgregor_harris_1993} is a related
 statistic for process variability. For the variance of financial returns, \citet{schipper_schmid_2001} developed EWMA
-charts for GARCH processes based on squared observations, on the conditional variance and on residuals, the squared
-observation divided by its conditional variance. Under known in-control parameters, normal innovations and a short
+charts for GARCH processes based on squared observations, on the conditional variance and on residuals (the squared
+observation divided by its conditional variance). Under known in-control parameters, normal innovations and a short
 in-control run length, their residual chart was the best chart in nearly all the cases they studied.
 
-Machine learning (ML) methods are now used in both areas. For forecasting realised variance, \citet{christensen_etal_2023} found
+Machine learning methods are now used in both volatility forecasting and SPC. For forecasting realised variance, \citet{christensen_etal_2023} found
 regularised regression, bagging, random forests, gradient boosting and neural networks competitive with heterogeneous
 autoregressive (HAR) benchmarks. A random forest \citep{breiman_2001} averages regression trees, so its predictions are
-averages of training targets: they are positive and cannot exceed the largest values seen in training. In SPC, random
+averages of training targets: they are nonnegative and cannot exceed the largest values seen in training. In SPC, random
 forests have served as classifiers inside charts, as in the real-time-contrasts chart of \citet{lee_etal_2020}.
 Here the random forest is used instead as the variance forecaster that standardises the statistic of a classical EWMA
 chart.
